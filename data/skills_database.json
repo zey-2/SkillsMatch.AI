@@ -1,0 +1,267 @@
+{
+  "skill_categories": {
+    "programming": {
+      "category_name": "Programming Languages",
+      "description": "Programming languages and coding skills",
+      "skills": {
+        "python": {
+          "name": "Python",
+          "description": "General-purpose programming language",
+          "related_skills": ["django", "flask", "pandas", "numpy", "scikit-learn"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "javascript": {
+          "name": "JavaScript",
+          "description": "Web programming language",
+          "related_skills": ["react", "nodejs", "vue", "angular"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "java": {
+          "name": "Java",
+          "description": "Enterprise programming language",
+          "related_skills": ["spring", "hibernate", "maven"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "cpp": {
+          "name": "C++",
+          "description": "System programming language",
+          "related_skills": ["c", "embedded-systems", "game-development"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "csharp": {
+          "name": "C#",
+          "description": "Microsoft's programming language",
+          "related_skills": ["dotnet", "aspnet", "unity"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "go": {
+          "name": "Go",
+          "description": "Google's programming language",
+          "related_skills": ["docker", "kubernetes", "microservices"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "rust": {
+          "name": "Rust",
+          "description": "Systems programming language",
+          "related_skills": ["webassembly", "blockchain", "embedded-systems"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        }
+      }
+    },
+    "web_development": {
+      "category_name": "Web Development",
+      "description": "Frontend and backend web development technologies",
+      "skills": {
+        "react": {
+          "name": "React",
+          "description": "JavaScript library for building user interfaces",
+          "related_skills": ["javascript", "redux", "nextjs"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "vue": {
+          "name": "Vue.js",
+          "description": "Progressive JavaScript framework",
+          "related_skills": ["javascript", "vuex", "nuxtjs"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "angular": {
+          "name": "Angular",
+          "description": "Platform for building mobile and desktop web applications",
+          "related_skills": ["javascript", "typescript", "rxjs"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "nodejs": {
+          "name": "Node.js",
+          "description": "JavaScript runtime for server-side development",
+          "related_skills": ["javascript", "express", "mongodb"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "django": {
+          "name": "Django",
+          "description": "High-level Python web framework",
+          "related_skills": ["python", "postgresql", "rest-api"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "flask": {
+          "name": "Flask",
+          "description": "Lightweight Python web framework",
+          "related_skills": ["python", "sqlalchemy", "rest-api"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        }
+      }
+    },
+    "data_science": {
+      "category_name": "Data Science & Machine Learning",
+      "description": "Data analysis, machine learning, and AI technologies",
+      "skills": {
+        "machine-learning": {
+          "name": "Machine Learning",
+          "description": "Algorithms and statistical models for data analysis",
+          "related_skills": ["python", "scikit-learn", "tensorflow", "pytorch"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "deep-learning": {
+          "name": "Deep Learning",
+          "description": "Neural networks and deep learning frameworks",
+          "related_skills": ["tensorflow", "pytorch", "keras", "machine-learning"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "data-analysis": {
+          "name": "Data Analysis",
+          "description": "Statistical analysis and data interpretation",
+          "related_skills": ["python", "pandas", "numpy", "matplotlib"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "statistics": {
+          "name": "Statistics",
+          "description": "Statistical methods and probability theory",
+          "related_skills": ["r", "python", "data-analysis", "machine-learning"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "nlp": {
+          "name": "Natural Language Processing",
+          "description": "Processing and understanding human language",
+          "related_skills": ["python", "spacy", "nltk", "transformers"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "computer-vision": {
+          "name": "Computer Vision",
+          "description": "Image and video analysis and processing",
+          "related_skills": ["opencv", "tensorflow", "pytorch", "python"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        }
+      }
+    },
+    "database": {
+      "category_name": "Database Technologies",
+      "description": "Database management and design skills",
+      "skills": {
+        "sql": {
+          "name": "SQL",
+          "description": "Structured Query Language for database management",
+          "related_skills": ["postgresql", "mysql", "database-design"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "postgresql": {
+          "name": "PostgreSQL",
+          "description": "Advanced open-source relational database",
+          "related_skills": ["sql", "database-design", "plpgsql"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "mysql": {
+          "name": "MySQL",
+          "description": "Popular open-source relational database",
+          "related_skills": ["sql", "database-design", "mariadb"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "mongodb": {
+          "name": "MongoDB",
+          "description": "NoSQL document-oriented database",
+          "related_skills": ["nosql", "javascript", "nodejs"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "redis": {
+          "name": "Redis",
+          "description": "In-memory data structure store",
+          "related_skills": ["caching", "nosql", "lua"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        }
+      }
+    },
+    "cloud_devops": {
+      "category_name": "Cloud & DevOps",
+      "description": "Cloud platforms and DevOps practices",
+      "skills": {
+        "aws": {
+          "name": "Amazon Web Services",
+          "description": "Cloud computing platform",
+          "related_skills": ["cloud-computing", "ec2", "s3", "lambda"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "azure": {
+          "name": "Microsoft Azure",
+          "description": "Cloud computing platform",
+          "related_skills": ["cloud-computing", "arm-templates", "powershell"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "gcp": {
+          "name": "Google Cloud Platform",
+          "description": "Cloud computing platform",
+          "related_skills": ["cloud-computing", "kubernetes", "bigquery"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "docker": {
+          "name": "Docker",
+          "description": "Containerization platform",
+          "related_skills": ["kubernetes", "container-orchestration", "microservices"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "kubernetes": {
+          "name": "Kubernetes",
+          "description": "Container orchestration system",
+          "related_skills": ["docker", "helm", "microservices"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        },
+        "terraform": {
+          "name": "Terraform",
+          "description": "Infrastructure as Code tool",
+          "related_skills": ["aws", "azure", "gcp", "infrastructure"],
+          "levels": ["beginner", "intermediate", "advanced", "expert"]
+        }
+      }
+    },
+    "soft_skills": {
+      "category_name": "Soft Skills",
+      "description": "Professional and interpersonal skills",
+      "skills": {
+        "leadership": {
+          "name": "Leadership",
+          "description": "Ability to guide and inspire teams",
+          "related_skills": ["team-management", "project-management", "communication"],
+          "levels": ["developing", "competent", "proficient", "expert"]
+        },
+        "communication": {
+          "name": "Communication",
+          "description": "Verbal and written communication skills",
+          "related_skills": ["presentation", "documentation", "stakeholder-management"],
+          "levels": ["developing", "competent", "proficient", "expert"]
+        },
+        "problem-solving": {
+          "name": "Problem Solving",
+          "description": "Analytical and creative problem-solving abilities",
+          "related_skills": ["critical-thinking", "debugging", "troubleshooting"],
+          "levels": ["developing", "competent", "proficient", "expert"]
+        },
+        "project-management": {
+          "name": "Project Management",
+          "description": "Planning, executing, and managing projects",
+          "related_skills": ["agile", "scrum", "leadership", "time-management"],
+          "levels": ["developing", "competent", "proficient", "expert"]
+        },
+        "team-collaboration": {
+          "name": "Team Collaboration",
+          "description": "Working effectively in team environments",
+          "related_skills": ["communication", "conflict-resolution", "empathy"],
+          "levels": ["developing", "competent", "proficient", "expert"]
+        }
+      }
+    }
+  },
+  "skill_weights": {
+    "programming": 0.3,
+    "web_development": 0.25,
+    "data_science": 0.25,
+    "database": 0.15,
+    "cloud_devops": 0.2,
+    "soft_skills": 0.15
+  },
+  "level_values": {
+    "beginner": 1,
+    "intermediate": 2,
+    "advanced": 3,
+    "expert": 4,
+    "developing": 1,
+    "competent": 2,
+    "proficient": 3
+  }
+}

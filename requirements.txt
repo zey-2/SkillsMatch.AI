@@ -1,0 +1,26 @@
+# AI Agent Framework (requires --pre flag)
+agent-framework-azure-ai
+
+# Core dependencies
+openai
+pandas
+numpy
+scikit-learn
+python-dotenv
+pydantic
+click
+rich
+asyncio-mqtt
+
+# Data processing
+jsonschema
+pyyaml
+
+# Development and testing
+pytest
+pytest-asyncio
+black
+flake8
+
+# Optional: For advanced NLP
+sentence-transformers

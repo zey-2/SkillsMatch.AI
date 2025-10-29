@@ -1,0 +1,130 @@
+{
+  "user_id": "john_developer",
+  "name": "John Developer",
+  "email": "john.developer@example.com",
+  "location": "San Francisco, CA",
+  "summary": "Experienced Python developer with 5+ years in data science and machine learning. Passionate about building scalable AI systems and mentoring junior developers.",
+  "skills": [
+    {
+      "skill_id": "python",
+      "skill_name": "Python",
+      "category": "programming",
+      "level": "advanced",
+      "years_experience": 5.0,
+      "last_used": "2024-10-29T00:00:00",
+      "verified": true
+    },
+    {
+      "skill_id": "machine-learning",
+      "skill_name": "Machine Learning",
+      "category": "data_science",
+      "level": "intermediate",
+      "years_experience": 3.0,
+      "last_used": "2024-10-29T00:00:00",
+      "verified": true
+    },
+    {
+      "skill_id": "sql",
+      "skill_name": "SQL",
+      "category": "database",
+      "level": "advanced",
+      "years_experience": 4.0,
+      "last_used": "2024-10-25T00:00:00",
+      "verified": true
+    },
+    {
+      "skill_id": "django",
+      "skill_name": "Django",
+      "category": "web_development",
+      "level": "intermediate",
+      "years_experience": 3.0,
+      "last_used": "2024-10-20T00:00:00",
+      "verified": true
+    },
+    {
+      "skill_id": "aws",
+      "skill_name": "Amazon Web Services",
+      "category": "cloud_devops",
+      "level": "beginner",
+      "years_experience": 1.0,
+      "last_used": "2024-10-15T00:00:00",
+      "verified": false
+    },
+    {
+      "skill_id": "leadership",
+      "skill_name": "Leadership",
+      "category": "soft_skills",
+      "level": "competent",
+      "years_experience": 2.0,
+      "last_used": "2024-10-29T00:00:00",
+      "verified": true
+    }
+  ],
+  "work_experience": [
+    {
+      "company": "DataTech Solutions",
+      "position": "Senior Python Developer",
+      "start_date": "2022-01-15T00:00:00",
+      "end_date": null,
+      "description": "Lead developer for machine learning pipeline infrastructure, mentoring junior developers",
+      "key_skills": ["python", "machine-learning", "sql", "leadership"],
+      "achievements": [
+        "Reduced ML model training time by 40% through pipeline optimization",
+        "Led team of 5 developers on critical data infrastructure project",
+        "Implemented automated testing that reduced bugs by 60%"
+      ]
+    },
+    {
+      "company": "StartupXYZ",
+      "position": "Python Developer",
+      "start_date": "2020-03-01T00:00:00",
+      "end_date": "2021-12-31T00:00:00",
+      "description": "Full-stack development with focus on data processing and web applications",
+      "key_skills": ["python", "django", "sql"],
+      "achievements": [
+        "Built core data processing system handling 1M+ records daily",
+        "Developed customer-facing dashboard with Django"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of California, Berkeley",
+      "degree": "Master of Science",
+      "field_of_study": "Computer Science",
+      "start_date": "2018-08-15T00:00:00",
+      "end_date": "2020-05-15T00:00:00",
+      "gpa": 3.8,
+      "relevant_coursework": ["Machine Learning", "Database Systems", "Software Engineering"]
+    },
+    {
+      "institution": "San Jose State University", 
+      "degree": "Bachelor of Science",
+      "field_of_study": "Computer Engineering",
+      "start_date": "2014-08-15T00:00:00",
+      "end_date": "2018-05-15T00:00:00",
+      "gpa": 3.6,
+      "relevant_coursework": ["Data Structures", "Algorithms", "Computer Networks"]
+    }
+  ],
+  "preferences": {
+    "work_type": ["remote", "hybrid"],
+    "desired_roles": ["Senior Data Scientist", "Machine Learning Engineer", "Technical Lead"],
+    "salary_min": 130000,
+    "salary_max": 180000,
+    "locations": ["San Francisco", "Remote", "Seattle"],
+    "company_size": ["100-500", "500-1000"],
+    "industries": ["Technology", "Healthcare", "Finance"],
+    "growth_areas": ["deep-learning", "kubernetes", "team-management"],
+    "availability": "2 weeks notice"
+  },
+  "career_goals": [
+    "Become a principal data scientist",
+    "Lead large-scale ML infrastructure projects", 
+    "Transition into technical management",
+    "Contribute to open source ML frameworks"
+  ],
+  "created_at": "2024-10-01T10:00:00",
+  "updated_at": "2024-10-29T12:00:00",
+  "is_active": true
+}
