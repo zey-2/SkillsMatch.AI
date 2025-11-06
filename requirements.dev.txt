@@ -1,0 +1,39 @@
+# SkillsMatch.AI Development Requirements
+# Additional dependencies for local development and testing
+
+# Include production requirements
+-r requirements.production.txt
+
+# Development tools
+pytest==7.4.3
+pytest-flask==1.3.0
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# Code quality and formatting
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+mypy==1.7.0
+bandit==1.7.5
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+
+# Database migrations (for development)
+Flask-Migrate==4.0.5
+
+# API documentation
+flasgger==0.9.7.1
+
+# Development server enhancements
+flask-debugtoolbar==0.13.1
+watchdog==3.0.0
+
+# Profiling and debugging
+py-spy==0.3.14
+memory-profiler==0.61.0
+
+# Load testing
+locust==2.17.0

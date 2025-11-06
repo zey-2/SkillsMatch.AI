@@ -10,21 +10,32 @@ SkillMatch.AI is a comprehensive AI-powered platform that matches users with job
 
 ## ✨ Features
 
+### Core Capabilities
 - 🤖 **AI-Powered Matching**: Uses advanced language models for intelligent skill and opportunity matching
+- 🕷️ **Web Scraping Integration**: Ethical scraping from SkillsFutureSG to enhance database with real-world Singapore data
 - 🎯 **Multi-Type Opportunities**: Supports jobs, projects, internships, and learning opportunities
 - 📊 **Comprehensive Scoring**: Detailed match scores with skill gaps and strengths analysis
 - 🧠 **Smart Skill Analysis**: Identifies related skills and provides learning recommendations
 - 💬 **Interactive Chat**: Natural language interface for career guidance
 - 📈 **Career Planning**: Skill gap analysis and personalized learning paths
+- 🇸🇬 **Singapore-Focused**: Enhanced with data from official SkillsFuture platform
 - 🔧 **Extensible**: Modular design for easy customization and extension
+
+### Web Interface
+- 🌐 **Modern Web UI**: Beautiful, responsive interface built with Bootstrap 5
+- ⚡ **Real-time Updates**: Live progress tracking with WebSocket connections
+- 📱 **Mobile-Friendly**: Optimized for all devices and screen sizes
+- 🎨 **Professional Design**: Clean, intuitive interface with smooth animations
+- 🔄 **Interactive Experience**: Dynamic forms, live validation, and instant feedback
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.11 or higher
 - GitHub Personal Access Token (for model access)
-- Conda or virtual environment (recommended)
+- Conda environment manager (recommended)
+- **Important**: Always use the `smai` conda environment for this project
 
 ### Installation
 
@@ -34,9 +45,14 @@ SkillMatch.AI is a comprehensive AI-powered platform that matches users with job
    cd SkillMatch.AI
    ```
 
-2. **Create and activate conda environment**
+2. **Create and activate the smai conda environment**
    ```bash
    conda create -n smai python=3.11
+   conda activate smai
+   ```
+   
+   ⚠️ **Important**: Always activate the `smai` environment before running any commands:
+   ```bash
    conda activate smai
    ```
 
@@ -63,7 +79,206 @@ Try the sample profile:
 python skillmatch.py match --profile profiles/john_developer.json
 ```
 
-## 📖 Usage
+## 🌐 Web Interface
+
+SkillMatch.AI now includes a modern, responsive web interface for better user experience!
+
+### Quick Start (Web Interface)
+To run the full web interface with real MySkillsFuture scraping:
+
+```bash
+# Make sure you're in the smai environment
+conda activate smai
+
+# Install web dependencies
+pip install flask flask-cors flask-socketio eventlet beautifulsoup4 aiohttp requests
+
+# Run the web application
+python web/app.py
+```
+
+Visit `http://localhost:5003` to access the full web interface with real scraping capabilities.
+
+⚠️ **Important**: Always ensure the `smai` conda environment is activated before running the web application.
+
+### Web Features
+- **📊 Interactive Dashboard** - Overview of your career data and system status
+- **👤 Comprehensive Profile Management** - Create, edit, view, and delete career profiles with full CRUD operations
+- **💼 Professional Profile Builder** - Complete forms with work experience, education, skills, and salary preferences
+- **📄 Resume Management** - Upload, download, and replace PDF resumes with secure file handling
+- **📈 Profile Analytics** - View statistics on total profiles, skills distribution, and experience levels
+- **🎯 Smart Matching** - Find opportunities with real-time progress tracking
+- **🕷️ Data Management** - Control web scraping with live progress monitoring and logs
+- **🤖 AI Career Chat** - Get personalized career advice with conversational interface
+- **📱 Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
+
+### Web Interface Highlights
+- **Modern UI**: Bootstrap 5 design with custom SkillMatch.AI styling and smooth animations
+- **Real-time Updates**: WebSocket connections provide live progress tracking for all operations
+- **Smart Forms**: Interactive forms with validation, suggestion chips, and dynamic content
+- **Professional UX**: Intuitive navigation, flash messages, modals, and responsive layouts
+- **Complete Functionality**: All CLI features available through beautiful web interface
+
+### Files Structure
+```
+web/
+├── app.py              # Main web application with real MySkillsFuture scraping
+├── templates/          # HTML templates
+│   ├── base.html       # Base template with navigation
+│   ├── index.html      # Dashboard page
+│   ├── profiles.html   # Profile listing with analytics and management
+│   ├── create_profile.html  # Profile creation/editing form with all fields
+│   ├── view_profile.html    # Detailed profile view with all sections
+│   ├── match.html      # Matching interface
+│   ├── scraping.html   # Data management with real scraping
+│   └── chat.html       # AI chat interface
+├── static/             # Static assets (CSS, JS)
+│   ├── css/
+│   │   └── style.css   # Professional styling with enterprise colors
+│   └── js/
+├── uploads/            # File storage
+│   └── resumes/        # PDF resume files
+└── requirements.txt    # Web dependencies
+
+profiles/               # Profile data storage
+├── *.json             # Individual profile files
+└── resumes/           # Resume file storage
+```
+
+### Local Development Focus
+This project is currently optimized for local development. All features work on localhost without requiring production deployment.
+
+## � Career Profiles System
+
+SkillMatch.AI features a comprehensive career profiles management system that allows users to create, manage, and optimize their professional profiles for better job matching.
+
+### 🌟 Profile Management Features
+
+#### **Complete Profile Creation**
+- **📝 Basic Information**: Name, title, location, and professional bio
+- **🧠 Skills Management**: Add technical and soft skills with proficiency levels
+- **💼 Work Experience**: Current and previous positions with detailed descriptions
+- **🎓 Education**: Academic qualifications, institutions, and graduation years
+- **💰 Salary Preferences**: Expected salary range and compensation preferences
+- **🏢 Work Preferences**: Remote work options, employment types, and industry preferences
+- **📄 Resume Upload**: PDF resume storage with download and replacement capabilities
+
+#### **Professional Profile Analytics**
+- **📊 Statistics Dashboard**: Track total profiles, skills, industries, and experience levels
+- **📈 Automatic Experience Level Classification**: 
+  - **Entry Level**: 0-2 years of experience (Fresh graduates, junior roles)
+  - **Mid Level**: 3-5 years of experience (Experienced professionals)
+  - **Senior Level**: 6+ years of experience (Senior roles, team leads)
+- **🎯 Smart Categorization**: Automatic skill categorization (programming, database, soft skills, etc.)
+- **📈 Real-time Analytics**: Live statistics updating as profiles are created/modified
+- **🔍 Data Insights**: Skills distribution, industry coverage, and experience diversity
+
+#### **Advanced Profile Operations**
+- **✏️ Full Edit Functionality**: Modify all profile aspects with pre-populated forms
+- **👁️ Comprehensive View**: Detailed profile view showing all information sections
+- **🗑️ Secure Deletion**: Complete profile and file removal with confirmation dialogs
+- **📱 Responsive Design**: Optimized for all devices and screen sizes
+
+### 🔧 Profile Management Interface
+
+#### **Profile Cards Display**
+Each profile is displayed in a professional card format showing:
+- **Profile avatar** with gradient background
+- **Name and creation date**
+- **Experience level badge** (automatically calculated)
+- **Skills overview** with skill count and top skills display
+- **Industry preferences** and location information
+- **Resume status** with download option when available
+- **Action menu** with view, edit, and delete options
+
+#### **Enhanced Forms**
+- **Smart Form Validation**: Real-time validation with helpful error messages
+- **Dynamic Field Management**: Add/remove skills and industries dynamically
+- **File Upload Handling**: Secure PDF resume upload with file validation
+- **Edit Mode Support**: Pre-populate all fields when editing existing profiles
+- **Professional Styling**: Clean, modern interface with enterprise color scheme
+
+#### **Profile Data Structure**
+```json
+{
+  "name": "Professional Name",
+  "email": "email@example.com",
+  "title": "Job Title",
+  "location": "City, Country",
+  "experience_level": "mid",
+  "bio": "Professional summary",
+  "skills": [
+    {
+      "skill_id": "python",
+      "skill_name": "Python",
+      "category": "programming",
+      "level": "advanced",
+      "years_experience": 3
+    }
+  ],
+  "work_experience": [
+    {
+      "position": "Software Developer",
+      "company": "Tech Company",
+      "years": 3,
+      "description": "Job responsibilities",
+      "employment_status": "employed"
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor",
+      "institution": "University Name",
+      "field_of_study": "Computer Science",
+      "graduation_year": 2020
+    }
+  ],
+  "preferences": {
+    "work_types": ["full_time"],
+    "salary_min": 50000,
+    "salary_max": 80000,
+    "remote_preference": "hybrid",
+    "locations": ["Singapore"]
+  },
+  "career_goals": [
+    "Become a senior developer",
+    "Learn new technologies"
+  ],
+  "resume_file": "resume.pdf"
+}
+```
+
+### 🚀 Getting Started with Profiles
+
+1. **Access Profile Management**
+   ```
+   http://localhost:5003/profiles
+   ```
+
+2. **Create Your First Profile**
+   - Click "Create New Profile"
+   - Fill in basic information (name, location, etc.)
+   - Add your skills with proficiency levels
+   - Include work experience and education
+   - Set salary and work preferences
+   - Upload your resume (PDF format)
+   - Save and view your profile
+
+3. **Manage Existing Profiles**
+   - **View**: See complete profile details
+   - **Edit**: Modify any profile information
+   - **Download Resume**: Get PDF resume file
+   - **Delete**: Remove profile and associated files
+
+### 💡 Profile Best Practices
+
+- **Complete All Sections**: Fill in work experience, education, and preferences for better matching
+- **Keep Skills Current**: Regularly update skills and proficiency levels
+- **Upload Resume**: PDF resume improves matching accuracy
+- **Set Realistic Expectations**: Use appropriate salary ranges and experience levels
+- **Update Regularly**: Keep profile information current for best results
+
+## �📖 Usage
 
 ### Command Line Interface
 
@@ -101,6 +316,50 @@ python skillmatch.py learn --skills "python, sql" --max-cost 0
 python skillmatch.py chat
 ```
 
+
+#### 🚀 Quick Scraping Test
+```bash
+# Test scraping with small batches (recommended first)
+python skillmatch.py scrape-test
+```
+
+#### 📊 Full Database Enhancement
+```bash
+# Scrape and integrate new courses, skills, and opportunities  
+python skillmatch.py scrape --courses 50 --skills 100 --opportunities 30 --integrate
+```
+
+#### ⚡ Easy Management Script
+```bash
+# Use the management script for common scenarios
+./scraper_manager.sh initial    # First-time setup (100 courses, 200 skills) 
+./scraper_manager.sh weekly     # Weekly updates (25 courses, 50 skills)
+./scraper_manager.sh monthly    # Monthly refresh (100 courses, 150 skills)
+./scraper_manager.sh urgent     # Before job search (50 courses, 30 opportunities)
+```
+
+#### 🌱 Ethical Scraping Features
+- **Respectful rate limiting**: 3+ seconds between requests
+- **Educational purpose**: Clear identification as research bot
+- **Small batch sizes**: Avoids overwhelming servers
+- **robots.txt compliance**: Respects website policies
+- **No personal data**: Only public course/skill information
+
+#### 📅 Recommended Schedule
+- **First time**: `./scraper_manager.sh initial` (get baseline data)
+- **Weekly**: `./scraper_manager.sh weekly` (keep data fresh)
+- **Monthly**: `./scraper_manager.sh monthly` (comprehensive updates)
+- **Before job search**: `./scraper_manager.sh urgent` (job-focused scraping)
+
+#### 🎯 Enhanced Matching Results
+After scraping, your matches will include fresh opportunities from SkillsFutureSG:
+```bash
+# See enhanced results with Singapore opportunities
+python skillmatch.py match --profile profiles/john_developer.json
+```
+
+> **💡 Pro Tip**: The scraper **enhances** your existing SkillMatch.AI app - it doesn't replace it! Run scraping periodically to keep your database current with Singapore's latest courses and opportunities.
+
 ### Python API
 
 You can also use SkillMatch.AI programmatically:
@@ -134,6 +393,51 @@ async def main():
 asyncio.run(main())
 ```
 
+## 🚀 Quick Command Reference
+
+### Core SkillMatch.AI Commands
+```bash
+# Setup (first time only)
+python skillmatch.py setup
+
+# Find job matches
+python skillmatch.py match --profile profiles/john_developer.json
+
+# Analyze skill gaps  
+python skillmatch.py gaps --profile profiles/john_developer.json
+
+# Find learning opportunities
+python skillmatch.py learn --skills "python, machine learning"
+
+# Chat with AI career advisor
+python skillmatch.py chat
+```
+
+### Web Scraping Commands
+```bash
+# Quick test (recommended first)
+python skillmatch.py scrape-test
+
+# Full scraping with integration
+python skillmatch.py scrape --courses 50 --skills 100 --integrate
+
+# Use management script (easier)
+./scraper_manager.sh weekly    # Regular updates
+./scraper_manager.sh urgent    # Before job search
+./scraper_manager.sh initial   # First-time setup
+```
+
+### File Structure After Setup
+```
+SkillMatch.AI/
+├── data/
+│   ├── skills_database.json     # Enhanced with SkillsFutureSG data
+│   └── opportunities_database.json  # Real Singapore opportunities
+├── scraped_data/               # Raw scraping results & reports
+├── profiles/                   # Your career profiles
+└── config/                     # AI model configuration
+```
+
 ## 🏗️ Architecture
 
 ### Core Components
@@ -146,15 +450,22 @@ SkillMatch.AI/
 │   │   └── opportunities.py # Jobs, projects, learning
 │   ├── agents/              # AI agents
 │   │   └── skill_match_agent.py  # Main AI agent
+│   ├── scrapers/            # Web scraping system (NEW!)
+│   │   ├── base_scraper.py  # Ethical scraping base class
+│   │   ├── myskillsfuture_scraper.py  # SkillsFutureSG scraper
+│   │   └── data_integrator.py  # Database integration
 │   ├── utils/               # Utilities
 │   │   ├── data_loader.py   # Data loading utilities
 │   │   └── skill_matcher.py # Matching algorithms
 │   └── cli.py              # Command line interface
 ├── data/                   # Data files
 │   ├── skills_database.json
-│   └── opportunities_database.json
+│   ├── opportunities_database.json
+│   └── backups/            # Auto-backups before scraping
+├── scraped_data/           # Raw scraped data & reports
 ├── config/                 # Configuration
 ├── profiles/              # Sample user profiles
+├── scraper_manager.sh     # Easy scraping management script
 └── tests/                 # Test files
 ```
 
@@ -205,15 +516,19 @@ The system organizes skills into categories:
 
 ## 📊 Example Output
 
-### Match Results
+### Match Results (Enhanced with SkillsFutureSG Data)
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
 ┃ Title                       ┃ Type        ┃ Company              ┃ Location        ┃ Match Score ┃ Skills Match  ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ Digital Transformation Spec│ Job         │ SkillsFutureSG       │ Singapore 🇸🇬   │    90.0%    │    100.0%     │
+│ Data Science Bootcamp      │ Learning    │ SkillsFutureSG       │ Singapore 🇸🇬   │    90.0%    │    100.0%     │
 │ Senior Python Developer    │ Job         │ TechCorp Inc         │ San Francisco   │    87.3%    │     92.1%     │
 │ Data Scientist             │ Job         │ Analytics Pro        │ New York, NY    │    78.9%    │     85.4%     │
 │ Machine Learning Fundamentals│ Learning   │ DataLearn Academy    │ Remote          │    65.2%    │     78.8%     │
 └─────────────────────────────┴─────────────┴──────────────────────┴─────────────────┴─────────────┴───────────────┘
+
+🇸🇬 Notice: Top matches now include real opportunities from Singapore's SkillsFutureSG platform!
 
 Top Match Details:
 📋 Senior Python Developer
@@ -356,11 +671,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Microsoft Agent Framework** for the powerful AI agent capabilities
 - **GitHub Models** for providing access to state-of-the-art language models
+- **SkillsFutureSG** for providing comprehensive skills and course data
+- **SkillsFuture Singapore** for the excellent career development platform
 - **Pydantic** for robust data validation and modeling
 - **Rich** for beautiful terminal output
 - **Click** for the CLI framework
 
-## 📞 Support
+## � Additional Documentation
+
+- **[SCRAPING_ETHICS.md](SCRAPING_ETHICS.md)** - Comprehensive ethical scraping guidelines
+- **[SCRAPER_SCHEDULE.md](SCRAPER_SCHEDULE.md)** - Detailed scraping schedule and automation guide
+- **[WEB_SCRAPING_COMPLETE.md](WEB_SCRAPING_COMPLETE.md)** - Complete web scraping implementation details
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Full project overview and results
+
+## �📞 Support
 
 - 📧 Email: [team@skillmatch.ai](mailto:team@skillmatch.ai)
 - 🐛 Issues: [GitHub Issues](https://github.com/rubyferdianto/SkillMatch.AI/issues)
@@ -368,13 +693,32 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
-- [ ] Web interface with React frontend
-- [ ] Integration with job boards (LinkedIn, Indeed)
+### ✅ Completed Features
+- [x] **Web scraping from SkillsFutureSG** - ✅ **COMPLETED!**
+- [x] **Ethical scraping with rate limiting** - ✅ **COMPLETED!**
+- [x] **Automated database enhancement** - ✅ **COMPLETED!**
+- [x] **Modern Web Interface** - ✅ **COMPLETED!**
+- [x] **Comprehensive Career Profiles System** - ✅ **COMPLETED!**
+- [x] **Professional Profile Management** - ✅ **COMPLETED!**
+- [x] **Resume Upload & Management** - ✅ **COMPLETED!**
+- [x] **Profile Analytics & Statistics** - ✅ **COMPLETED!**
+- [x] **Full CRUD Operations** - ✅ **COMPLETED!**
+
+### 🚧 In Development
+- [ ] Enhanced AI matching algorithms
+- [ ] Advanced profile recommendations
+- [ ] Bulk profile operations
+
+### 📋 Future Plans
+- [ ] Integration with additional job boards (LinkedIn, Indeed)
 - [ ] Advanced learning path recommendations
 - [ ] Team skill analysis and planning
 - [ ] API for third-party integrations
 - [ ] Mobile application
 - [ ] Enterprise features and deployment
+- [ ] Multi-country support (expand beyond Singapore)
+- [ ] React frontend migration
+- [ ] Real-time collaboration features
 
 ---
 

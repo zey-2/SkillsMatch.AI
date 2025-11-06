@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SkillsMatch.AI{% endblock %}</title>
+    
+    <!-- Bootstrap CSS for modern UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+        <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                <i class="fas fa-bullseye me-2" style="color: #ed8936;"></i>
+                SkillsMatch.AI
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'index' }}" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint in ['profiles', 'create_profile'] }}" href="{{ url_for('profiles') }}">
+                            <i class="fas fa-users me-1"></i>Profiles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'match_page' }}" href="{{ url_for('match_page') }}">
+                            <i class="fas fa-search me-1"></i>Match
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'chat_page' }}" href="{{ url_for('chat_page') }}">
+                            <i class="fas fa-robot me-1"></i>AI Chat
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>API Configuration</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-database me-2"></i>Database Status</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-info-circle me-2"></i>About</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+        <!-- Footer -->
+    <footer class="footer py-5 mt-5" style="background: linear-gradient(135deg, #0f2436 0%, #2d3748 100%); color: white;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3" style="color: white;">
+                        <i class="fas fa-bullseye me-2" style="color: #ed8936;"></i>
+                        SkillsMatch.AI
+                    </h5>
+                    <p style="color: white; opacity: 0.9;">
+                        Enterprise-grade intelligent career and skills matching system enhanced with real-world data from Singapore's official SkillsFuture platform.
+                        As part of project capstone for NTU SCTP in DSAI 2025 @ Team #1
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3" style="color: #38b2ac;">Enterprise Features</h5>
+                    <ul class="list-unstyled">
+                        <li style="color: white; opacity: 0.9;"><i class="fas fa-check-circle me-2" style="color: #38a169;"></i>AI-Powered Matching</li>
+                        <li style="color: white; opacity: 0.9;"><i class="fas fa-check-circle me-2" style="color: #38a169;"></i>Career Intelligence</li>
+                        <li style="color: white; opacity: 0.9;"><i class="fas fa-check-circle me-2" style="color: #38a169;"></i>Real-time Analytics</li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3" style="color: #38b2ac;">Quick Access</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('create_profile') }}" style="color: white; opacity: 0.8; text-decoration: none;" onmouseover="this.style.opacity='1'; this.style.color='#38b2ac';" onmouseout="this.style.opacity='0.8'; this.style.color='white';">Create Profile</a></li>
+                        <li><a href="{{ url_for('match_page') }}" style="color: white; opacity: 0.8; text-decoration: none;" onmouseover="this.style.opacity='1'; this.style.color='#38b2ac';" onmouseout="this.style.opacity='0.8'; this.style.color='white';">Find Matches</a></li>
+                        <li><a href="{{ url_for('chat_page') }}" style="color: white; opacity: 0.8; text-decoration: none;" onmouseover="this.style.opacity='1'; this.style.color='#38b2ac';" onmouseout="this.style.opacity='0.8'; this.style.color='white';">AI Advisory</a></li>
+
+                    </ul>
+                </div>
+            </div>
+            <hr style="border-color: #38b2ac; opacity: 0.3;">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-light mb-0 opacity-75">
+                        &copy; 2025 SkillsMatch.AI Enterprise. Enhanced with SkillsFutureSG data 🇸🇬
+                    </p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-light opacity-75">
+                        <i class="fas fa-code me-1" style="color: #ed8936;"></i>
+                        Enterprise Flask • Bootstrap • AI Framework
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO for real-time features -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

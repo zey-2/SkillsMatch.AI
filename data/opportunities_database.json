@@ -59,20 +59,33 @@
         "description": "Leading technology company in AI and data analytics"
       },
       "location": "San Francisco, CA",
-      "work_type": ["remote", "hybrid"],
+      "work_type": [
+        "remote",
+        "hybrid"
+      ],
       "salary_info": {
         "min_salary": 120000,
         "max_salary": 160000,
         "currency": "USD",
         "equity": true,
-        "benefits": ["Health Insurance", "401k", "Stock Options", "Flexible PTO"]
+        "benefits": [
+          "Health Insurance",
+          "401k",
+          "Stock Options",
+          "Flexible PTO"
+        ]
       },
       "posted_date": "2024-10-15T10:00:00Z",
       "application_deadline": "2024-11-15T23:59:59Z",
       "start_date": "2024-12-01T09:00:00Z",
       "is_active": true,
       "urgency": 0.7,
-      "tags": ["python", "data-science", "remote-friendly", "senior-level"]
+      "tags": [
+        "python",
+        "data-science",
+        "remote-friendly",
+        "senior-level"
+      ]
     },
     {
       "opportunity_id": "job_002",
@@ -125,19 +138,32 @@
         "description": "Fast-growing startup building innovative web solutions"
       },
       "location": "Austin, TX",
-      "work_type": ["hybrid", "onsite"],
+      "work_type": [
+        "hybrid",
+        "onsite"
+      ],
       "salary_info": {
         "min_salary": 80000,
         "max_salary": 110000,
         "currency": "USD",
         "equity": true,
-        "benefits": ["Health Insurance", "Flexible Schedule", "Stock Options"]
+        "benefits": [
+          "Health Insurance",
+          "Flexible Schedule",
+          "Stock Options"
+        ]
       },
       "posted_date": "2024-10-20T14:30:00Z",
       "application_deadline": "2024-11-20T23:59:59Z",
       "is_active": true,
       "urgency": 0.8,
-      "tags": ["javascript", "fullstack", "startup", "react", "nodejs"]
+      "tags": [
+        "javascript",
+        "fullstack",
+        "startup",
+        "react",
+        "nodejs"
+      ]
     },
     {
       "opportunity_id": "project_001",
@@ -174,7 +200,9 @@
       ],
       "min_experience_years": 2.0,
       "location": "Remote",
-      "work_type": ["contract"],
+      "work_type": [
+        "contract"
+      ],
       "salary_info": {
         "min_salary": 15000,
         "max_salary": 25000,
@@ -185,7 +213,12 @@
       "duration": "3 months",
       "is_active": true,
       "urgency": 0.6,
-      "tags": ["freelance", "ecommerce", "web-development", "remote"]
+      "tags": [
+        "freelance",
+        "ecommerce",
+        "web-development",
+        "remote"
+      ]
     },
     {
       "opportunity_id": "learning_001",
@@ -219,14 +252,22 @@
         "difficulty": "Beginner to Intermediate",
         "certification": true,
         "cost": 299.0,
-        "prerequisites": ["Basic Python knowledge", "High school mathematics"]
+        "prerequisites": [
+          "Basic Python knowledge",
+          "High school mathematics"
+        ]
       },
       "posted_date": "2024-10-01T00:00:00Z",
       "start_date": "2024-11-15T09:00:00Z",
       "duration": "12 weeks",
       "is_active": true,
       "urgency": 0.4,
-      "tags": ["machine-learning", "python", "beginner-friendly", "certification"]
+      "tags": [
+        "machine-learning",
+        "python",
+        "beginner-friendly",
+        "certification"
+      ]
     },
     {
       "opportunity_id": "job_003",
@@ -295,18 +336,31 @@
         "description": "Data analytics consulting firm serving Fortune 500 companies"
       },
       "location": "New York, NY",
-      "work_type": ["hybrid", "onsite"],
+      "work_type": [
+        "hybrid",
+        "onsite"
+      ],
       "salary_info": {
         "min_salary": 110000,
         "max_salary": 140000,
         "currency": "USD",
-        "benefits": ["Health Insurance", "401k", "Professional Development", "Bonus"]
+        "benefits": [
+          "Health Insurance",
+          "401k",
+          "Professional Development",
+          "Bonus"
+        ]
       },
       "posted_date": "2024-10-18T11:00:00Z",
       "application_deadline": "2024-11-25T23:59:59Z",
       "is_active": true,
       "urgency": 0.6,
-      "tags": ["data-science", "machine-learning", "statistics", "consulting"]
+      "tags": [
+        "data-science",
+        "machine-learning",
+        "statistics",
+        "consulting"
+      ]
     },
     {
       "opportunity_id": "internship_001",
@@ -351,12 +405,19 @@
         "description": "Large technology company with global reach"
       },
       "location": "Seattle, WA",
-      "work_type": ["onsite", "hybrid"],
+      "work_type": [
+        "onsite",
+        "hybrid"
+      ],
       "salary_info": {
         "min_salary": 4000,
         "max_salary": 6000,
         "currency": "USD",
-        "benefits": ["Housing Stipend", "Mentorship", "Networking Events"]
+        "benefits": [
+          "Housing Stipend",
+          "Mentorship",
+          "Networking Events"
+        ]
       },
       "posted_date": "2024-10-25T09:00:00Z",
       "application_deadline": "2024-12-15T23:59:59Z",
@@ -364,7 +425,84 @@
       "duration": "12 weeks",
       "is_active": true,
       "urgency": 0.3,
-      "tags": ["internship", "entry-level", "mentorship", "summer"]
+      "tags": [
+        "internship",
+        "entry-level",
+        "mentorship",
+        "summer"
+      ]
+    },
+    {
+      "opportunity_id": "msf_msf_opp_001",
+      "title": "Digital Transformation Specialist",
+      "description": "Lead digital transformation initiatives in organizations",
+      "opportunity_type": "job",
+      "company": null,
+      "location": "Singapore",
+      "skills_required": [
+        {
+          "skill_id": "req_digital_transformation",
+          "skill_name": "digital_transformation",
+          "required_level": "intermediate",
+          "importance": 0.8
+        },
+        {
+          "skill_id": "req_project_management",
+          "skill_name": "project_management",
+          "required_level": "intermediate",
+          "importance": 0.8
+        },
+        {
+          "skill_id": "req_change_management",
+          "skill_name": "change_management",
+          "required_level": "intermediate",
+          "importance": 0.8
+        }
+      ],
+      "experience_required": {
+        "min_years": 0,
+        "max_years": 10,
+        "level": "any"
+      },
+      "source": "SkillsFutureSG",
+      "scraped_at": "2025-10-30T21:20:05.018828",
+      "url": ""
+    },
+    {
+      "opportunity_id": "msf_msf_opp_002",
+      "title": "Data Science Bootcamp",
+      "description": "Comprehensive data science training program",
+      "opportunity_type": "learning",
+      "company": null,
+      "location": "Singapore",
+      "skills_required": [
+        {
+          "skill_id": "req_python",
+          "skill_name": "python",
+          "required_level": "intermediate",
+          "importance": 0.8
+        },
+        {
+          "skill_id": "req_statistics",
+          "skill_name": "statistics",
+          "required_level": "intermediate",
+          "importance": 0.8
+        },
+        {
+          "skill_id": "req_machine_learning",
+          "skill_name": "machine_learning",
+          "required_level": "intermediate",
+          "importance": 0.8
+        }
+      ],
+      "experience_required": {
+        "min_years": 0,
+        "max_years": 10,
+        "level": "any"
+      },
+      "source": "SkillsFutureSG",
+      "scraped_at": "2025-10-30T21:20:09.790616",
+      "url": ""
     }
   ],
   "last_updated": "2024-10-29T12:00:00Z"

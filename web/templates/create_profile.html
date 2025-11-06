@@ -1,0 +1,1067 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Profile' if edit_mode else 'Create Profile' }} - SkillsMatch.AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Modern Professional Layout */
+    body {
+        background: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #2c3e50;
+    }
+    
+    .container {
+        max-width: 1000px;
+        padding: 2rem 1rem;
+    }
+    
+    /* Professional Section Cards */
+    .section-card {
+        background: white;
+        border: none;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .section-card:hover {
+        box-shadow: 0 4px 30px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    /* Section Headers */
+    .section-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .section-header i {
+        margin-right: 0.75rem;
+        font-size: 1.2rem;
+    }
+    
+    .section-body {
+        padding: 2rem;
+    }
+    
+    /* Form Controls */
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        background: #fafbfc;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        background: white;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Buttons */
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 0.6rem 1.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Different header colors for sections */
+    .header-info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .header-resume { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .header-summary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .header-skills { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .header-industry { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .header-goals { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #2c3e50; }
+    .header-experience { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: #2c3e50; }
+    .header-education { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
+    .header-preferences { background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%); }
+    
+    /* Input Groups */
+    .input-group .form-control {
+        background: white;
+    }
+    
+    /* Badges and suggestions */
+    .skill-suggestion, .industry-suggestion {
+        background: #e9ecef;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-block;
+        margin: 0.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .skill-suggestion:hover, .industry-suggestion:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* Page Header */
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
+    
+    .page-header h1 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-header p {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    /* Progress Steps */
+    .form-steps {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
+    
+    .step {
+        padding: 0.5rem 1rem;
+        margin: 0 0.5rem;
+        border-radius: 20px;
+        background: #e9ecef;
+        color: #6c757d;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .step.active {
+        background: #667eea;
+        color: white;
+    }
+    
+    /* Form Actions */
+    .form-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        margin-top: 2rem;
+    }
+    
+    /* Force UPPERCASE for profile name */
+    #name {
+        text-transform: uppercase !important;
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem 0.5rem;
+        }
+        
+        .section-body {
+            padding: 1.5rem;
+        }
+        
+        .section-header {
+            padding: 1rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex align-items-center">
+            <a href="{{ url_for('profiles') }}" class="btn btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1>
+                    <i class="fas fa-{{ 'edit' if edit_mode else 'user-plus' }} me-2"></i>
+                    {{ 'Edit Career Profile' if edit_mode else 'Create Career Profile' }}
+                </h1>
+                <p>
+                    {{ 'Update your career profile information for better job matching' if edit_mode else 'Build your comprehensive career profile for better matching' }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="form-steps">
+        <div class="step active">1. Basic Info</div>
+        <div class="step">2. Resume</div>
+        <div class="step">3. Summary</div>
+        <div class="step">4. Skills</div>
+        <div class="step">5. Experience</div>
+        <div class="step">6. Education</div>
+    </div>
+
+    <!-- Profile Form -->
+    <form id="profileForm" method="POST" enctype="multipart/form-data" action="{{ url_for('save_profile') }}">
+        {% if edit_mode and profile %}
+            <input type="hidden" name="edit_profile_id" value="{{ profile.get('user_id', profile.get('name', '').lower().replace(' ', '_')) }}">
+        {% endif %}
+        
+        <!-- Basic Information Section -->
+        <div class="section-card">
+            <div class="section-header header-info">
+                <i class="fas fa-user"></i>
+                Basic Information
+            </div>
+            <div class="section-body">
+                    
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Profile Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required 
+                                    value="{{ profile.name.upper() if edit_mode and profile and profile.name else '' }}"
+                                    placeholder="JOHN DOE - SENIOR DEVELOPER"
+                                    style="text-transform: uppercase;">
+                            <div class="form-text">Your name will be displayed in UPPERCASE</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                    value="{{ profile.email if edit_mode and profile else '' }}"
+                                    placeholder="john.doe@example.com">
+                            <div class="form-text">Your professional email address</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="experience_level" class="form-label">Experience Level *</label>
+                            <select class="form-select" id="experience_level" name="experience_level" required>
+                                <option value="">Select your experience level</option>
+                                <option value="entry"
+                                    {% if edit_mode and profile and profile.experience_level == 'entry' %}
+                                    selected
+                                    {% endif %}>Entry Level (0-2 years)</option>
+                                <option value="mid"
+                                    {% if edit_mode and profile and profile.experience_level == 'mid' %}
+                                    selected
+                                    {% endif %}>Mid Level (3-5 years)</option>
+                                <option value="senior"
+                                    {% if edit_mode and profile and profile.experience_level == 'senior' %}
+                                    selected
+                                    {% endif %}>Senior Level (6-10 years)</option>
+                                <option value="executive"
+                                    {% if edit_mode and profile and profile.experience_level == 'executive' %}
+                                    selected
+                                    {% endif %}>Executive Level (10+ years)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                    value="{{ profile.location if edit_mode and profile else '' }}"
+                                    placeholder="Singapore, Remote, New York">
+                            <div class="form-text">Your preferred work location</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume/CV Upload Section -->
+        <div class="section-card">
+            <div class="section-header header-resume">
+                <i class="fas fa-file-pdf"></i>
+                Resume/CV Upload
+            </div>
+            <div class="section-body">
+                    
+                    {% if edit_mode and profile and profile.resume_file %}
+                    <!-- Existing Resume -->
+                    <div class="mb-3">
+                        <label class="form-label">Current Resume/CV</label>
+                        <div class="alert alert-info border-0" style="background-color: rgba(56, 178, 172, 0.1); border-radius: 8px;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    <span class="fw-medium">{{ profile.resume_file }}</span>
+                                </div>
+                                <a href="/profiles/{{ profile.get('name', '').lower().replace(' ', '_') + '_profile' }}/resume/download" 
+                                    class="btn btn-sm btn-outline-danger" target="_blank">
+                                    <i class="fas fa-download me-1"></i>Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="resume" class="form-label">
+                            {{ 'Replace Resume/CV (PDF)' if edit_mode and profile and profile.resume_file else 'Upload Resume/CV (PDF)' }}
+                        </label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="resume" name="resume" 
+                                    accept=".pdf" onchange="handleFileUpload(this)">
+                            <button class="btn btn-outline-danger" type="button" id="clearResumeBtn" 
+                                    onclick="clearResume()" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            {{ 'Upload a new resume to replace the existing one. ' if edit_mode and profile and profile.resume_file else '' }}Upload your resume or CV in PDF format (max 5MB). This will help improve job matching accuracy.
+                        </div>
+                        
+                        <!-- File Upload Status -->
+                        <div id="resumeStatus" class="mt-2" style="display: none;">
+                            <div class="alert alert-success mb-0 py-2">
+                                <i class="fas fa-check-circle me-1"></i>
+                                <span id="resumeFileName"></span> uploaded successfully
+                                <small class="text-muted d-block">File size: <span id="resumeFileSize"></span></small>
+                            </div>
+                        </div>
+                        
+                        <div id="resumeError" class="mt-2" style="display: none;">
+                            <div class="alert alert-danger mb-0 py-2">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                <span id="resumeErrorMessage"></span>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Professional Summary Section -->
+        <div class="section-card">
+            <div class="section-header header-summary">
+                <i class="fas fa-user-tie"></i>
+                Professional Summary
+            </div>
+            <div class="section-body">
+                <div class="mb-3">
+                    <label for="summary" class="form-label">Professional Summary</label>
+                    <textarea class="form-control" id="summary" name="summary" rows="4"
+                                placeholder="A concise professional summary highlighting your key strengths, experience, and value proposition... (Auto-generated from resume if uploaded)"
+                                maxlength="500" oninput="updateCharCount()">{{ profile.summary if edit_mode and profile and profile.summary else '' }}</textarea>
+                    <div class="form-text d-flex justify-content-between">
+                        <span>
+                            <i class="fas fa-magic me-1 text-primary"></i>
+                            Auto-generated from your resume when uploaded
+                        </span>
+                        <span class="text-muted">
+                            <span id="summaryCharCount">{{ profile.summary|length if edit_mode and profile and profile.summary else 0 }}</span>/500 characters
+                        </span>
+                    </div>
+                </div>
+                
+                {% if edit_mode and profile and profile.summary %}
+                <div class="alert alert-success mb-0" style="background-color: rgba(25, 135, 84, 0.1); border: 1px solid rgba(25, 135, 84, 0.2);">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>AI-Generated Summary Available</strong>
+                    <p class="mb-0 mt-2">This summary was automatically generated from your resume. You can edit it to better reflect your professional profile.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="section-card">
+            <div class="section-header header-skills">
+                <i class="fas fa-brain"></i>
+                Skills & Expertise
+            </div>
+            <div class="section-body">
+                    
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">Skills *</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="skillInput" 
+                                    placeholder="Type skills and press Enter or comma">
+                            <button class="btn btn-outline-secondary" type="button" id="addSkillBtn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Add your technical and soft skills</div>
+                        
+                        <!-- Skills Display -->
+                        <div id="skillsContainer" class="mt-3">
+                            <div id="skillsList"></div>
+                            <input type="hidden" name="skills" id="skillsHidden">
+                        </div>
+                    </div>
+
+                    <!-- Skill Suggestions -->
+                    <div class="mb-3">
+                        <label class="form-label">Popular Skills (click to add)</label>
+                        <div id="skillSuggestions">
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Python">Python</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="JavaScript">JavaScript</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Machine Learning">Machine Learning</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Data Analysis">Data Analysis</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Project Management">Project Management</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Communication">Communication</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Leadership">Leadership</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="SQL">SQL</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="Cloud Computing">Cloud Computing</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 skill-suggestion" data-skill="React">React</span>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Industry Preferences Section -->
+        <div class="section-card">
+            <div class="section-header header-industry">
+                <i class="fas fa-industry"></i>
+                Industry Preferences
+            </div>
+            <div class="section-body">
+                    
+                    <div class="mb-3">
+                        <label for="industries" class="form-label">Preferred Industries</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="industryInput" 
+                                    placeholder="Type an industry and press Enter">
+                            <button class="btn btn-outline-secondary" type="button" id="addIndustryBtn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Industries you're interested in working</div>
+                        
+                        <!-- Industries Display -->
+                        <div id="industriesContainer" class="mt-3">
+                            <div id="industriesList"></div>
+                            <input type="hidden" name="industries" id="industriesHidden">
+                        </div>
+                    </div>
+
+                    <!-- Industry Suggestions -->
+                    <div class="mb-3">
+                        <label class="form-label">Popular Industries (click to add)</label>
+                        <div id="industrySuggestions">
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Technology">Technology</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Finance">Finance</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Healthcare">Healthcare</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Education">Education</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Manufacturing">Manufacturing</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Retail">Retail</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Consulting">Consulting</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Government">Government</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Startups">Startups</span>
+                            <span class="badge bg-light text-dark me-1 mb-1 industry-suggestion" data-industry="Non-profit">Non-profit</span>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Career Goals Section -->
+        <div class="section-card">
+            <div class="section-header header-goals">
+                <i class="fas fa-bullseye"></i>
+                Career Goals
+            </div>
+            <div class="section-body">
+                    
+                    <div class="mb-3">
+                        <label for="goals" class="form-label">Career Goals</label>
+                        <textarea class="form-control" id="goals" name="goals" rows="3"
+                                    placeholder="Describe your career aspirations, what you want to achieve, learn, or the type of role you're seeking...">{{ profile.goals if edit_mode and profile and profile.goals else '' }}</textarea>
+                        <div class="form-text">Optional: Help us understand your career direction</div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Work Experience Section -->
+        <div class="section-card">
+            <div class="section-header header-experience">
+                <i class="fas fa-briefcase"></i>
+                Work Experience
+            </div>
+            <div class="section-body">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="job_title" class="form-label">Current/Recent Job Title</label>
+                                <input type="text" class="form-control" id="job_title" name="job_title" 
+                                        value="{{ profile.work_experience[0].position if edit_mode and profile and profile.work_experience else '' }}"
+                                        placeholder="e.g., Senior Frontend Developer">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company" class="form-label">Company</label>
+                                <input type="text" class="form-control" id="company" name="company" 
+                                        value="{{ profile.work_experience[0].company if edit_mode and profile and profile.work_experience else '' }}"
+                                        placeholder="e.g., Tech Solutions Inc">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="experience_years" class="form-label">Years of Experience</label>
+                                <select class="form-select" id="experience_years" name="experience_years">
+                                    <option value="">Select experience level</option>
+                                    <option value="0"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') == 0 %}
+                                        selected
+                                        {% endif %}>Fresh Graduate / No Experience</option>
+                                    <option value="1"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') == 1 %}
+                                        selected
+                                        {% endif %}>1 year</option>
+                                    <option value="2"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') == 2 %}
+                                        selected
+                                        {% endif %}>2 years</option>
+                                    <option value="3"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') == 3 %}
+                                        selected
+                                        {% endif %}>3 years</option>
+                                    <option value="4"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') == 4 %}
+                                        selected
+                                        {% endif %}>4 years</option>
+                                    <option value="5"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') == 5 %}
+                                        selected
+                                        {% endif %}>5 years</option>
+                                    <option value="6"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') and profile.work_experience[0].get('years')|int >= 6 and profile.work_experience[0].get('years')|int < 10 %}
+                                        selected
+                                        {% endif %}>6+ years</option>
+                                    <option value="10"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].get('years') and profile.work_experience[0].get('years')|int >= 10 %}
+                                        selected
+                                        {% endif %}>10+ years</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="employment_status" class="form-label">Employment Status</label>
+                                <select class="form-select" id="employment_status" name="employment_status">
+                                    <option value="">Select status</option>
+                                    <option value="employed"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].employment_status == 'employed' %}
+                                        selected
+                                        {% endif %}>Currently Employed</option>
+                                    <option value="unemployed"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].employment_status == 'unemployed' %}
+                                        selected
+                                        {% endif %}>Looking for Work</option>
+                                    <option value="student"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].employment_status == 'student' %}
+                                        selected
+                                        {% endif %}>Student</option>
+                                    <option value="freelance"
+                                        {% if edit_mode and profile and profile.work_experience and profile.work_experience[0].employment_status == 'freelance' %}
+                                        selected
+                                        {% endif %}>Freelancer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="job_description" class="form-label">Job Description</label>
+                        <textarea class="form-control" id="job_description" name="job_description" rows="3"
+                                    placeholder="Briefly describe your current or most recent role, responsibilities, and achievements...">{{ profile.work_experience[0].description if edit_mode and profile and profile.work_experience else '' }}</textarea>
+                        <div class="form-text">Optional: Describe your key responsibilities and achievements</div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Education Section -->
+        <div class="section-card">
+            <div class="section-header header-education">
+                <i class="fas fa-graduation-cap"></i>
+                Education
+            </div>
+            <div class="section-body">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="degree" class="form-label">Highest Degree</label>
+                                <select class="form-select" id="degree" name="degree">
+                                    <option value="">Select degree</option>
+                                    <option value="High School"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].degree == 'High School' %}
+                                        selected
+                                        {% endif %}>High School</option>
+                                    <option value="Certificate"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].degree == 'Certificate' %}
+                                        selected
+                                        {% endif %}>Certificate</option>
+                                    <option value="Diploma"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].degree == 'Diploma' %}
+                                        selected
+                                        {% endif %}>Diploma</option>
+                                    <option value="Bachelor"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].degree == 'Bachelor' %}
+                                        selected
+                                        {% endif %}>Bachelor's Degree</option>
+                                    <option value="Master"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].degree == 'Master' %}
+                                        selected
+                                        {% endif %}>Master's Degree</option>
+                                    <option value="PhD"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].degree == 'PhD' %}
+                                        selected
+                                        {% endif %}>PhD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="field_of_study" class="form-label">Field of Study</label>
+                                <input type="text" class="form-control" id="field_of_study" name="field_of_study" 
+                                        value="{{ profile.education[0].field_of_study if edit_mode and profile and profile.education else '' }}"
+                                        placeholder="e.g., Computer Science, Engineering, Business">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="institution" class="form-label">Institution</label>
+                                <input type="text" class="form-control" id="institution" name="institution" 
+                                        value="{{ profile.education[0].institution if edit_mode and profile and profile.education else '' }}"
+                                        placeholder="e.g., National University of Singapore">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="graduation_year" class="form-label">Graduation Year</label>
+                                <select class="form-select" id="graduation_year" name="graduation_year">
+                                    <option value="">Select year</option>
+                                    {% for year in range(2024, 1959, -1) %}
+                                    <option value="{{ year }}"
+                                        {% if edit_mode and profile and profile.education and profile.education[0].graduation_year and profile.education[0].graduation_year|int == year %}
+                                        selected
+                                        {% endif %}>
+                                        {{ year }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Salary & Preferences Section -->
+        <div class="section-card">
+            <div class="section-header header-preferences">
+                <i class="fas fa-dollar-sign"></i>
+                Salary & Work Preferences
+            </div>
+            <div class="section-body">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="salary_min" class="form-label">Minimum Salary (SGD)</label>
+                                <input type="number" class="form-control" id="salary_min" name="salary_min" 
+                                        value="{{ profile.preferences.salary_min if edit_mode and profile and profile.preferences else '' }}"
+                                        placeholder="e.g., 50000" min="0" step="1000">
+                                <div class="form-text">Annual salary expectation (minimum)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="salary_max" class="form-label">Maximum Salary (SGD)</label>
+                                <input type="number" class="form-control" id="salary_max" name="salary_max" 
+                                        value="{{ profile.preferences.salary_max if edit_mode and profile and profile.preferences else '' }}"
+                                        placeholder="e.g., 80000" min="0" step="1000">
+                                <div class="form-text">Annual salary expectation (maximum)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="work_type" class="form-label">Preferred Work Type</label>
+                                <select class="form-select" id="work_type" name="work_type">
+                                    <option value="">Select work type</option>
+                                    <option value="full_time"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.work_types and 'full_time' in profile.preferences.work_types %}
+                                        selected
+                                        {% endif %}>Full Time</option>
+                                    <option value="part_time"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.work_types and 'part_time' in profile.preferences.work_types %}
+                                        selected
+                                        {% endif %}>Part Time</option>
+                                    <option value="contract"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.work_types and 'contract' in profile.preferences.work_types %}
+                                        selected
+                                        {% endif %}>Contract</option>
+                                    <option value="freelance"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.work_types and 'freelance' in profile.preferences.work_types %}
+                                        selected
+                                        {% endif %}>Freelance</option>
+                                    <option value="internship"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.work_types and 'internship' in profile.preferences.work_types %}
+                                        selected
+                                        {% endif %}>Internship</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="remote_preference" class="form-label">Remote Work Preference</label>
+                                <select class="form-select" id="remote_preference" name="remote_preference">
+                                    <option value="office"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.remote_preference == 'office' %}
+                                        selected
+                                        {% endif %}>Office Only</option>
+                                    <option value="hybrid"
+                                        {% if not (edit_mode and profile and profile.preferences) or (edit_mode and profile and profile.preferences and profile.preferences.remote_preference == 'hybrid') %}
+                                        selected
+                                        {% endif %}>Hybrid</option>
+                                    <option value="remote"
+                                        {% if edit_mode and profile and profile.preferences and profile.preferences.remote_preference == 'remote' %}
+                                        selected
+                                        {% endif %}>Remote Only</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <h5 class="mb-3">Ready to {{ 'update' if edit_mode else 'create' }} your professional profile?</h5>
+            <p class="text-muted mb-4">Make sure all information is accurate for better job matching</p>
+            
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                    <i class="fas fa-{{ 'edit' if edit_mode else 'save' }} me-2"></i>
+                    {{ 'Update Profile' if edit_mode else 'Create Profile' }}
+                </button>
+                <a href="{{ url_for('profiles') }}" class="btn btn-outline-secondary btn-lg px-4 py-3">
+                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Skills management
+    let skills = [];
+    let industries = [];
+
+    // Initialize data for edit mode
+    {% if edit_mode and profile %}
+    // Initialize skills from profile data
+    {% if profile.skills %}
+    {% for skill in profile.skills %}
+        {% if skill.skill_name %}
+            {% if skill.skill_name.startswith('["') and skill.skill_name.endswith('"]') %}
+                {# Handle malformed JSON string skills #}
+                {% set skill_list = skill.skill_name[2:-2].split('","') %}
+                {% for individual_skill in skill_list %}
+                skills.push("{{ individual_skill }}");
+                {% endfor %}
+            {% else %}
+                skills.push("{{ skill.skill_name }}");
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+    
+    // Initialize industries from profile data
+    {% if profile.preferences and profile.preferences.industries %}
+    {% for industry in profile.preferences.industries %}
+    industries.push("{{ industry }}");
+    {% endfor %}
+    {% endif %}
+    {% endif %}
+
+    function addSkill(skillName) {
+        if (skillName && !skills.includes(skillName)) {
+            skills.push(skillName);
+            updateSkillsDisplay();
+            updateSkillsHidden();
+        }
+    }
+
+    function removeSkill(skillName) {
+        skills = skills.filter(skill => skill !== skillName);
+        updateSkillsDisplay();
+        updateSkillsHidden();
+    }
+
+    function updateSkillsDisplay() {
+        const container = document.getElementById('skillsList');
+        container.innerHTML = skills.map(skill => 
+            `<span class="badge bg-primary me-1 mb-1">
+                ${skill}
+                <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.7rem;" onclick="removeSkill('${skill}')"></button>
+            </span>`
+        ).join('');
+    }
+
+    function updateSkillsHidden() {
+        document.getElementById('skillsHidden').value = JSON.stringify(skills);
+    }
+
+    function addIndustry(industryName) {
+        if (industryName && !industries.includes(industryName)) {
+            industries.push(industryName);
+            updateIndustriesDisplay();
+            updateIndustriesHidden();
+        }
+    }
+
+    function removeIndustry(industryName) {
+        industries = industries.filter(industry => industry !== industryName);
+        updateIndustriesDisplay();
+        updateIndustriesHidden();
+    }
+
+    function updateIndustriesDisplay() {
+        const container = document.getElementById('industriesList');
+        container.innerHTML = industries.map(industry => 
+            `<span class="badge bg-info me-1 mb-1">
+                ${industry}
+                <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.7rem;" onclick="removeIndustry('${industry}')"></button>
+            </span>`
+        ).join('');
+    }
+
+    function updateIndustriesHidden() {
+        document.getElementById('industriesHidden').value = JSON.stringify(industries);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force uppercase for profile name
+        const nameInput = document.getElementById('name');
+        if (nameInput) {
+            nameInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        }
+        
+        // Skill input handling
+        const skillInput = document.getElementById('skillInput');
+        const addSkillBtn = document.getElementById('addSkillBtn');
+
+        function handleSkillInput() {
+            const value = skillInput.value.trim();
+            if (value) {
+                // Handle comma-separated skills
+                const skillsToAdd = value.split(',').map(s => s.trim()).filter(s => s);
+                skillsToAdd.forEach(skill => addSkill(skill));
+                skillInput.value = '';
+            }
+        }
+
+        addSkillBtn.addEventListener('click', handleSkillInput);
+        
+        skillInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSkillInput();
+            } else if (e.key === ',') {
+                setTimeout(handleSkillInput, 10);
+            }
+        });
+
+        // Industry input handling
+        const industryInput = document.getElementById('industryInput');
+        const addIndustryBtn = document.getElementById('addIndustryBtn');
+
+        function handleIndustryInput() {
+            const value = industryInput.value.trim();
+            if (value) {
+                addIndustry(value);
+                industryInput.value = '';
+            }
+        }
+
+        addIndustryBtn.addEventListener('click', handleIndustryInput);
+        
+        industryInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleIndustryInput();
+            }
+        });
+
+        // Skill suggestions
+        document.querySelectorAll('.skill-suggestion').forEach(badge => {
+            badge.addEventListener('click', function() {
+                const skill = this.dataset.skill;
+                addSkill(skill);
+                this.style.opacity = '0.5';
+                this.style.pointerEvents = 'none';
+            });
+        });
+
+        // Industry suggestions
+        document.querySelectorAll('.industry-suggestion').forEach(badge => {
+            badge.addEventListener('click', function() {
+                const industry = this.dataset.industry;
+                addIndustry(industry);
+                this.style.opacity = '0.5';
+                this.style.pointerEvents = 'none';
+            });
+        });
+
+        // Form validation
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            if (skills.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one skill to your profile.');
+                document.getElementById('skillInput').focus();
+                return false;
+            }
+        });
+
+        // Initialize display for edit mode
+        {% if edit_mode and profile %}
+        updateSkillsDisplay();
+        updateSkillsHidden();
+        updateIndustriesDisplay();
+        updateIndustriesHidden();
+        {% endif %}
+    });
+
+    // File upload handling
+    function handleFileUpload(input) {
+        const file = input.files[0];
+        const resumeStatus = document.getElementById('resumeStatus');
+        const resumeError = document.getElementById('resumeError');
+        const clearBtn = document.getElementById('clearResumeBtn');
+        
+        // Hide previous status
+        resumeStatus.style.display = 'none';
+        resumeError.style.display = 'none';
+        clearBtn.style.display = 'none';
+        
+        if (!file) return;
+        
+        // Validate file type
+        if (file.type !== 'application/pdf') {
+            document.getElementById('resumeErrorMessage').textContent = 'Please upload a PDF file only.';
+            resumeError.style.display = 'block';
+            input.value = '';
+            return;
+        }
+        
+        // Validate file size (5MB max)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+            document.getElementById('resumeErrorMessage').textContent = 'File size must be less than 5MB.';
+            resumeError.style.display = 'block';
+            input.value = '';
+            return;
+        }
+        
+        // Show success status
+        document.getElementById('resumeFileName').textContent = file.name;
+        document.getElementById('resumeFileSize').textContent = formatFileSize(file.size);
+        resumeStatus.style.display = 'block';
+        clearBtn.style.display = 'inline-block';
+    }
+    
+    function clearResume() {
+        document.getElementById('resume').value = '';
+        document.getElementById('resumeStatus').style.display = 'none';
+        document.getElementById('resumeError').style.display = 'none';
+        document.getElementById('clearResumeBtn').style.display = 'none';
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Professional Summary character counting
+    function updateCharCount() {
+        const summaryField = document.getElementById('summary');
+        const charCountSpan = document.getElementById('summaryCharCount');
+        
+        if (summaryField && charCountSpan) {
+            const currentLength = summaryField.value.length;
+            charCountSpan.textContent = currentLength;
+            
+            // Change color based on length
+            if (currentLength > 450) {
+                charCountSpan.style.color = '#dc3545'; // Red when approaching limit
+            } else if (currentLength > 350) {
+                charCountSpan.style.color = '#fd7e14'; // Orange when getting close
+            } else {
+                charCountSpan.style.color = '#6c757d'; // Default gray
+            }
+        }
+    }
+
+    // Initialize character count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCharCount();
+    });
+</script>
+{% endblock %}

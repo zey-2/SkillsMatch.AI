@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Profiles - SkillsMatch.AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Professional Page Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="bg-gradient-light rounded-3 p-4 shadow-sm border">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-3 fw-bold" style="color: var(--primary);">
+                            <i class="fas fa-users me-3" style="color: var(--accent-orange);"></i>Career Profiles
+                        </h1>
+                        <p class="text-muted mb-0 fs-5">Manage your career profiles and track your professional growth</p>                       
+                    </div>
+                    <div>
+                        <a href="{{ url_for('create_profile') }}" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="fas fa-plus me-2"></i>Create New Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profiles Grid -->
+    <div class="row">
+        {% if profiles %}
+            {% for profile in profiles %}
+            <div class="col-lg-6 col-xl-4 mb-4">
+                <div class="card h-100 border-0 shadow profile-card" style="border-radius: 12px;">
+                    <div class="card-header bg-gradient-light border-0 pb-0" style="border-radius: 12px 12px 0 0;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="me-3" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent-teal)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0 fw-bold" style="color: var(--primary);">{{ profile.name.upper() }}</h5>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Created {{ profile.created_at.strftime('%b %d, %Y') if profile.created_at else 'Unknown' }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" style="border-radius: 8px;">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="border-radius: 8px; z-index: 1050;">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('view_profile', profile_id=profile.id) }}">
+                                            <i class="fas fa-eye me-2" style="color: var(--accent-teal);"></i>View Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('edit_profile', profile_id=profile.id) }}">
+                                            <i class="fas fa-edit me-2" style="color: var(--accent-orange);"></i>Edit Profile
+                                        </a>
+                                    </li>
+                                    {% if profile.resume_file %}
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('download_resume', profile_id=profile.id) }}">
+                                            <i class="fas fa-download me-2" style="color: var(--info);"></i>Download Resume
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" onclick="confirmDelete('{{ profile.id }}', '{{ profile.name }}')">
+                                            <i class="fas fa-trash me-2"></i>Delete Profile
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body pt-3">
+                        <!-- Experience Level -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-graduation-cap me-2" style="color: var(--accent-orange);"></i>
+                                <small class="text-muted fw-semibold">Experience Level</small>
+                            </div>
+                            <span class="badge badge-experience fs-6 px-3 py-2" style="border-radius: 8px;">
+                                {% if profile.experience_level and profile.experience_level != 'not_specified' %}
+                                    {{ profile.experience_level.replace('_', ' ').title() }}
+                                {% elif profile.experience_years > 0 %}
+                                    {% if profile.experience_years < 2 %}
+                                        Junior
+                                    {% elif profile.experience_years < 5 %}
+                                        Mid-Level
+                                    {% else %}
+                                        Senior
+                                    {% endif %}
+                                {% else %}
+                                    Entry Level
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-brain me-2" style="color: var(--primary);"></i>
+                                <small class="text-muted fw-semibold">Skills</small>
+                            </div>
+                            <div class="skills-container">
+                                {% if profile.skills %}
+                                    {% for skill in profile.skills[:5] %}
+                                        <span class="badge badge-skill me-1 mb-2" style="border-radius: 6px; font-size: 0.75rem;">
+                                            {% if skill is mapping %}
+                                                {% if skill.skill_name and skill.skill_name.startswith('["') and skill.skill_name.endswith('"]') %}
+                                                    {# Handle malformed JSON string skills #}
+                                                    {% set skill_list = skill.skill_name[2:-2].split('","') %}
+                                                    {{ skill_list|join(', ') }}
+                                                {% else %}
+                                                    {{ skill.skill_name }}
+                                                {% endif %}
+                                            {% else %}
+                                                {{ skill }}
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                    {% if profile.skills|length > 5 %}
+                                        <span class="badge me-1 mb-2" style="background-color: var(--secondary); color: white; border-radius: 6px; font-size: 0.75rem;">
+                                            +{{ profile.skills|length - 5 }}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted fst-italic">No skills specified</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Industries -->
+                        {% if profile.industries %}
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-industry me-2" style="color: var(--accent-teal);"></i>
+                                <small class="text-muted fw-semibold">Industries</small>
+                            </div>
+                            <div>
+                                {% for industry in profile.industries[:3] %}
+                                    <span class="badge badge-industry me-1 mb-2" style="border-radius: 6px; font-size: 0.75rem;">{{ industry }}</span>
+                                {% endfor %}
+                                {% if profile.industries|length > 3 %}
+                                    <span class="badge me-1 mb-2" style="background-color: var(--accent-teal); color: white; opacity: 0.8; border-radius: 6px; font-size: 0.75rem;">
+                                        +{{ profile.industries|length - 3 }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Location -->
+                        {% if profile.location %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt me-2" style="color: var(--warning);"></i>
+                                <small class="text-muted fw-semibold">Location</small>
+                            </div>
+                            <span class="text-dark fw-medium">
+                                {{ profile.location }}
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Email -->
+                        {% if profile.email %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-envelope me-2" style="color: var(--primary);"></i>
+                                <small class="text-muted fw-semibold">Email</small>
+                            </div>
+                            <span class="text-dark fw-medium">
+                                <a href="mailto:{{ profile.email }}" class="text-dark text-decoration-none">{{ profile.email }}</a>
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Resume/CV Section -->
+                        {% if profile.resume_file %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-file-pdf me-2" style="color: var(--danger);"></i>
+                                <small class="text-muted fw-semibold">Resume/CV</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <a href="{{ url_for('download_resume', profile_id=profile.id) }}" 
+                                   class="btn btn-outline-danger btn-sm" style="border-radius: 6px; font-size: 0.75rem;">
+                                    <i class="fas fa-download me-1"></i>Download PDF
+                                </a>
+                                <small class="text-muted ms-2">
+                                    <i class="fas fa-check-circle me-1 text-success"></i>Available
+                                </small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-file-pdf me-2" style="color: var(--medium-grey);"></i>
+                                <small class="text-muted fw-semibold">Resume/CV</small>
+                            </div>
+                            <small class="text-muted fst-italic">
+                                <i class="fas fa-exclamation-circle me-1"></i>No resume uploaded
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer bg-gradient-light border-0 pt-3" style="border-radius: 0 0 12px 12px;">
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('match_page') }}" class="btn btn-primary btn-sm flex-fill shadow-sm" style="border-radius: 8px;">
+                                <i class="fas fa-search me-1"></i>Find Matches
+                            </a>
+                            <a href="{{ url_for('view_profile', profile_id=profile.id) }}" class="btn btn-outline-secondary btn-sm shadow-sm" style="border-radius: 8px;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Professional Empty State -->
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px; border-radius: 16px;">
+                        <div class="card-body p-5">
+                            <div class="mb-4">
+                                <div class="d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), var(--accent-teal)); border-radius: 20px;">
+                                    <i class="fas fa-user-plus fa-3x text-white"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-3" style="color: var(--primary);">No Profiles Yet</h3>
+                            <p class="text-muted mb-4 fs-5">
+                                Create your first career profile to start finding matching opportunities and get personalized career advice from our AI system.
+                            </p>
+                            <div class="mb-4">
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-rocket me-1"></i>Quick Start
+                                </span>
+                                <span class="badge" style="background-color: var(--accent-teal);">
+                                    <i class="fas fa-brain me-1"></i>AI-Powered
+                                </span>
+                            </div>
+                            <a href="{{ url_for('create_profile') }}" class="btn btn-primary btn-lg shadow-sm" style="border-radius: 10px;">
+                                <i class="fas fa-plus me-2"></i>Create Your First Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+
+</div>
+
+<!-- Professional Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold d-flex align-items-center" style="color: var(--primary);">
+                    <div class="me-3" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--danger), #e53e3e); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-exclamation-triangle text-white"></i>
+                    </div>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <p class="mb-3 fs-5">Are you sure you want to delete the profile "<strong id="profileName" style="color: var(--primary);"></strong>"?</p>
+                <div class="alert alert-warning border-0" style="background-color: rgba(237, 137, 54, 0.1); border-radius: 10px;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                        <div class="text-warning fw-medium">
+                            <div>This action cannot be undone. The following will be permanently removed:</div>
+                            <ul class="mb-0 mt-2">
+                                <li>Profile data and settings</li>
+                                <li>Associated resume/CV file</li>
+                                <li>All skills and experience information</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger shadow-sm" style="border-radius: 8px;">
+                        <i class="fas fa-trash me-1"></i>Delete Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function confirmDelete(profileId, profileName) {
+        document.getElementById('profileName').textContent = profileName;
+        document.getElementById('deleteForm').action = '/profiles/' + profileId + '/delete';
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    // Enhanced professional interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle dropdown z-index for proper layering
+        const dropdowns = document.querySelectorAll('.dropdown');
+        
+        dropdowns.forEach(dropdown => {
+            const dropdownToggle = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            const parentCard = dropdown.closest('.profile-card');
+            
+            if (dropdownToggle && dropdownMenu && parentCard) {
+                dropdownToggle.addEventListener('show.bs.dropdown', function() {
+                    parentCard.style.zIndex = '100';
+                    parentCard.classList.add('dropdown-open');
+                });
+                
+                dropdownToggle.addEventListener('hide.bs.dropdown', function() {
+                    setTimeout(() => {
+                        parentCard.style.zIndex = '';
+                        parentCard.classList.remove('dropdown-open');
+                    }, 300);
+                });
+            }
+        });
+        
+        // Profile card hover effects
+        const profileCards = document.querySelectorAll('.profile-card');
+        
+        profileCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+                this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                this.style.boxShadow = '0 20px 40px rgba(26, 54, 93, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            });
+        });
+
+        // Animate statistics cards on scroll
+        const statCards = document.querySelectorAll('.col-md-3 .card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.transform = 'scale(1)';
+                        entry.target.style.opacity = '1';
+                    }, index * 100);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        statCards.forEach(card => {
+            card.style.transform = 'scale(0.9)';
+            card.style.opacity = '0.7';
+            card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            observer.observe(card);
+        });
+
+        // Add loading states to buttons
+        const actionButtons = document.querySelectorAll('.btn');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.classList.contains('btn-outline-secondary')) {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Loading...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    }, 1500);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

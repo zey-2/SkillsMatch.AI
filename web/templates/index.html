@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}SkillsMatch.AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="bg-enterprise text-white rounded-4 p-5 text-center" style="box-shadow: 0 8px 32px rgba(26, 54, 93, 0.3);">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-bullseye me-3" style="color: #ed8936;"></i>SkillsMatch.AI
+                </h1>
+                <p class="lead mb-4">
+                    Intelligent Career and Skills Matching System<br>
+                    Enhanced with real-world data from SkillsFutureSG 🇸🇬
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('match_page') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-search me-2"></i>Find Matches
+                    </a>
+                    <a href="{{ url_for('create_profile') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Create Profile
+                    </a>
+                    <a href="{{ url_for('chat_page') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-robot me-2"></i>AI Chat
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-rocket me-2"></i>Quick Actions</h2>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card-enterprise primary h-100 d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon primary me-3">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0 text-dark">Find Job Matches</h5>
+                            <small class="text-muted">AI-powered career matching</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-dark flex-grow-1">
+                        Use our enterprise-grade AI matching system to discover the best career opportunities based on your professional profile and preferences.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('match_page') }}" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>Start Matching
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card-enterprise teal h-100 d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon teal me-3">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0 text-dark">Build Profile</h5>
+                            <small class="text-muted">Professional profile creation</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-dark flex-grow-1">
+                        Create a comprehensive professional profile with your skills, experience, and career objectives for accurate enterprise-level matching.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('create_profile') }}" class="btn btn-info w-100">
+                            <i class="fas fa-user-plus me-1"></i>Create Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card-enterprise orange h-100 d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon orange me-3">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0 text-dark">AI Career Advisory</h5>
+                            <small class="text-muted">Professional guidance system</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-dark flex-grow-1">
+                        Access our AI-powered career advisory system for personalized guidance, strategic recommendations, and professional development planning.
+                    </p>
+                    <div class="mt-auto">
+                        {% if stats.github_configured %}
+                            <a href="{{ url_for('chat_page') }}" class="btn btn-warning w-100">
+                                <i class="fas fa-comments me-1"></i>Start Advisory
+                            </a>
+                        {% else %}
+                            <button class="btn btn-warning w-100" disabled style="background-color: var(--accent-orange) !important; border-color: var(--accent-orange) !important; color: white !important;">
+                                <i class="fas fa-lock me-1"></i>Setup Required
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Analytics Section -->
+    {% if profiles %}
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3" style="width: 4px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent-teal)); border-radius: 2px;"></div>
+                <div>
+                    <h3 class="mb-1 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-chart-bar me-2" style="color: var(--accent-orange);"></i>Profile Analytics
+                    </h3>
+                    <p class="text-muted mb-0">Overview of your career profile data</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-light));">
+                <div class="card-body text-center text-white p-4">
+                    <div class="display-6 mb-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">{{ profiles|length }}</h3>
+                    <small class="opacity-75">Total Profiles</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, var(--accent-teal), #38b2ac);">
+                <div class="card-body text-center text-white p-4">
+                    <div class="display-6 mb-3">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">
+                        {% set skill_counts = [] %}
+                        {% for profile in profiles %}
+                            {% if profile.skills %}
+                                {% set _ = skill_counts.append(profile.skills | length) %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ skill_counts | sum }}
+                    </h3>
+                    <small class="opacity-75">Total Skills</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, var(--accent-orange), #ed8936);">
+                <div class="card-body text-center text-white p-4">
+                    <div class="display-6 mb-3">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">
+                        {% set all_industries = [] %}
+                        {% for profile in profiles %}
+                            {% if profile.preferences and profile.preferences.industries %}
+                                {% for industry in profile.preferences.industries %}
+                                    {% set _ = all_industries.append(industry) %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ all_industries | unique | list | length }}
+                    </h3>
+                    <small class="opacity-75">Industries Covered</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(90deg, rgb(133 151 178), 100%, rgb(226, 232, 240))">
+                <div class="card-body text-center text-white p-4">
+                    <div class="display-6 mb-3">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">
+                        {% set all_experience_levels = [] %}
+                        {% for profile in profiles %}
+                            {% if profile.experience_level %}
+                                {% set _ = all_experience_levels.append(profile.experience_level) %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ all_experience_levels | unique | list | length }}
+                    </h3>
+                    <small class="opacity-75">Experience Levels</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Features Overview -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-star me-2"></i>Key Features</h2>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="d-flex">
+                <div class="me-3" style="color: #1a365d;">
+                    <i class="fas fa-robot fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="text-dark">Enterprise AI Matching</h5>
+                    <p class="text-muted">
+                        Advanced language models and machine learning algorithms analyze professional profiles to deliver precise career opportunity matching with enterprise-grade accuracy.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="d-flex">
+                <div class="me-3" style="color: #38a169;">
+                    <i class="fas fa-flag fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="text-dark">Singapore Market Intelligence</h5>
+                    <p class="text-muted">
+                        Real-time data integration from SkillsFutureSG provides current market insights and authentic opportunities within Singapore's professional landscape.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="d-flex">
+                <div class="me-3" style="color: #38b2ac;">
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="text-dark">Strategic Career Analytics</h5>
+                    <p class="text-muted">
+                        Comprehensive skills gap analysis, career trajectory modeling, and strategic learning path recommendations powered by professional intelligence systems.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="d-flex">
+                <div class="me-3" style="color: #ed8936;">
+                    <i class="fas fa-shield-alt fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="text-dark">Ethical Data Operations</h5>
+                    <p class="text-muted">
+                        Enterprise-compliant data collection through direct API access, responsible data management, and secure source integration ensuring data integrity and compliance.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Add some interactive effects
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate cards on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s, transform 0.6s';
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}

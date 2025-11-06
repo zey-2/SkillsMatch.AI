@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.name }} - Profile Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Profile Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="bg-gradient-light rounded-3 p-4 shadow-sm border">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-4" style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), var(--accent-teal)); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                            <div>
+                                <h1 class="mb-2 fw-bold" style="color: var(--primary);">{{ profile.name }}</h1>
+                                <p class="mb-1 fs-5 text-muted">{{ profile.title or 'Professional' }}</p>
+                                {% if profile.location %}
+                                <p class="mb-1 text-muted">
+                                    <i class="fas fa-map-marker-alt me-1" style="color: var(--warning);"></i>
+                                    {{ profile.location }}
+                                </p>
+                                {% endif %}
+                                {% if profile.email %}
+                                <p class="mb-0 text-muted">
+                                    <i class="fas fa-envelope me-1" style="color: var(--primary);"></i>
+                                    <a href="mailto:{{ profile.email }}" class="text-muted text-decoration-none">{{ profile.email }}</a>
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if profile.bio %}
+                        <p class="text-muted mb-0">{{ profile.bio }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="{{ url_for('profiles') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Profiles
+                        </a>
+                        <a href="{{ url_for('match_page') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Find Matches
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Summary Section -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-user-circle me-2" style="color: var(--accent-teal);"></i>Professional Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if profile.summary %}
+                    <p class="mb-0 text-dark">{{ profile.summary }}</p>
+                    {% else %}
+                    <div class="text-muted font-italic">
+                        <i class="fas fa-robot me-2" style="color: var(--accent-orange);"></i>
+                        AI-Generated Summary: 
+                        <span class="text-dark">
+                            {% if profile.experience_level == 'entry' %}
+                            Motivated {{ profile.experience_level }} level professional based in {{ profile.location or 'Singapore' }}. 
+                            {% elif profile.experience_level == 'mid' %}
+                            Experienced {{ profile.experience_level }}-level professional with proven expertise based in {{ profile.location or 'Singapore' }}. 
+                            {% else %}
+                            Senior-level professional with extensive experience and leadership capabilities based in {{ profile.location or 'Singapore' }}. 
+                            {% endif %}
+                            {% if profile.skills %}
+                            Skilled in {% for skill in profile.skills[:3] %}
+                                {%- if skill.skill_name -%}
+                                    {%- if skill.skill_name.startswith('["') and skill.skill_name.endswith('"]') -%}
+                                        {%- set skill_list = skill.skill_name[2:-2].split('","') -%}
+                                        {{ skill_list|join(', ') }}
+                                    {%- else -%}
+                                        {{ skill.skill_name }}
+                                    {%- endif -%}
+                                {%- else -%}
+                                    {{ skill }}
+                                {%- endif -%}
+                                {%- if not loop.last -%}, {% endif -%}
+                            {% endfor %}{% if profile.skills|length > 3 %} and {{ profile.skills|length - 3 }} other technologies{% endif %}.
+                            {% endif %}
+                            {% if profile.preferences and profile.preferences.desired_roles %}
+                            Seeking opportunities in {{ profile.preferences.desired_roles[:2]|join(' or ') }}.
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Section -->
+        {% if profile.resume_file %}
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-file-pdf me-2" style="color: var(--danger);"></i>Resume Document
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-file-pdf fa-2x" style="color: var(--danger);"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">{{ profile.resume_file }}</h6>
+                                <small class="text-muted">Resume document in PDF format</small>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('download_resume', profile_id=profile.id) }}" 
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-download me-1"></i>Download Resume
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Skills Section -->
+        {% if profile.skills %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-brain me-2" style="color: var(--accent-orange);"></i>Skills
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for skill in profile.skills %}
+                        <div class="col-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-check-circle me-2" style="color: var(--success); font-size: 0.9rem;"></i>
+                                <span class="fw-medium">
+                                    {% if skill.skill_name %}
+                                        {% if skill.skill_name.startswith('["') and skill.skill_name.endswith('"]') %}
+                                            {# Handle malformed JSON string skills #}
+                                            {% set skill_list = skill.skill_name[2:-2].split('","') %}
+                                            {{ skill_list|join(', ') }}
+                                        {% else %}
+                                            {{ skill.skill_name }}
+                                        {% endif %}
+                                    {% else %}
+                                        {{ skill }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Work Experience Section -->
+        {% if profile.work_experience and profile.work_experience|length > 0 %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-briefcase me-2" style="color: var(--accent-teal);"></i>Work Experience
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for exp in profile.work_experience %}
+                    <div class="mb-4{% if not loop.last %} border-bottom pb-3{% endif %}">
+                        <h6 class="fw-bold mb-1">{{ exp.position or exp.job_title }}</h6>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-building me-1"></i>{{ exp.company }}
+                            {% if exp.start_date %}
+                            <span class="ms-2">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ exp.start_date[:4] if exp.start_date else '' }}
+                                {% if exp.end_date %} - {{ exp.end_date[:4] }}{% else %} - Present{% endif %}
+                            </span>
+                            {% elif exp.get('years') %}
+                            <span class="ms-2">
+                                <i class="fas fa-calendar me-1"></i>{{ exp.get('years') }} year{{ 's' if exp.get('years') != 1 else '' }}
+                            </span>
+                            {% endif %}
+                        </p>
+                        {% if exp.description %}
+                        <p class="small text-muted mb-2">{{ exp.description }}</p>
+                        {% endif %}
+                        {% if exp.achievements %}
+                        <div class="small">
+                            <strong class="text-primary">Key Achievements:</strong>
+                            <ul class="mb-0 mt-1">
+                                {% for achievement in exp.achievements %}
+                                <li class="text-muted">{{ achievement }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Education Section -->
+        {% if profile.education and profile.education|length > 0 %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-graduation-cap me-2" style="color: var(--warning);"></i>Education
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for edu in profile.education %}
+                    <div class="mb-3{% if not loop.last %} border-bottom pb-3{% endif %}">
+                        <h6 class="fw-bold mb-1">{{ edu.degree }}</h6>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-university me-1"></i>{{ edu.institution }}
+                        </p>
+                        {% if edu.field_of_study %}
+                        <p class="small text-muted mt-1"><strong>Field:</strong> {{ edu.field_of_study }}</p>
+                        {% endif %}
+                        {% if edu.end_date %}
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>Graduated {{ edu.end_date[:4] }}
+                        </small>
+                        {% elif edu.graduation_year %}
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>Graduated {{ edu.graduation_year }}
+                        </small>
+                        {% endif %}
+                        {% if edu.gpa %}
+                        <small class="text-muted ms-3">
+                            <i class="fas fa-star me-1"></i>GPA: {{ edu.gpa }}
+                        </small>
+                        {% endif %}
+                        {% if edu.relevant_coursework %}
+                        <div class="mt-2">
+                            <small class="text-primary fw-bold">Relevant Coursework:</small>
+                            <div class="small text-muted">{{ edu.relevant_coursework|join(', ') }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Career Goals Section -->
+        {% if profile.goals %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-bullseye me-2" style="color: var(--success);"></i>Career Goals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ profile.goals }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Salary & Preferences Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-gradient-light border-0" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="fas fa-dollar-sign me-2" style="color: var(--success);"></i>Salary & Preferences
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if profile.preferences %}
+                        {% if profile.preferences.salary_min or profile.preferences.salary_max %}
+                        <div class="mb-3">
+                            <strong class="small text-muted d-block mb-1">Expected Salary Range</strong>
+                            <span class="fs-6 text-dark fw-bold">
+                                {% if profile.preferences.salary_min %}${{ "{:,}".format(profile.preferences.salary_min) }}{% endif %}
+                                {% if profile.preferences.salary_min and profile.preferences.salary_max %} - {% endif %}
+                                {% if profile.preferences.salary_max %}${{ "{:,}".format(profile.preferences.salary_max) }}{% endif %}
+                                <small class="text-muted">per year</small>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.preferences.desired_roles %}
+                        <div class="mb-3">
+                            <strong class="small text-muted d-block mb-1">Desired Roles</strong>
+                            {% for role in profile.preferences.desired_roles %}
+                            <span class="badge badge-skill me-1 mb-1">{{ role }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.preferences.work_types or profile.preferences.work_type %}
+                        <div class="mb-3">
+                            <strong class="small text-muted d-block mb-1">Work Types</strong>
+                            {% set work_types = profile.preferences.work_types or profile.preferences.work_type %}
+                            {% for work_type in work_types %}
+                            <span class="badge badge-industry me-1 mb-1">{{ work_type.title() }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.preferences.remote_preference %}
+                        <div class="mb-3">
+                            <strong class="small text-muted d-block mb-1">Remote Preference</strong>
+                            <span class="badge badge-experience">{{ profile.preferences.remote_preference.title() }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.preferences.locations %}
+                        <div class="mb-3">
+                            <strong class="small text-muted d-block mb-1">Preferred Locations</strong>
+                            <div>
+                                {% for location in profile.preferences.locations %}
+                                <span class="badge badge-secondary me-1 mb-1">{{ location }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.preferences.industries %}
+                        <div class="mb-3">
+                            <strong class="small text-muted d-block mb-1">Preferred Industries</strong>
+                            <div>
+                                {% for industry in profile.preferences.industries %}
+                                <span class="badge badge-primary me-1 mb-1">{{ industry }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="text-muted text-center py-3">
+                        <i class="fas fa-cog fa-2x mb-2"></i>
+                        <p class="mb-0">No preferences specified</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not profile.skills and not profile.work_experience and not profile.education %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px; border-radius: 16px;">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-file-alt fa-3x text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">Profile Incomplete</h5>
+                        <p class="text-muted mb-0">This profile needs more information to be effective for matching.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
