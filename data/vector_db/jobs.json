@@ -1,0 +1,93 @@
+[
+  {
+    "job_id": "test_job_1",
+    "text_content": "Job Title: Software Engineer\nDescription: Python developer position with Flask and AI experience\nSkills: Python, Flask, AI, Machine Learning",
+    "title": "Software Engineer",
+    "company": "Tech Corp",
+    "location": "Singapore",
+    "category": "Technology",
+    "created_at": "2025-11-08T13:52:54.569502",
+    "original_data": {
+      "id": "test_job_1",
+      "title": "Software Engineer",
+      "description": "Python developer position with Flask and AI experience",
+      "company": "Tech Corp",
+      "location": "Singapore",
+      "category": "Technology",
+      "skills": [
+        "Python",
+        "Flask",
+        "AI",
+        "Machine Learning"
+      ]
+    }
+  },
+  {
+    "job_id": "test_job_2",
+    "text_content": "Job Title: Data Scientist\nDescription: Data analysis and machine learning specialist role\nSkills: Python, Machine Learning, Data Analysis, SQL",
+    "title": "Data Scientist",
+    "company": "Data Inc",
+    "location": "Singapore",
+    "category": "Data Science",
+    "created_at": "2025-11-08T13:52:54.576692",
+    "original_data": {
+      "id": "test_job_2",
+      "title": "Data Scientist",
+      "description": "Data analysis and machine learning specialist role",
+      "company": "Data Inc",
+      "location": "Singapore",
+      "category": "Data Science",
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "Data Analysis",
+        "SQL"
+      ]
+    }
+  },
+  {
+    "job_id": "test_job_3",
+    "text_content": "Job Title: Frontend Developer\nDescription: React and JavaScript web development position\nSkills: JavaScript, React, HTML, CSS",
+    "title": "Frontend Developer",
+    "company": "Web Solutions",
+    "location": "Singapore",
+    "category": "Web Development",
+    "created_at": "2025-11-08T13:52:54.584096",
+    "original_data": {
+      "id": "test_job_3",
+      "title": "Frontend Developer",
+      "description": "React and JavaScript web development position",
+      "company": "Web Solutions",
+      "location": "Singapore",
+      "category": "Web Development",
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML",
+        "CSS"
+      ]
+    }
+  },
+  {
+    "job_id": "benchmark_job",
+    "text_content": "Job Title: Performance Test Job\nDescription: Testing vectorization speed for benchmark purposes\nSkills: Performance, Testing, Benchmarking",
+    "title": "Performance Test Job",
+    "company": "Benchmark Corp",
+    "location": "Test City",
+    "category": "Testing",
+    "created_at": "2025-11-08T14:18:28.395551",
+    "original_data": {
+      "id": "benchmark_job",
+      "title": "Performance Test Job",
+      "description": "Testing vectorization speed for benchmark purposes",
+      "company": "Benchmark Corp",
+      "location": "Test City",
+      "category": "Testing",
+      "skills": [
+        "Performance",
+        "Testing",
+        "Benchmarking"
+      ]
+    }
+  }
+]

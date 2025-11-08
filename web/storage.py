@@ -44,17 +44,17 @@ class PostgreSQLProfileStorage(ProfileStorage):
         try:
             # Try the full path first
             from web.database.services import ProfileService
-            from web.database.models import get_db
+            from web.database.db_config import db_config
             self.ProfileService = ProfileService
-            self.get_db = get_db
+            self.db_config = db_config
             self._db_available = True
         except ImportError:
             try:
                 # Fallback for when running from web directory
                 from database.services import ProfileService
-                from database.models import get_db
+                from database.db_config import db_config
                 self.ProfileService = ProfileService
-                self.get_db = get_db
+                self.db_config = db_config
                 self._db_available = True
             except ImportError as e:
                 print(f"PostgreSQL storage not available: {e}")
@@ -65,7 +65,7 @@ class PostgreSQLProfileStorage(ProfileStorage):
         if not self._db_available:
             raise RuntimeError("PostgreSQL storage not available")
         
-        db = next(self.get_db())
+        db = self.db_config.get_session()
         return self.ProfileService(db), db
     
     def save_profile(self, profile_data: Dict[str, Any]) -> bool:

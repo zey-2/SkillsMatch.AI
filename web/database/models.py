@@ -2,14 +2,18 @@
 Database configuration and models for SkillMatch.AI PostgreSQL implementation
 """
 import os
-from sqlalchemy import create_engine, Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, Table
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, Table
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from datetime import datetime
 import uuid
 
-Base = declarative_base()
+try:
+    from .db_config import Base
+except ImportError:
+    # Fallback for direct module usage
+    from sqlalchemy.ext.declarative import declarative_base
+    Base = declarative_base()
 
 # Association table for user skills
 user_skills = Table(
@@ -158,57 +162,73 @@ class CareerGoal(Base):
     # Relationships
     users = relationship("UserProfile", secondary=user_career_goals, back_populates="career_goals")
 
-# Database configuration
-class DatabaseConfig:
-    """Database configuration class"""
+class Course(Base):
+    """SSG-WSG Courses from Developer Portal API"""
+    __tablename__ = 'courses'
     
-    def __init__(self):
-        self.database_url = self._get_database_url()
-        self.engine = create_engine(
-            self.database_url,
-            pool_size=10,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=os.getenv('DATABASE_DEBUG', 'false').lower() == 'true'
-        )
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    course_id = Column(String, unique=True, nullable=False)  # External course ID
+    course_reference_number = Column(String, unique=True)  # Course reference number
+    title = Column(String, nullable=False)
+    description = Column(Text)
+    provider = Column(String)  # Training provider
+    provider_code = Column(String)
     
-    def _get_database_url(self) -> str:
-        """Get database URL from environment variables"""
-        # Try to get full database URL first
-        database_url = os.getenv('DATABASE_URL')
-        if database_url:
-            return database_url
-        
-        # Build URL from individual components
-        host = os.getenv('DB_HOST', 'localhost')
-        port = os.getenv('DB_PORT', '5432')
-        database = os.getenv('DB_NAME', 'skillmatch')
-        username = os.getenv('DB_USER', 'skillmatch_user')
-        password = os.getenv('DB_PASSWORD', 'password')
-        
-        return f"postgresql://{username}:{password}@{host}:{port}/{database}"
+    # Course details
+    duration = Column(String)  # Course duration
+    duration_hours = Column(Float)  # Duration in hours
+    course_type = Column(String)  # Online, Classroom, Blended
+    delivery_mode = Column(String)  # Full-time, Part-time, etc.
     
-    def create_tables(self):
-        """Create all tables"""
-        Base.metadata.create_all(bind=self.engine)
+    # Skills and categories
+    skills_taught = Column(JSON)  # List of skills covered
+    skills_framework = Column(JSON)  # Skills framework mapping
+    categories = Column(JSON)  # Course categories
+    sectors = Column(JSON)  # Industry sectors
     
-    def get_session(self):
-        """Get database session"""
-        session = self.SessionLocal()
-        try:
-            return session
-        except Exception:
-            session.close()
-            raise
+    # Eligibility and requirements
+    eligibility_criteria = Column(Text)
+    prerequisites = Column(Text)
+    target_audience = Column(String)
+    
+    # Pricing and funding
+    course_fee = Column(Float)
+    nett_fee_citizen = Column(Float)  # Fee for citizens after subsidies
+    nett_fee_pr = Column(Float)  # Fee for PRs after subsidies
+    funding_available = Column(JSON)  # Available funding schemes
+    
+    # Schedule and location
+    schedule = Column(JSON)  # Course schedule information
+    locations = Column(JSON)  # Course locations
+    next_intake = Column(DateTime)  # Next course intake date
+    
+    # Quality and accreditation
+    rating = Column(Float)
+    accreditation = Column(String)
+    certification = Column(String)
+    
+    # API metadata
+    api_source = Column(String, default='SSG-WSG')
+    external_url = Column(String)  # Link to course details
+    last_updated = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
 
-# Global database instance
-db_config = DatabaseConfig()
+class Job(Base):
+    """Job postings from CSV import"""
+    __tablename__ = 'jobs'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(String, unique=True, nullable=False)  # From CSV job_id column
+    category = Column(String)  # From CSV category column
+    job_title = Column(String, nullable=False)  # From CSV job_title column
+    job_description = Column(Text)  # From CSV job_description column
+    job_skill_set = Column(JSON)  # From CSV job_skill_set column (parsed as JSON list)
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
 
-def get_db():
-    """Dependency for getting database session"""
-    db = db_config.get_session()
-    try:
-        yield db
-    finally:
-        db.close()
+# Database configuration is now in db_config.py

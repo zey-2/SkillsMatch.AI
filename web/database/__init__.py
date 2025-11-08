@@ -3,7 +3,7 @@ Database initialization and setup utilities
 """
 import os
 from pathlib import Path
-from .models import db_config, Base
+from .db_config import db_config, Base
 from .services import JSONToPostgreSQLMigrator
 
 def init_database():

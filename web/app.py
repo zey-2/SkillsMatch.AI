@@ -48,6 +48,15 @@ from dotenv import load_dotenv
 env_path = Path(__file__).parent.parent / '.env'
 load_dotenv(env_path)
 
+# Vector search service import
+try:
+    from services.simple_vector_service import get_vector_service
+    VECTOR_SEARCH_AVAILABLE = True
+    print("✅ Vector search service available")
+except ImportError as e:
+    print(f"⚠️ Vector search service not available: {e}")
+    VECTOR_SEARCH_AVAILABLE = False
+
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -160,11 +169,36 @@ def generate_ai_summary(profile_data):
         resume_file = profile_data.get('resume_file')
         if resume_file:
             try:
-                # For now, we'll use the filename as context since PDF parsing is complex
-                # In a production system, you'd use a PDF parser like PyPDF2 or pdfplumber
+                # Parse PDF content for AI analysis
+                import os
+                import pdfplumber
+                
+                resume_path = os.path.join('uploads', 'resumes', resume_file)
+                if os.path.exists(resume_path):
+                    print(f"📄 Parsing resume PDF: {resume_file}")
+                    with pdfplumber.open(resume_path) as pdf:
+                        full_text = ""
+                        for page in pdf.pages:
+                            page_text = page.extract_text()
+                            if page_text:
+                                full_text += page_text + "\n"
+                        
+                        if full_text.strip():
+                            resume_content = full_text.strip()
+                            print(f"✅ Successfully extracted {len(full_text)} characters from resume")
+                        else:
+                            resume_content = f"Has resume file: {resume_file} (could not extract text)"
+                            print("⚠️ PDF found but no text could be extracted")
+                else:
+                    resume_content = f"Resume file referenced: {resume_file} (file not found)"
+                    print(f"⚠️ Resume file not found at: {resume_path}")
+                    
+            except ImportError:
+                print("⚠️ pdfplumber not available - install with: pip install pdfplumber")
                 resume_content = f"Has resume: {resume_file}"
             except Exception as e:
-                print(f"Could not read resume file: {e}")
+                print(f"❌ Could not read resume file {resume_file}: {e}")
+                resume_content = f"Has resume: {resume_file}"
         
         # Create prompt for AI summary
         # Build detailed context
@@ -530,6 +564,26 @@ def save_profile():
                 profile_data['resume_file'] = resume_filename
                 print(f"Saved new resume: {resume_filename}")
                 
+                # Add resume to vector database
+                if VECTOR_SEARCH_AVAILABLE:
+                    try:
+                        vector_service = get_vector_service()
+                        success = vector_service.add_resume_to_vector_db(
+                            profile_id=profile_data['name'].lower().replace(' ', '_'),
+                            pdf_path=str(resume_path),
+                            metadata={
+                                'name': profile_data['name'],
+                                'title': profile_data.get('title', ''),
+                                'created_at': datetime.now().isoformat()
+                            }
+                        )
+                        if success:
+                            print(f"✅ Resume added to vector database: {resume_filename}")
+                        else:
+                            print(f"⚠️ Failed to add resume to vector database: {resume_filename}")
+                    except Exception as e:
+                        print(f"❌ Vector search error: {e}")
+                
                 # Generate AI summary from PDF if no existing summary
                 if not profile_data.get('summary'):
                     try:
@@ -774,6 +828,13 @@ def download_resume(profile_id):
         return redirect(url_for('profiles'))
 
 
+@app.route('/debug-test')
+def debug_test():
+    """Debug test page for job matching"""
+    from flask import send_from_directory
+    import os
+    return send_from_directory(os.path.dirname(os.path.dirname(__file__)), 'debug_test.html')
+
 @app.route('/match')
 def match_page():
     """Job matching page"""
@@ -806,11 +867,12 @@ def match_page():
 
 @app.route('/api/match', methods=['POST'])
 def api_match():
-    """Enhanced API endpoint for AI-powered job matching"""
+    """Enhanced API endpoint for job matching with database integration"""
     try:
         data = request.get_json()
         profile_id = data.get('profile_id')
-        use_ai = data.get('use_ai', True)  # Default to AI matching
+        include_database_jobs = data.get('include_database_jobs', True)  # Default to include DB jobs
+        use_ai = data.get('use_ai', True)  # Default to AI matching for legacy jobs
         
         if not profile_id:
             return jsonify({'error': 'Profile ID is required'}), 400
@@ -820,152 +882,264 @@ def api_match():
         if not profile_data:
             return jsonify({'error': 'Profile not found'}), 404
         
-        # Load opportunities from JSON file
-        opportunities_path = Path(__file__).parent.parent / "data" / "opportunities_database.json"
-        if not opportunities_path.exists():
-            return jsonify({'error': 'Opportunities database not found'}), 500
+        # Initialize results
+        all_matches = []
+        matching_info = {
+            'profile_name': profile_data.get('name', 'Unknown'),
+            'profile_title': profile_data.get('title', ''),
+            'profile_location': profile_data.get('location', ''),
+            'status': 'success'
+        }
         
-        with open(opportunities_path, 'r') as f:
-            opportunities_data = json.load(f)
-        
-        opportunities = opportunities_data.get('opportunities', [])
-        
-        if use_ai:
-            # Try advanced AI matching first
+        # 1. PRIORITY: Search database jobs (new jobs table)
+        if include_database_jobs:
             try:
-                from .utils.ai_matcher import get_ai_job_matches
-                import asyncio
+                print(f"🔍 Searching database jobs for {profile_data.get('name', 'user')}")
                 
-                print(f"🤖 Using AI-powered matching for {profile_data.get('name', 'user')}")
+                # Direct database job matching (avoiding import issues)
+                from database.db_config import db_config
+                from database.models import Job
                 
-                # Run AI matching
-                ai_matches = asyncio.run(get_ai_job_matches(profile_data, opportunities))
+                # Extract user skills from profile
+                user_skills = []
+                if profile_data.get('skills'):
+                    for skill in profile_data['skills']:
+                        if isinstance(skill, dict):
+                            skill_name = skill.get('skill_name', '')
+                        elif isinstance(skill, str):
+                            skill_name = skill
+                        else:
+                            continue
+                        if skill_name:
+                            user_skills.append(skill_name.lower().strip())
                 
-                if ai_matches:
-                    return jsonify({
-                        'status': 'success',
-                        'matching_type': 'ai_powered',
-                        'model_used': ai_matches[0].get('model_used', 'advanced') if ai_matches else 'fallback',
-                        'profile_name': profile_data.get('name', 'Unknown'),
-                        'profile_title': profile_data.get('title', ''),
-                        'profile_location': profile_data.get('location', ''),
-                        'total_matches': len(ai_matches),
-                        'matches': ai_matches[:20]  # Top 20 AI matches
-                    }), 200
-                else:
-                    print("⚠️ AI matching returned no results, falling back to enhanced basic")
-                    use_ai = False
+                user_skills = list(set([skill for skill in user_skills if skill]))
+                print(f"   User skills: {user_skills[:5]}...")
+                
+                # Query database jobs
+                with db_config.session_scope() as session:
+                    jobs = session.query(Job).filter(Job.is_active == True).limit(100).all()
+                    print(f"📊 Found {len(jobs)} active jobs in database")
                     
-            except ImportError as ie:
-                print(f"⚠️ AI matcher not available: {ie}")
-                use_ai = False
-            except Exception as ai_error:
-                print(f"⚠️ AI matching failed, falling back to enhanced basic: {ai_error}")
-                use_ai = False
-        
-        if not use_ai:
-            # Enhanced basic matching algorithm
-            print(f"📊 Using enhanced basic matching for {profile_data.get('name', 'user')}")
-            
-            matches = []
-            user_skills = profile_data.get('skills', [])
-            user_skill_names = [skill.get('skill_name', '').lower() for skill in user_skills if skill.get('skill_name')]
-            user_location = profile_data.get('location', '').lower()
-            user_experience_level = profile_data.get('experience_level', 'entry').lower()
-            
-            for opportunity in opportunities:
-                # Calculate skill match score
-                required_skills = opportunity.get('required_skills', [])
-                preferred_skills = opportunity.get('preferred_skills', [])
-                all_opp_skills = required_skills + preferred_skills
-                
-                skill_matches = 0
-                total_skill_weight = 0
-                skill_gaps = []
-                strengths = []
-                
-                for req_skill in all_opp_skills:
-                    skill_name = req_skill.get('skill_name', '').lower()
-                    importance = req_skill.get('importance', 0.5)
-                    required_level = req_skill.get('required_level', 'beginner')
-                    is_mandatory = req_skill.get('is_mandatory', False)
+                    # Calculate matches
+                    db_matches = []
+                    for job in jobs:
+                        job_skills = job.job_skill_set or []
+                        job_skills_lower = [skill.lower().strip() for skill in job_skills if skill and isinstance(skill, str)]
+                        
+                        # Calculate skill matches
+                        matched_skills = []
+                        for job_skill in job_skills_lower:
+                            for user_skill in user_skills:
+                                if user_skill in job_skill or job_skill in user_skill:
+                                    matched_skills.append(job_skill)
+                                    break
+                        
+                        # Calculate match percentage
+                        skill_match_score = len(matched_skills) / max(len(job_skills_lower), 1) if job_skills_lower else 0
+                        match_percentage = min(skill_match_score * 100, 100)
+                        
+                        if match_percentage >= 10:  # Only include matches above 10%
+                            db_matches.append({
+                                'job_id': job.job_id,
+                                'job_title': job.job_title,
+                                'job_category': job.category,
+                                'job_description': job.job_description,
+                                'required_skills': job_skills,
+                                'matched_skills': matched_skills[:10],  # Limit to first 10
+                                'missing_skills': [s for s in job_skills_lower if s not in [m.lower() for m in matched_skills]][:10],
+                                'skills_matched_count': len(matched_skills),
+                                'total_job_skills': len(job_skills_lower),
+                                'match_percentage': round(match_percentage, 1),
+                                'match_score': skill_match_score,
+                                'skill_match_score': skill_match_score,
+                                'category_match_score': 0.2,  # Default category score
+                                'user_skill_coverage': len(matched_skills) / max(len(user_skills), 1),
+                                'recommendation_reason': f"Matched {len(matched_skills)} skills out of {len(job_skills_lower)} required"
+                            })
                     
-                    total_skill_weight += importance
-                    
-                    # Check if user has this skill
-                    user_has_skill = any(skill_name in user_skill.lower() for user_skill in user_skill_names)
-                    
-                    if user_has_skill:
-                        skill_matches += importance
-                        strengths.append(f"Has {req_skill.get('skill_name', skill_name)}")
-                    else:
-                        skill_gaps.append({
-                            'skill_name': req_skill.get('skill_name', skill_name),
-                            'required_level': required_level,
-                            'importance': round(importance * 100, 1),
-                            'is_mandatory': is_mandatory
-                        })
+                    # Sort by match percentage
+                    db_matches.sort(key=lambda x: x['match_percentage'], reverse=True)
+                    db_matches = db_matches[:50]  # Limit to top 50
                 
-                # Calculate scores
-                skill_score = (skill_matches / total_skill_weight * 100) if total_skill_weight > 0 else 0
-                
-                # Location match bonus
-                location_score = 50  # Base score
-                opp_location = opportunity.get('location', '').lower()
-                if user_location and opp_location:
-                    if user_location in opp_location or opp_location in user_location:
-                        location_score = 100
-                    elif 'singapore' in user_location and 'singapore' in opp_location:
-                        location_score = 90
-                
-                # Experience level match
-                experience_score = 50  # Base score
-                opp_exp = opportunity.get('experience_level', 'entry').lower()
-                if user_experience_level == opp_exp:
-                    experience_score = 100
-                elif (user_experience_level == 'senior' and opp_exp in ['intermediate', 'mid']) or \
-                     (user_experience_level == 'intermediate' and opp_exp == 'entry'):
-                    experience_score = 80
-                
-                # Overall score (weighted average)
-                overall_score = (skill_score * 0.6 + location_score * 0.2 + experience_score * 0.2)
-                
-                # Only include opportunities with reasonable matches
-                if overall_score >= 30:  # Minimum threshold
-                    company_name = opportunity.get('company', {}).get('name', 'Unknown Company') if isinstance(opportunity.get('company'), dict) else opportunity.get('company', 'Unknown Company')
-                    
-                    matches.append({
-                        'opportunity_id': opportunity.get('opportunity_id', ''),
-                        'title': opportunity.get('title', 'Unknown Position'),
-                        'company': company_name,
-                        'location': opportunity.get('location', 'Not specified'),
-                        'type': opportunity.get('opportunity_type', 'job'),
-                        'overall_score': round(overall_score, 1),
-                        'skill_score': round(skill_score, 1),
-                        'location_score': round(location_score, 1),
-                        'experience_score': round(experience_score, 1),
-                        'strengths': strengths[:5],  # Top 5 strengths
-                        'skill_gaps': skill_gaps[:5],  # Top 5 gaps
-                        'description': opportunity.get('description', ''),
-                        'url': opportunity.get('url', ''),
-                        'salary_range': opportunity.get('salary_range', {}),
-                        'requirements': [skill.get('skill_name', '') for skill in required_skills[:5]],
-                        'match_explanation': f"Matched {len(strengths)} key requirements with {round(skill_score, 1)}% skill alignment",
-                        'next_steps': ['Review job description thoroughly', 'Tailor resume to highlight matching skills', 'Research company culture and values']
+                # Format database matches
+                for match in db_matches:
+                    all_matches.append({
+                        'job_id': match['job_id'],
+                        'title': match['job_title'],
+                        'company': 'Various Companies',  # Database jobs don't have specific companies
+                        'location': 'Multiple Locations',
+                        'category': match['job_category'],
+                        'description': match['job_description'][:300] + '...' if len(match.get('job_description', '')) > 300 else match.get('job_description', ''),
+                        'required_skills': match['required_skills'],
+                        'match_score': match['match_score'],
+                        'match_percentage': match['match_percentage'],
+                        'matched_skills': match['matched_skills'],
+                        'missing_skills': match['missing_skills'],
+                        'skills_matched_count': match['skills_matched_count'],
+                        'total_required_skills': match['total_job_skills'],
+                        'recommendation_reason': match['recommendation_reason'],
+                        'source': 'database',
+                        'skill_match_score': match['skill_match_score'],
+                        'category_match_score': match['category_match_score'],
+                        'user_skill_coverage': match['user_skill_coverage']
                     })
-            
-            # Sort by overall score
-            matches.sort(key=lambda x: x['overall_score'], reverse=True)
-            
-            return jsonify({
-                'status': 'success',
-                'matching_type': 'enhanced_basic',
-                'profile_name': profile_data.get('name'),
-                'profile_title': profile_data.get('title', ''),
-                'profile_location': profile_data.get('location', ''),
-                'total_matches': len(matches),
-                'matches': matches[:20]  # Top 20 matches
-            })
+                
+                print(f"✅ Found {len(db_matches)} database job matches")
+                matching_info['database_matches'] = len(db_matches)
+                
+            except Exception as db_error:
+                print(f"⚠️ Database job matching failed: {db_error}")
+                matching_info['database_error'] = str(db_error)
+        
+        # 2. ENHANCED: Vector-based Semantic Matching
+        if VECTOR_SEARCH_AVAILABLE and len(all_matches) < 20:  # Add semantic matches if we need more
+            try:
+                print(f"🔍 Performing semantic vector search...")
+                vector_service = get_vector_service()
+                
+                # Get resume text for semantic search
+                resume_text = ""
+                if profile_data.get('resume_file'):
+                    uploads_dir = Path(__file__).parent.parent / "uploads" / "resumes"
+                    resume_path = uploads_dir / profile_data['resume_file']
+                    if resume_path.exists():
+                        # Extract text from PDF for semantic search
+                        try:
+                            import pdfplumber
+                            with pdfplumber.open(str(resume_path)) as pdf:
+                                resume_text = ""
+                                for page in pdf.pages:
+                                    page_text = page.extract_text()
+                                    if page_text:
+                                        resume_text += page_text + "\n"
+                        except Exception as pdf_error:
+                            print(f"⚠️ PDF extraction error: {pdf_error}")
+                
+                # Fallback to profile text if no resume text
+                if not resume_text:
+                    profile_parts = []
+                    if profile_data.get('title'):
+                        profile_parts.append(f"Title: {profile_data['title']}")
+                    if profile_data.get('summary'):
+                        profile_parts.append(f"Summary: {profile_data['summary']}")
+                    if profile_data.get('skills'):
+                        skills_text = ", ".join([
+                            skill.get('skill_name', skill) if isinstance(skill, dict) else str(skill)
+                            for skill in profile_data['skills']
+                        ])
+                        profile_parts.append(f"Skills: {skills_text}")
+                    resume_text = "\n".join(profile_parts)
+                
+                if resume_text:
+                    # Perform vector search
+                    vector_matches = vector_service.search_similar_jobs(
+                        resume_text=resume_text,
+                        n_results=10
+                    )
+                    
+                    print(f"📊 Found {len(vector_matches)} vector-based matches")
+                    matching_info['vector_matches'] = len(vector_matches)
+                    
+                    # Convert vector matches to standard format
+                    for vector_match in vector_matches:
+                        # Avoid duplicates from database matches
+                        existing_ids = [match['job_id'] for match in all_matches]
+                        if vector_match['job_id'] not in existing_ids:
+                            all_matches.append({
+                                'job_id': vector_match['job_id'],
+                                'title': vector_match['title'],
+                                'company': vector_match.get('company', 'Various Companies'),
+                                'location': vector_match.get('location', 'Multiple Locations'),
+                                'category': vector_match.get('category', 'General'),
+                                'description': vector_match.get('matched_text', 'Semantic match found'),
+                                'required_skills': [],
+                                'match_score': vector_match['similarity_score'],
+                                'match_percentage': round(vector_match['similarity_score'] * 100, 1),
+                                'matched_skills': [],
+                                'missing_skills': [],
+                                'skills_matched_count': 0,
+                                'total_required_skills': 0,
+                                'recommendation_reason': f"Semantic similarity: {round(vector_match['similarity_score'] * 100, 1)}%",
+                                'source': 'vector_search',
+                                'skill_match_score': vector_match['similarity_score'],
+                                'category_match_score': 0.1,
+                                'user_skill_coverage': vector_match['similarity_score']
+                            })
+                    
+                    print(f"✅ Added {len(vector_matches)} semantic matches")
+                else:
+                    print("⚠️ No resume text available for semantic search")
+                    
+            except Exception as vector_error:
+                print(f"⚠️ Vector search failed: {vector_error}")
+                matching_info['vector_error'] = str(vector_error)
+        
+        # 3. FALLBACK: Add legacy opportunities if we need more matches
+        if len(all_matches) < 5:  # Only add legacy if very few database matches
+            try:
+                opportunities_path = Path(__file__).parent.parent / "data" / "opportunities_database.json"
+                if opportunities_path.exists():
+                    with open(opportunities_path, 'r') as f:
+                        opportunities_data = json.load(f)
+                    
+                    opportunities = opportunities_data.get('opportunities', [])
+                    
+                    # Add up to 5 legacy opportunities as fallback
+                    for i, opp in enumerate(opportunities[:5]):
+                        all_matches.append({
+                            'job_id': f"legacy_{i}",
+                            'title': opp.get('title', 'Legacy Opportunity'),
+                            'company': opp.get('company', 'Various'),
+                            'location': opp.get('location', 'Multiple'),
+                            'category': opp.get('category', 'General'),
+                            'description': opp.get('description', 'Legacy opportunity from database'),
+                            'required_skills': [skill.get('skill_name', '') for skill in opp.get('required_skills', [])],
+                            'match_score': 0.5,  # Default score for legacy
+                            'match_percentage': 50.0,
+                            'matched_skills': [],
+                            'missing_skills': [],
+                            'skills_matched_count': 0,
+                            'total_required_skills': len(opp.get('required_skills', [])),
+                            'recommendation_reason': 'Legacy opportunity from database',
+                            'source': 'legacy',
+                            'skill_match_score': 0.5,
+                            'category_match_score': 0.0,
+                            'user_skill_coverage': 0.5
+                        })
+                        
+                    legacy_matches = min(len(opportunities), 5)
+                    print(f"� Added {legacy_matches} legacy opportunities as fallback")
+                    matching_info['legacy_matches'] = legacy_matches
+                    
+            except Exception as legacy_error:
+                print(f"⚠️ Legacy opportunity loading failed: {legacy_error}")
+                matching_info['legacy_error'] = str(legacy_error)
+        
+        # Sort all matches by score (database matches should already be sorted)
+        all_matches.sort(key=lambda x: x['match_score'], reverse=True)
+        
+        # Prepare final response
+        final_matches = all_matches[:20]  # Top 20 matches
+        
+        matching_info.update({
+            'matching_type': 'database_priority',
+            'total_matches': len(final_matches),
+            'total_found': len(all_matches),
+            'top_match_score': final_matches[0]['match_percentage'] if final_matches else 0,
+            'sources_used': list(set([match['source'] for match in final_matches]))
+        })
+        
+        return jsonify({
+            **matching_info,
+            'matches': final_matches
+        })
+        
+    except Exception as e:
+        print(f"Match API error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Matching failed: {str(e)}'}), 500
         
     except Exception as e:
         print(f"Match API error: {e}")

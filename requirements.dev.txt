@@ -2,7 +2,7 @@
 # Additional dependencies for local development and testing
 
 # Include production requirements
--r requirements.production.txt
+-r requirements.txt
 
 # Development tools
 pytest==7.4.3

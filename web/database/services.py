@@ -9,7 +9,7 @@ import json
 
 from .models import (
     UserProfile, UserSkill, Skill, WorkExperience, 
-    Education, UserPreferences, CareerGoal, get_db
+    Education, UserPreferences, CareerGoal
 )
 
 class ProfileService:

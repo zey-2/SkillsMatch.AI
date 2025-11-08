@@ -54,12 +54,12 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="text-center py-4">
+                        <div class="text-center py-5">
                             <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">No Profiles Found</h5>
-                            <p class="text-muted mb-3">Create a profile first to start finding matches</p>
+                            <p class="text-muted mb-3">Create a profile first to find matching opportunities</p>
                             <a href="{{ url_for('create_profile') }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Create Profile
+                                <i class="fas fa-user-plus me-1"></i>Create Profile
                             </a>
                         </div>
                     {% endif %}
@@ -68,72 +68,68 @@
         </div>
     </div>
 
-    <!-- Matching Progress -->
-    <div id="matchingProgress" class="row mb-4" style="display: none;">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">
-                        <i class="fas fa-cogs me-2 text-info"></i>Finding Your Matches
-                    </h5>
-                    
-                    <div class="progress mb-3" style="height: 20px;">
-                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" style="width: 0%"></div>
+    <!-- Matching Progress Section -->
+    <div id="matchingProgress" style="display: none;" class="mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-cogs me-2 text-info"></i>Finding Your Perfect Matches
+                </h5>
+                <div class="progress mb-3" style="height: 8px;">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                         role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                     </div>
-                    
-                    <div id="progressStatus" class="text-center">
-                        <small class="text-muted">Initializing matching process...</small>
-                    </div>
+                </div>
+                <div id="progressStatus">
+                    <small class="text-muted">Initializing...</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Matching Results -->
-    <div id="matchingResults" class="row" style="display: none;">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-trophy me-2 text-success"></i>Matching Results
-                        </h5>
-                        <div>
-                            <button id="exportResults" class="btn btn-outline-primary btn-sm me-2">
-                                <i class="fas fa-download me-1"></i>Export
-                            </button>
-                            <button id="newSearch" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-refresh me-1"></i>New Search
-                            </button>
-                        </div>
+    <!-- Results Section -->
+    <div id="matchingResults" style="display: none;" class="mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div id="matchResultsHeader">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Your Career Matches</h5>
                     </div>
-                    
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" id="newSearch" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-1"></i>New Search
+                        </button>
+                        <button type="button" id="exportResults" class="btn btn-outline-success">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer">
                     <!-- Results will be populated here -->
-                    <div id="resultsContainer"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Match Options -->
+    <!-- Quick Features -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm bg-light">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title mb-3">
-                        <i class="fas fa-lightbulb me-2 text-warning"></i>Quick Match Options
+                        <i class="fas fa-rocket me-2 text-success"></i>Enhance Your Career Journey
                     </h5>
-                    
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <div class="d-flex align-items-center">
                                 <div class="bg-primary text-white rounded-circle p-2 me-3">
-                                    <i class="fas fa-briefcase"></i>
+                                    <i class="fas fa-user-tie"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-1">Job Opportunities</h6>
-                                    <small class="text-muted">Find relevant job openings</small>
+                                    <h6 class="mb-1">Profile Optimization</h6>
+                                    <small class="text-muted">Improve your profile for better matches</small>
                                 </div>
                             </div>
                         </div>
@@ -171,401 +167,207 @@
 
 {% block extra_scripts %}
 <script>
-    let socket;
-    let currentProfileId = null;
+// Main function to start job matching process
+function startMatching(profileId) {
+    console.log('🔍 Starting job matching for profile:', profileId);
+    
+    // Call the actual matching function
+    performMatching(profileId);
+}
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Socket.IO
-        socket = io();
-        
-        // Listen for matching progress updates
-        socket.on('matching_progress', function(data) {
-            updateProgress(data.progress, data.status);
-        });
-        
-        // Listen for matching results
-        socket.on('matching_results', function(data) {
-            displayResults(data);
-        });
-        
-        // Listen for matching errors
-        socket.on('matching_error', function(data) {
-            showError(data.message);
-        });
-    });
-
-    function startMatching(profileId) {
-        currentProfileId = profileId;
+// Function to perform the actual API call
+async function performMatching(profileId) {
+    try {
+        console.log('📡 Making API call for profile:', profileId);
         
         // Show progress section
-        document.getElementById('matchingProgress').style.display = 'block';
-        document.getElementById('matchingResults').style.display = 'none';
-        
-        // Reset progress
-        updateProgress(0, 'Initializing matching process...');
-        
-        // Scroll to progress section
-        document.getElementById('matchingProgress').scrollIntoView({behavior: 'smooth'});
-        
-        // Start matching via API
-        startAPIMatching(profileId);
-    }
-    
-    async function startAPIMatching(profileId) {
-        try {
-            // Update progress steps
-            updateProgress(20, 'Loading profile data...');
-            
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate processing
-            updateProgress(40, 'Analyzing skills and preferences...');
-            
-            await new Promise(resolve => setTimeout(resolve, 500));
-            updateProgress(60, 'Finding matching opportunities...');
-            
-            // Make API call
-            const response = await fetch('/api/match', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    profile_id: profileId
-                })
-            });
-            
-            updateProgress(80, 'Calculating match scores...');
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Matching failed');
-            }
-            
-            const data = await response.json();
-            updateProgress(100, 'Matching complete!');
-            
-            // Display results after a short delay
-            setTimeout(() => {
-                displayAPIResults(data);
-            }, 500);
-            
-        } catch (error) {
-            console.error('Matching error:', error);
-            showError(error.message || 'An error occurred during matching');
-        }
-    }
-
-    function updateProgress(progress, status) {
-        const progressBar = document.getElementById('progressBar');
-        const progressStatus = document.getElementById('progressStatus');
-        
-        progressBar.style.width = progress + '%';
-        progressBar.setAttribute('aria-valuenow', progress);
-        progressStatus.innerHTML = `<small class="text-muted">${status}</small>`;
-        
-        if (progress >= 100) {
-            progressBar.classList.remove('progress-bar-animated');
-        }
-    }
-
-    function displayAPIResults(data) {
-        const container = document.getElementById('resultsContainer');
+        const progressSection = document.getElementById('matchingProgress');
         const resultsSection = document.getElementById('matchingResults');
         
-        // Update header with profile info and AI status
-        const headerInfo = document.getElementById('matchResultsHeader');
-        if (headerInfo) {
-            const aiStatus = data.matching_type === 'ai_powered' ? 
-                `<i class="fas fa-robot me-1 text-success"></i>AI-Powered` : 
-                `<i class="fas fa-cogs me-1 text-info"></i>Enhanced Basic`;
-            
-            headerInfo.innerHTML = `
-                <h4><i class="fas fa-chart-line me-2"></i>Matches for ${data.profile_name}</h4>
-                <p class="text-muted mb-0">
-                    Found ${data.total_matches} opportunities • Showing top ${data.matches.length} matches
-                    <span class="mx-2">•</span>${aiStatus}
-                    ${data.model_used ? `<span class="mx-2">•</span><small class="text-success">Model: ${data.model_used}</small>` : ''}
-                </p>
-            `;
+        if (progressSection) {
+            progressSection.style.display = 'block';
+            progressSection.scrollIntoView({behavior: 'smooth'});
+        }
+        if (resultsSection) {
+            resultsSection.style.display = 'none';
         }
         
-        if (data.matches && data.matches.length > 0) {
-            let html = '<div class="row">';
-            
-            data.matches.forEach((match, index) => {
-                const matchScore = Math.round(match.overall_score);
-                const scoreColor = matchScore >= 80 ? 'success' : matchScore >= 60 ? 'warning' : 'info';
-                
-                html += `
-                    <div class="col-lg-6 mb-4">
-                        <div class="card h-100 border-0 shadow-sm match-card">
-                            <div class="card-header bg-white border-0 pb-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="card-title mb-1">${match.title}</h6>
-                                        <small class="text-muted">
-                                            <i class="fas fa-building me-1"></i>${match.company}
-                                        </small>
-                                    </div>
-                                    <span class="badge bg-${scoreColor}">${matchScore}% Match</span>
-                                </div>
-                            </div>
-                            
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt me-1"></i>${match.location}
-                                        <span class="mx-2">•</span>
-                                        <i class="fas fa-briefcase me-1"></i>${match.type}
-                                    </small>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <small class="text-muted d-block mb-1">Match Breakdown</small>
-                                    <div class="row g-2">
-                                        <div class="col-4">
-                                            <div class="text-center">
-                                                <div class="h6 mb-0 text-primary">${Math.round(match.skill_score)}%</div>
-                                                <small class="text-muted">Skills</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="text-center">
-                                                <div class="h6 mb-0 text-info">${Math.round(match.location_score)}%</div>
-                                                <small class="text-muted">Location</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="text-center">
-                                                <div class="h6 mb-0 text-success">${Math.round(match.experience_score)}%</div>
-                                                <small class="text-muted">Experience</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                ${match.requirements && match.requirements.length > 0 ? `
-                                <div class="mb-3">
-                                    <small class="text-muted d-block mb-1">Key Requirements</small>
-                                    <div class="skills-container">
-                                        ${match.requirements.slice(0, 5).map(skill => 
-                                            `<span class="badge bg-light text-dark me-1 mb-1">${skill}</span>`
-                                        ).join('')}
-                                        ${match.requirements.length > 5 ? `<span class="badge bg-secondary">+${match.requirements.length - 5} more</span>` : ''}
-                                    </div>
-                                </div>
-                                ` : ''}
-                                
-                                ${match.strengths && match.strengths.length > 0 ? `
-                                <div class="mb-3">
-                                    <small class="text-success d-block mb-1">
-                                        <i class="fas fa-check-circle me-1"></i>Your Strengths
-                                    </small>
-                                    <div class="small text-muted">
-                                        ${match.strengths.slice(0, 3).join(' • ')}
-                                    </div>
-                                </div>
-                                ` : ''}
-                                
-                                ${match.skill_gaps && match.skill_gaps.length > 0 ? `
-                                <div class="mb-3">
-                                    <small class="text-warning d-block mb-1">
-                                        <i class="fas fa-lightbulb me-1"></i>Skills to Develop
-                                    </small>
-                                    <div class="small text-muted">
-                                        ${match.skill_gaps.slice(0, 3).map(gap => gap.skill_name || gap).join(' • ')}
-                                    </div>
-                                </div>
-                                ` : ''}
-                                
-                                ${match.ai_insights ? `
-                                <div class="mb-3 border-top pt-2">
-                                    <small class="text-info d-block mb-1">
-                                        <i class="fas fa-robot me-1"></i>AI Career Insights
-                                    </small>
-                                    ${match.ai_insights.career_trajectory ? `
-                                    <div class="small text-muted mb-1">
-                                        <strong>Career Path:</strong> ${match.ai_insights.career_trajectory}
-                                    </div>
-                                    ` : ''}
-                                    ${match.ai_insights.growth_areas && match.ai_insights.growth_areas.length > 0 ? `
-                                    <div class="small text-muted">
-                                        <strong>Growth Areas:</strong> ${match.ai_insights.growth_areas.slice(0, 2).join(', ')}
-                                    </div>
-                                    ` : ''}
-                                </div>
-                                ` : ''}
-                                
-                                ${match.match_explanation ? `
-                                <div class="mb-3">
-                                    <small class="text-secondary d-block mb-1">
-                                        <i class="fas fa-info-circle me-1"></i>Match Analysis
-                                    </small>
-                                    <div class="small text-muted">
-                                        ${match.match_explanation}
-                                    </div>
-                                </div>
-                                ` : ''}
-                                
-                                ${match.next_steps && match.next_steps.length > 0 ? `
-                                <div class="mb-3">
-                                    <small class="text-primary d-block mb-1">
-                                        <i class="fas fa-arrow-right me-1"></i>Next Steps
-                                    </small>
-                                    <div class="small text-muted">
-                                        • ${match.next_steps.slice(0, 2).join('<br>• ')}
-                                    </div>
-                                </div>
-                                ` : ''}
-                                
-                                ${match.description ? `
-                                <div class="mb-3">
-                                    <small class="text-muted d-block mb-1">Description</small>
-                                    <p class="small text-dark">${match.description.substring(0, 150)}${match.description.length > 150 ? '...' : ''}</p>
-                                </div>
-                                ` : ''}
-                            </div>
-                            
-                            <div class="card-footer bg-white border-0 pt-0">
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-primary btn-sm flex-fill" onclick="viewMatch('${match.opportunity_id || index}')">
-                                        <i class="fas fa-eye me-1"></i>View Details
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" onclick="saveMatch('${match.opportunity_id || index}')">
-                                        <i class="fas fa-bookmark"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-        } else {
-            container.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No Matches Found</h5>
-                    <p class="text-muted mb-3">Try updating your profile or expanding your criteria</p>
-                    <a href="${window.location.origin}/profiles" class="btn btn-outline-primary">
-                        <i class="fas fa-edit me-2"></i>Update Profile
-                    </a>
-                </div>
-            `;
-        }
+        // Update progress
+        updateProgress(20, 'Connecting to matching service...');
         
-        // Show results section
-        resultsSection.style.display = 'block';
-        resultsSection.scrollIntoView({behavior: 'smooth'});
-    }
-
-    function displayResults(data) {
-        // Legacy function - redirect to new API function
-        displayAPIResults(data);
-    }
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" onclick="saveMatch('${match.id || index}')">
-                                        <i class="fas fa-bookmark"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-        } else {
-            container.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No Matches Found</h5>
-                    <p class="text-muted mb-3">Try updating your profile or expanding your criteria</p>
-                    <a href="${window.location.origin}/profiles" class="btn btn-outline-primary">
-                        <i class="fas fa-edit me-2"></i>Update Profile
-                    </a>
-                </div>
-            `;
-        }
-        
-        // Show results section
-        resultsSection.style.display = 'block';
-        resultsSection.scrollIntoView({behavior: 'smooth'});
-    }
-
-    function showError(message) {
-        const alert = `
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>Matching Error:</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        document.getElementById('matchingProgress').insertAdjacentHTML('beforebegin', alert);
-        document.getElementById('matchingProgress').style.display = 'none';
-    }
-
-    function viewMatch(matchId) {
-        // Implementation for viewing match details
-        console.log('Viewing match:', matchId);
-        // You could open a modal or navigate to a detailed view
-    }
-
-    function saveMatch(matchId) {
-        // Implementation for saving/bookmarking a match
-        console.log('Saving match:', matchId);
-        // Show success message
-        showToast('Match saved to your bookmarks!', 'success');
-    }
-
-    function showToast(message, type = 'info') {
-        const toast = `
-            <div class="toast align-items-center text-white bg-${type} border-0 position-fixed" 
-                 style="top: 20px; right: 20px; z-index: 9999;" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', toast);
-        const toastElement = document.querySelector('.toast:last-child');
-        const bsToast = new bootstrap.Toast(toastElement);
-        bsToast.show();
-        
-        // Auto remove after hiding
-        toastElement.addEventListener('hidden.bs.toast', () => {
-            toastElement.remove();
+        const response = await fetch('/api/match', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                profile_id: profileId,
+                database_jobs: true
+            })
         });
+        
+        updateProgress(60, 'Analyzing job opportunities...');
+        
+        if (!response.ok) {
+            throw new Error('API request failed: ' + response.statusText);
+        }
+        
+        const data = await response.json();
+        console.log('✅ API response:', data);
+        
+        updateProgress(100, 'Matching complete!');
+        
+        // Wait a moment then show results
+        setTimeout(() => {
+            displayResults(data);
+        }, 1000);
+        
+    } catch (error) {
+        console.error('❌ Matching error:', error);
+        showError('Failed to find matches: ' + error.message);
     }
+}
 
+// Function to update progress bar
+function updateProgress(percentage, message) {
+    const progressBar = document.getElementById('progressBar');
+    const progressStatus = document.getElementById('progressStatus');
+    
+    if (progressBar) {
+        progressBar.style.width = percentage + '%';
+        progressBar.setAttribute('aria-valuenow', percentage);
+    }
+    
+    if (progressStatus) {
+        progressStatus.innerHTML = '<small class="text-muted">' + message + '</small>';
+    }
+    
+    if (percentage >= 100 && progressBar) {
+        progressBar.classList.remove('progress-bar-animated');
+    }
+}
+
+// Function to display matching results
+function displayResults(data) {
+    const resultsSection = document.getElementById('matchingResults');
+    const container = document.getElementById('resultsContainer');
+    const headerInfo = document.getElementById('matchResultsHeader');
+    const progressSection = document.getElementById('matchingProgress');
+    
+    // Hide progress and show results
+    if (progressSection) progressSection.style.display = 'none';
+    if (resultsSection) resultsSection.style.display = 'block';
+    
+    // Update header
+    if (headerInfo) {
+        headerInfo.innerHTML = `
+            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Matches for ${data.profile_name || 'Profile'}</h5>
+            <small class="text-muted">Found ${data.total_matches || 0} opportunities</small>
+        `;
+    }
+    
+    if (container && data.matches && data.matches.length > 0) {
+        let html = '<div class="row">';
+        
+        data.matches.slice(0, 6).forEach((match, index) => {
+            const matchScore = Math.round(match.match_percentage || 50);
+            const scoreClass = matchScore >= 80 ? 'success' : matchScore >= 60 ? 'warning' : 'info';
+            
+            html += `
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">${match.title || 'Job Opportunity'}</h6>
+                                <span class="badge bg-${scoreClass}">${matchScore}% Match</span>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-building me-1"></i>${match.company || 'Various Companies'}
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>${match.location || 'Location TBA'}
+                            </p>
+                            <p class="small mb-3">${(match.description || 'No description available').substring(0, 100)}...</p>
+                            <div class="small text-muted">
+                                <strong>Skills:</strong> ${(match.required_skills || []).slice(0, 3).join(', ')}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary btn-sm flex-fill" onclick="viewJob('${match.job_id || index}')">
+                                    View Details
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" onclick="saveJob('${match.job_id || index}')">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    } else if (container) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No matches found</h5>
+                <p class="text-muted">Try updating your profile or adjusting your preferences</p>
+            </div>
+        `;
+    }
+    
+    // Scroll to results
+    if (resultsSection) {
+        resultsSection.scrollIntoView({behavior: 'smooth'});
+    }
+}
+
+// Function to show errors
+function showError(message) {
+    const progressSection = document.getElementById('matchingProgress');
+    const resultsSection = document.getElementById('matchingResults');
+    
+    if (progressSection) progressSection.style.display = 'none';
+    if (resultsSection) resultsSection.style.display = 'none';
+    
+    alert('Error: ' + message);
+}
+
+// Placeholder functions for job actions
+function viewJob(jobId) {
+    console.log('View job:', jobId);
+    alert('Job details functionality coming soon!');
+}
+
+function saveJob(jobId) {
+    console.log('Save job:', jobId);
+    alert('Job saved successfully!');
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Match page JavaScript loaded successfully');
+    
     // New search button
-    document.getElementById('newSearch').addEventListener('click', function() {
-        document.getElementById('matchingProgress').style.display = 'none';
-        document.getElementById('matchingResults').style.display = 'none';
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    });
-
+    const newSearchBtn = document.getElementById('newSearch');
+    if (newSearchBtn) {
+        newSearchBtn.addEventListener('click', function() {
+            document.getElementById('matchingProgress').style.display = 'none';
+            document.getElementById('matchingResults').style.display = 'none';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        });
+    }
+    
     // Export results button
-    document.getElementById('exportResults').addEventListener('click', function() {
-        // Implementation for exporting results
-        showToast('Export functionality coming soon!', 'info');
-    });
-
-    // Profile selector hover effects
-    document.querySelectorAll('.profile-selector').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px)';
-            this.style.transition = 'transform 0.2s ease';
+    const exportBtn = document.getElementById('exportResults');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            alert('Export functionality coming soon!');
         });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
+    }
+});
 </script>
 {% endblock %}
