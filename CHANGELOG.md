@@ -125,7 +125,6 @@ web/templates/
 
 ### Major Updates
 - **Web Interface Launch**: Complete Flask-based web application
-- **Real-time Scraping**: SkillsFutureSG integration with live progress tracking
 - **AI Chat Interface**: Conversational career guidance system
 - **Dashboard System**: Overview of career data and system status
 

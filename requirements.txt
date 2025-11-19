@@ -38,7 +38,7 @@ sentence-transformers>=2.2.2
 # lxml>=4.9.0  # Removed - using direct API access  
 # selenium>=4.15.0  # Removed - using direct API access
 
-# Database and storage
+# Database and storage (SQLite - bundled with Python)
 SQLAlchemy>=2.0.23
 alembic>=1.12.0
 

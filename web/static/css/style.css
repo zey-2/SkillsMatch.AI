@@ -93,8 +93,9 @@ body {
 .badge {
     font-size: 0.85em;
     font-weight: 500;
-    border-radius: 6px;
-    padding: 0.5em 0.75em;
+    border-radius: 20px;
+    padding: 0.75em 0.75em;
+    /*background: var(--bs-orange) !important; */
 }
 
 .badge-skill {
@@ -105,6 +106,12 @@ body {
 .badge-industry {
     background-color: var(--accent-teal);
     color: white;
+}
+
+/* Custom badge colors for match scores */
+.badge.bg-teal {
+    background-color: var(--accent-teal) !important;
+    color: white !important;
 }
 
 .badge-experience {
@@ -147,7 +154,7 @@ body {
 
 .progress-bar {
     transition: width 0.3s ease;
-    background: linear-gradient(90deg, var(--accent-teal) 0%, var(--accent-orange) 100%);
+    background: linear-gradient(90deg, var(--accent-orange) 0%, var(--accent-orange) 100%);
 }
 
 .progress-bar-success {
@@ -304,8 +311,7 @@ body {
 }
 
 .user-message .bg-primary {
-    /* background: linear-gradient(135deg, var(--primary), var(--secondary)) !important; */
-    background-color: var(--accent-teal);
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important; 
 }
 
 .assistant-message .bg-white {

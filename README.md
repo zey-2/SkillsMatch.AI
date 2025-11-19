@@ -252,7 +252,7 @@ Each profile is displayed in a professional card format showing:
    ```
 
 2. **Create Your First Profile**
-   - Click "Create New Profile"
+   - Click "New Profile"
    - Fill in basic information (name, location, etc.)
    - Add your skills with proficiency levels
    - Include work experience and education

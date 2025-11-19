@@ -13,18 +13,15 @@ from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 
 try:
+    # Use same import pattern as working Jobs Listing route
+    from database.models import Course
+    from database.db_config import DatabaseConfig
     from sqlalchemy.orm import Session
-    from ..database.models import Course
-    from ..database.db_config import db_config
+    db_config = DatabaseConfig()
 except ImportError as e:
-    try:
-        # Fallback for direct script usage
-        from web.database.models import Course
-        from web.database.db_config import db_config
-    except ImportError:
-        print(f"Database modules not available: {e}")
-        Course = None
-        db_config = None
+    print(f"Database modules not available: {e}")
+    Course = None
+    db_config = None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

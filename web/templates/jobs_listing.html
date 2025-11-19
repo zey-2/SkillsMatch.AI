@@ -1,0 +1,506 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs Listing - SkillsMatch.AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .job-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: white;
+    }
+    
+    .job-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-color: #fd7e14;
+    }
+    
+    .salary-badge {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .job-category {
+        background-color: var(--bs-orange);
+        color: #ffffff;
+        padding: 0.5em 0.75em;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .company-name {
+        color: #6b7280;
+        font-weight: 500;
+    }
+    
+    .job-title {
+        color: #1f2937;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+    
+    .job-details {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .filter-section {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .search-box {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: border-color 0.2s;
+    }
+    
+    .search-box:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-briefcase me-2" style="color: var(--accent-orange);"></i>Jobs Listing
+                    </h1>
+                    <p class="text-muted mt-1">Browse available job opportunities from Singapore companies</p>
+                </div>
+                <div>
+                    <button onclick="fetchJobsData()" class="btn btn-outline-primary" id="getDataBtn">
+                        <i class="fas fa-download me-1"></i>Get Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" id="searchJobs" class="form-control" 
+                                       placeholder="Search by job title, company, skills, salary, description..." 
+                                       onkeyup="filterJobs()">
+                                <button class="btn btn-outline-secondary" type="button" onclick="clearJobSearch()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="filterCategory" class="form-select">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jobs Grid -->
+    {% if jobs %}
+    <div class="row" id="jobsContainer">
+        {% for job in jobs %}
+        <div class="col-lg-6 col-xl-4 mb-4 job-item" 
+             data-title="{{ job.title|lower }}" 
+             data-company="{{ job.company_name|lower }}"
+             data-category="{{ job.job_category[0] if job.job_category else '' }}"
+             data-position-level="{{ (job.position_level or '')|lower }}"
+             data-experience="{{ (job.min_years_experience or '')|lower }}"
+             data-education="{{ (job.min_education_level or '')|lower }}"
+             data-work-arrangement="{{ (job.work_arrangement or '')|lower }}"
+             data-employment-type="{{ (job.employment_type|join(', ') if job.employment_type else '')|lower }}"
+             data-salary="{{ job.min_salary or '' }} {{ job.max_salary or '' }} {{ job.currency or '' }}"
+             data-description="{{ (job.job_description|striptags|lower) if job.job_description else '' }}"
+             data-requirements="{{ (job.job_requirements|striptags|lower) if job.job_requirements else '' }}"
+             data-location="{{ (job.location or '')|lower }}"
+             data-skills="{{ (job.skills_required|join(', ') if job.skills_required else '')|lower }}">
+            <div class="job-card h-100">
+                <!-- Job Header with Gradient -->
+                <div class="card-header bg-gradient-light border-0 p-4" style="border-radius: 12px 12px 0 0;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="job-title mb-1">{{ job.title }}</h5>
+                            <p class="company-name mb-0">{{ job.company_name or 'Company Name' }}</p>
+                        </div>
+                        {% if job.job_category %}
+                        <span class="job-category">{{ job.job_category[0] }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Job Body -->
+                <div class="card-body p-4">
+
+                <!-- Job Details -->
+                <div class="job-details mb-3">
+                    {% if job.position_level %}
+                    <div class="mb-1">
+                        <i class="fas fa-user-tie me-2"></i>{{ job.position_level }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if job.min_years_experience %}
+                    <div class="mb-1">
+                        <i class="fas fa-clock me-2"></i>{{ job.min_years_experience }} experience
+                    </div>
+                    {% endif %}
+                    
+                    {% if job.min_education_level %}
+                    <div class="mb-1">
+                        <i class="fas fa-graduation-cap me-2"></i>{{ job.min_education_level }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if job.work_arrangement %}
+                    <div class="mb-1">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ job.work_arrangement }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if job.employment_type %}
+                    <div class="mb-1">
+                        <i class="fas fa-briefcase me-2"></i>{{ job.employment_type|join(', ') }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Salary Info -->
+                {% if job.min_salary or job.max_salary %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="salary-badge">
+                        {% if job.min_salary and job.max_salary %}
+                            {{ job.currency or 'SGD' }} {{ "{:,}".format(job.min_salary) }} - {{ "{:,}".format(job.max_salary) }}
+                        {% elif job.min_salary %}
+                            {{ job.currency or 'SGD' }} {{ "{:,}".format(job.min_salary) }}+
+                        {% elif job.max_salary %}
+                            Up to {{ job.currency or 'SGD' }} {{ "{:,}".format(job.max_salary) }}
+                        {% endif %}
+                        {% if job.salary_interval %} / {{ job.salary_interval }}{% endif %}
+                    </span>
+                    {% if job.no_of_vacancies %}
+                    <small class="text-muted">{{ job.no_of_vacancies }} opening{{ 's' if job.no_of_vacancies != 1 else '' }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Job Description Preview -->
+                {% if job.job_description %}
+                <div class="mb-3">
+                    <p class="text-muted small mb-0">
+                        {{ (job.job_description|striptags)[:150] }}{% if (job.job_description|striptags|length) > 150 %}...{% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                </div>
+                
+                <!-- Footer with Gradient -->
+                <div class="card-footer bg-gradient-light border-0 p-4" style="border-radius: 0 0 12px 12px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            {% if job.updated_at %}
+                            Updated {{ job.updated_at[:10] }}
+                            {% else %}
+                            Recently posted
+                            {% endif %}
+                        </small>
+                        <button class="btn btn-sm btn-primary" style="background:linear-gradient(135deg, var(--primary-light), var(--primary))" onclick="viewJobDetails('{{ job.job_id }}')">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-briefcase fa-4x text-muted opacity-50"></i>
+        </div>
+        <h3 class="text-muted mb-3">No Jobs Available</h3>
+        <p class="text-muted mb-4">No job opportunities are currently loaded in the database.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-download me-2"></i>Fetch Jobs from API
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Loading State (hidden by default) -->
+    <div id="loadingState" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted">Loading jobs...</p>
+    </div>
+</div>
+
+<!-- Job Details Modal -->
+<div class="modal fade" id="jobDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Job Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="jobDetailsContent">
+                <!-- Job details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Apply Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchJobs');
+    const categoryFilter = document.getElementById('filterCategory');
+    const jobItems = document.querySelectorAll('.job-item');
+    
+    // Extract unique categories
+    const categories = new Set();
+    jobItems.forEach(item => {
+        const category = item.dataset.category;
+        if (category) categories.add(category);
+    });
+    
+    // Populate category filter
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.toLowerCase();
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+    
+    // Search functionality
+    function filterJobs() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value.toLowerCase();
+        
+        jobItems.forEach(item => {
+            // Get all searchable fields
+            const title = item.dataset.title || '';
+            const company = item.dataset.company || '';
+            const category = item.dataset.category.toLowerCase();
+            const positionLevel = item.dataset.positionLevel || '';
+            const experience = item.dataset.experience || '';
+            const education = item.dataset.education || '';
+            const workArrangement = item.dataset.workArrangement || '';
+            const employmentType = item.dataset.employmentType || '';
+            const salary = item.dataset.salary || '';
+            const description = item.dataset.description || '';
+            const requirements = item.dataset.requirements || '';
+            const location = item.dataset.location || '';
+            const skills = item.dataset.skills || '';
+            
+            // Search across all fields
+            const matchesSearch = !searchTerm || 
+                title.includes(searchTerm) || 
+                company.includes(searchTerm) ||
+                positionLevel.includes(searchTerm) ||
+                experience.includes(searchTerm) ||
+                education.includes(searchTerm) ||
+                workArrangement.includes(searchTerm) ||
+                employmentType.includes(searchTerm) ||
+                salary.includes(searchTerm) ||
+                description.includes(searchTerm) ||
+                requirements.includes(searchTerm) ||
+                location.includes(searchTerm) ||
+                skills.includes(searchTerm);
+            
+            const matchesCategory = !selectedCategory || 
+                category === selectedCategory;
+            
+            if (matchesSearch && matchesCategory) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Update count for no results message
+        const visibleJobs = document.querySelectorAll('.job-item[style="display: block"], .job-item:not([style])').length;
+        const totalJobs = jobItems.length;
+        
+        // Show/hide no results message
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        if (visibleJobs === 0 && totalJobs > 0) {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.id = 'noResultsMessage';
+                noResultsMsg.className = 'col-12 text-center py-5';
+                noResultsMsg.innerHTML = `
+                    <div class="mb-4">
+                        <i class="fas fa-search fa-3x text-muted opacity-50"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Jobs Found</h4>
+                    <p class="text-muted">Try adjusting your search criteria or filters.</p>
+                `;
+                document.getElementById('jobsContainer').appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = 'block';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', filterJobs);
+    categoryFilter.addEventListener('change', filterJobs);
+    
+    // Initial filter
+    filterJobs();
+});
+
+function viewJobDetails(jobId) {
+    // For now, just show a placeholder
+    const modal = new bootstrap.Modal(document.getElementById('jobDetailsModal'));
+    document.getElementById('jobDetailsContent').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="text-muted">Loading job details for ID: ${jobId}...</p>
+        </div>
+    `;
+    modal.show();
+    
+    // TODO: Implement actual job details loading
+    setTimeout(() => {
+        document.getElementById('jobDetailsContent').innerHTML = `
+            <div class="alert alert-info">
+                <h5>Job Details</h5>
+                <p>Detailed job information for job ID: <strong>${jobId}</strong> will be implemented here.</p>
+                <p>This will include full job description, requirements, benefits, and application instructions.</p>
+            </div>
+        `;
+    }, 1000);
+}
+
+function clearJobSearch() {
+    document.getElementById('searchJobs').value = '';
+    document.getElementById('filterCategory').value = '';
+    filterJobs();
+}
+
+async function fetchJobsData() {
+    const button = document.getElementById('getDataBtn');
+    const originalContent = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Fetching...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/api/fetch-jobs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Successfully fetched ${result.jobs_added || 'new'} jobs!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remove toast after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                document.body.removeChild(toast);
+            });
+            
+            // Reload page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            throw new Error(result.error || 'Unknown error occurred');
+        }
+    } catch (error) {
+        // Show error message
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-danger border-0 position-fixed top-0 end-0 m-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error: ${error.message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', () => {
+            document.body.removeChild(toast);
+        });
+    } finally {
+        // Restore button state
+        button.innerHTML = originalContent;
+        button.disabled = false;
+    }
+}
+</script>
+{% endblock %}

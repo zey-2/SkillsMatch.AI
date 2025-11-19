@@ -2,8 +2,11 @@ services:
   - type: web
     name: skillsmatch-ai
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements-render.txt
+      mkdir -p data uploads/resumes profiles
+    startCommand: gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --preload --log-level info
     envVars:
       - key: FLASK_ENV
         value: production
@@ -11,8 +14,12 @@ services:
         value: false
       - key: RENDER
         value: true
+      - key: USE_SQLITE
+        value: true
       - key: PYTHONPATH
         value: /opt/render/project/src:/opt/render/project/src/web
+      - key: PYTHONUNBUFFERED
+        value: "1"
     disk:
       name: skillsmatch-storage
       mountPath: /opt/render/project/src/data

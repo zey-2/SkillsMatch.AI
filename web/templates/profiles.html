@@ -10,14 +10,14 @@
             <div class="bg-gradient-light rounded-3 p-4 shadow-sm border">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h1 class="mb-3 fw-bold" style="color: var(--primary);">
+                        <h1 class="h2 mb-3" style="color: var(--primary);">
                             <i class="fas fa-users me-3" style="color: var(--accent-orange);"></i>Career Profiles
                         </h1>
                         <p class="text-muted mb-0 fs-5">Manage your career profiles and track your professional growth</p>                       
                     </div>
                     <div>
                         <a href="{{ url_for('create_profile') }}" class="btn btn-primary btn-lg shadow-sm">
-                            <i class="fas fa-plus me-2"></i>Create New Profile
+                            <i class="fas fa-plus me-2"></i>New Profile
                         </a>
                     </div>
                 </div>
@@ -25,11 +25,37 @@
         </div>
     </div>
 
+    <!-- Search Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="profileSearch" class="form-control" 
+                               placeholder="Search profiles by name, skills, experience level, or location..." 
+                               onkeyup="filterProfiles()">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted" id="searchResults">Showing all profiles</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Profiles Grid -->
-    <div class="row">
+    <div class="row" id="profilesGrid">
         {% if profiles %}
             {% for profile in profiles %}
-            <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="col-lg-6 col-xl-4 mb-4 profile-item" 
+                 data-profile-name="{{ profile.name|lower }}" 
+                 data-profile-skills="{{ (profile.skills | join(', '))|lower if profile.skills else '' }}" 
+                 data-profile-experience="{{ profile.experience_level|lower if profile.experience_level else '' }}"
+                 data-profile-location="{{ profile.location|lower if profile.location else '' }}">
                 <div class="card h-100 border-0 shadow profile-card" style="border-radius: 12px;">
                     <div class="card-header bg-gradient-light border-0 pb-0" style="border-radius: 12px 12px 0 0;">
                         <div class="d-flex justify-content-between align-items-start">
@@ -216,7 +242,7 @@
                     
                     <div class="card-footer bg-gradient-light border-0 pt-3" style="border-radius: 0 0 12px 12px;">
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('match_page') }}?auto_match={{ profile.id }}" class="btn btn-primary btn-sm flex-fill shadow-sm" style="border-radius: 8px;">
+                            <a href="{{ url_for('match_page') }}?auto_match={{ profile.id }}" class="btn btn-primary btn-sm flex-fill shadow-sm" style="border-radius: 8px; background: linear-gradient(100deg, var(--primary-light), var(--primary));">
                                 <i class="fas fa-search me-1"></i>Find Matches
                             </a>
                             <a href="{{ url_for('view_profile', profile_id=profile.id) }}" class="btn btn-outline-secondary btn-sm shadow-sm" style="border-radius: 8px;">
@@ -393,6 +419,62 @@
                 }
             });
         });
+    });
+
+    // Profile search functionality
+    function filterProfiles() {
+        const searchTerm = document.getElementById('profileSearch').value.toLowerCase();
+        const profileItems = document.querySelectorAll('.profile-item');
+        let visibleCount = 0;
+        
+        profileItems.forEach(item => {
+            const name = item.getAttribute('data-profile-name');
+            const skills = item.getAttribute('data-profile-skills');
+            const experience = item.getAttribute('data-profile-experience');
+            const location = item.getAttribute('data-profile-location');
+            
+            const searchText = `${name} ${skills} ${experience} ${location}`;
+            
+            if (searchText.includes(searchTerm)) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        updateSearchResults(visibleCount, profileItems.length, searchTerm);
+    }
+
+    function clearSearch() {
+        document.getElementById('profileSearch').value = '';
+        const profileItems = document.querySelectorAll('.profile-item');
+        profileItems.forEach(item => {
+            item.style.display = 'block';
+        });
+        updateSearchResults(profileItems.length, profileItems.length, '');
+    }
+
+    function updateSearchResults(visible, total, searchTerm) {
+        const resultsElement = document.getElementById('searchResults');
+        if (searchTerm) {
+            resultsElement.textContent = `Showing ${visible} of ${total} profiles for "${searchTerm}"`;
+        } else {
+            resultsElement.textContent = `Showing all ${total} profiles`;
+        }
+    }
+
+    // Add enter key support for search
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('profileSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    filterProfiles();
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

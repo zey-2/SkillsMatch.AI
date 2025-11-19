@@ -1,14 +1,13 @@
 """
 Database Configuration and Management
-Utilities for database setup and table creation
+SQLite-only configuration for SkillMatch.AI
 """
 import os
 import logging
 from contextlib import contextmanager
-from typing import Optional
+from pathlib import Path
 
-from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool
 
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 class DatabaseConfig:
-    """Database configuration and session management"""
+    """SQLite database configuration and session management"""
     
     def __init__(self):
         self.engine = None
@@ -28,41 +27,26 @@ class DatabaseConfig:
         self._setup_database()
     
     def _setup_database(self):
-        """Setup database connection"""
-        # Get database URL from environment or build from components
-        database_url = os.getenv('DATABASE_URL')
+        """Setup SQLite database connection"""
+        # Create data directory
+        db_dir = Path(__file__).parent.parent / 'data'
+        db_dir.mkdir(exist_ok=True)
         
-        if not database_url:
-            # Try to build from individual components
-            db_host = os.getenv('DB_HOST')
-            db_port = os.getenv('DB_PORT')
-            db_name = os.getenv('DB_NAME')
-            db_user = os.getenv('DB_USER')
-            db_password = os.getenv('DB_PASSWORD')
-            
-            if all([db_host, db_port, db_name, db_user, db_password]):
-                database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-                logger.info(f"Built DATABASE_URL from components: postgresql://{db_user}:***@{db_host}:{db_port}/{db_name}")
-            else:
-                # Fallback to SQLite for development
-                db_path = os.path.join(os.path.dirname(__file__), '..', 'skillsmatch.db')
-                database_url = f'sqlite:///{db_path}'
-                logger.warning("No DATABASE_URL or DB components found, using SQLite fallback")
+        # SQLite database path
+        db_path = db_dir / 'skillsmatch.db'
+        database_url = f'sqlite:///{db_path}'
         
-        # Create engine
-        if database_url.startswith('sqlite'):
-            self.engine = create_engine(
-                database_url,
-                connect_args={"check_same_thread": False},
-                poolclass=StaticPool,
-            )
-        else:
-            self.engine = create_engine(database_url)
+        # Create SQLite engine
+        self.engine = create_engine(
+            database_url,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
         
         # Create session factory
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
         
-        logger.info(f"Database configured: {database_url}")
+        logger.info(f"SQLite database configured: {database_url}")
     
     def create_tables(self):
         """Create all database tables"""

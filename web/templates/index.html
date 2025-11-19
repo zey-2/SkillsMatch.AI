@@ -13,7 +13,7 @@
                 </h1>
                 <p class="lead mb-4">
                     Intelligent Career and Skills Matching System<br>
-                    Enhanced with real-world data from SkillsFutureSG 🇸🇬
+                    Enhanced with real-world data from FindSGJobs 🇸🇬
                 </p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
                     <a href="{{ url_for('match_page') }}" class="btn btn-light btn-lg">
@@ -31,11 +31,85 @@
     </div>
 
     
+    <!-- Summary Overview Cards -->
+    <div class="row mb-5">
+        <div class="col-12 mb-3">
+            <h3 class="fw-bold" style="color: var(--primary);">
+                <i class="fas fa-tachometer-alt me-2" style="color: var(--accent-orange);"></i>Summary Overview
+            </h3>
+        </div>
+        
+        <!-- Total Job Listings Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #ea580c, #f97316);">
+                <div class="card-body text-center text-white p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-briefcase" style="font-size: 3rem; color: rgba(255,255,255,0.9);"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2" style="font-size: 2.5rem;">{{ "{:,}".format(stats.total_jobs) }}</h2>
+                    <h5 class="mb-1">Total Job Listings</h5>
+                    <small class="opacity-75">Active opportunities in database</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Profiles Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: linear-gradient(135deg, #0f766e, #14b8a6);">
+                <div class="card-body text-center text-white p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-users" style="font-size: 3rem; color: rgba(255,255,255,0.9);"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2" style="font-size: 2.5rem;">{{ "{:,}".format(stats.total_profiles) }}</h2>
+                    <h5 class="mb-1">Total Profiles</h5>
+                    <small class="opacity-75">Registered user profiles</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALWAYS VISIBLE DEBUG -->
+    <div style="display:none;">CHART SECTION REACHED</div>
+    
+    <!-- Job Categories Chart -->
+    {% if chart_data %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                    <h4 class="fw-bold mb-0" style="color: var(--primary);">
+                        <i class="fas fa-chart-column me-2" style="color: var(--accent-orange);"></i>Job Distribution by Category
+                    </h4>
+                    <p class="text-muted mb-0">Number of active job listings per category</p>
+                </div>
+                <div class="card-body p-4">
+                    <div id="jobCategoriesChart" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-chart-column mb-3" style="font-size: 3rem; color: var(--medium-gray);"></i>
+                    <h5 class="text-muted">No Job Category Data Available</h5>
+                    <p class="text-muted mb-0">Job category distribution will appear here when data is available</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Quick Actions -->
     <div class="row mb-5">
         <div class="col-12">
             <h2 class="mb-4"><i class="fas fa-rocket me-2"></i>Quick Actions</h2>
         </div>
+        
+            <div class="row mb-4">
+        
         
         <div class="col-md-4 mb-3">
             <div class="card-enterprise primary h-100 d-flex flex-column">
@@ -235,7 +309,7 @@
                 <div>
                     <h5 class="text-dark">Singapore Market Intelligence</h5>
                     <p class="text-muted">
-                        Real-time data integration from SkillsFutureSG provides current market insights and authentic opportunities within Singapore's professional landscape.
+                        Real-time data integration from FindSGJobs provides current market insights and authentic opportunities within Singapore's professional landscape.
                     </p>
                 </div>
             </div>
@@ -292,6 +366,91 @@
             card.style.transition = 'opacity 0.6s, transform 0.6s';
             observer.observe(card);
         });
+
+        // Fetch Jobs functionality
+        const fetchJobsBtn = document.getElementById('fetchJobsBtn');
+        const fetchStatus = document.getElementById('fetchStatus');
+        
+        if (fetchJobsBtn) {
+            fetchJobsBtn.addEventListener('click', async function() {
+                const btn = this;
+                
+                // Disable button and show loading
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Fetching...';
+                fetchStatus.innerHTML = '<span class="text-primary">🔄 Fetching job data from FindSGJobs API...</span>';
+                
+                try {
+                    const response = await fetch('/api/fetch-jobs', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        fetchStatus.innerHTML = `<span class="text-success">✅ Successfully fetched ${result.jobs_count} jobs!</span>`;
+                    } else {
+                        fetchStatus.innerHTML = `<span class="text-danger">❌ Error: ${result.error}</span>`;
+                    }
+                } catch (error) {
+                    fetchStatus.innerHTML = `<span class="text-danger">❌ Network error: ${error.message}</span>`;
+                } finally {
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Fetch Jobs';
+                }
+            });
+        }
     });
+    
+    // Job Categories Chart Script
+    {% if chart_data %}
+    // Load Plotly.js if not already loaded
+    if (typeof Plotly === 'undefined') {
+        const plotlyScript = document.createElement('script');
+        plotlyScript.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+        plotlyScript.onload = function() {
+            initializeChart();
+        };
+        document.head.appendChild(plotlyScript);
+    } else {
+        initializeChart();
+    }
+    
+    function initializeChart() {
+        const chartData = {{ chart_data|safe }};
+        if (chartData && chartData.data && chartData.data.length > 0) {
+            Plotly.newPlot('jobCategoriesChart', chartData.data, chartData.layout, {
+                responsive: true,
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian'],
+                displaylogo: false
+            });
+        }
+    }
+    {% endif %}
+    
 </script>
+
+<style>
+/* Chart container styling */
+#jobCategoriesChart {
+    min-height: 400px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body h2 {
+        font-size: 2rem !important;
+    }
+    
+    #jobCategoriesChart {
+        min-height: 300px;
+    }
+}
+</style>
+
 {% endblock %}

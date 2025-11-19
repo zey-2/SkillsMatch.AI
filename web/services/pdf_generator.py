@@ -33,12 +33,15 @@ class SkillsMatchPDFGenerator:
     
     def __init__(self):
         self.colors = {
-            'primary': HexColor('#2563eb'),      # Blue
-            'secondary': HexColor('#059669'),    # Green  
-            'accent': HexColor('#7c3aed'),       # Purple
-            'text': HexColor('#1f2937'),         # Dark gray
-            'light_gray': HexColor('#f9fafb'),   # Light gray
-            'border': HexColor('#e5e7eb')        # Border gray
+            'primary': HexColor('#1e40af'),      # Professional Blue
+            'secondary': HexColor('#0f766e'),    # Teal Green  
+            'accent': HexColor('#ea580c'),       # Orange accent
+            'text': HexColor('#111827'),         # Rich black
+            'light_gray': HexColor('#f8fafc'),   # Light background
+            'medium_gray': HexColor('#6b7280'),  # Medium gray
+            'border': HexColor('#d1d5db'),       # Border gray
+            'success': HexColor('#16a34a'),      # Success green
+            'warning': HexColor('#d97706')       # Warning orange
         }
         
         # Initialize OpenAI if available
@@ -149,8 +152,12 @@ APPLICANT PROFILE:
 - Professional Summary: {profile_data.get('summary', 'Dedicated professional')}
 
 JOB REQUIREMENTS:
+- Position Level: {job_data.get('position_level', 'N/A')}
+- Experience Required: {job_data.get('min_years_experience', 'N/A')}
+- Education Level: {job_data.get('min_education_level', 'N/A')}
+- Work Arrangement: {job_data.get('work_arrangement', 'N/A')}
 - Required Skills: {', '.join(job_data.get('required_skills', [])[:6])}
-- Job Description: {job_data.get('description', '')[:200]}...
+- Job Description: {(job_data.get('description') or job_data.get('keywords', ''))[:300]}...
 
 INSTRUCTIONS:
 1. Write a professional, engaging cover letter (300-400 words)
@@ -185,7 +192,7 @@ Format as plain text paragraphs."""
         """Generate template cover letter when AI is not available"""
         user_name = profile_data.get('name', 'Professional')
         job_title = job_data.get('title', 'Position')
-        company = job_data.get('company', 'Your Company')
+        company = job_data.get('company_name') or job_data.get('company', 'Your Company')
         
         return f"""Dear Hiring Manager at {company},
 
@@ -250,14 +257,65 @@ Sincerely,
         # Job Information
         story.append(Paragraph("TARGET POSITION", styles['CustomHeader']))
         
+        # Handle job categories (JSON array)
+        job_categories = job_data.get('job_category', [])
+        if isinstance(job_categories, list) and job_categories:
+            category_text = ', '.join([str(cat) for cat in job_categories[:3]])  # Show first 3 categories
+        else:
+            category_text = job_data.get('category', 'General')
+        
+        # Handle employment type (JSON array)
+        employment_types = job_data.get('employment_type', [])
+        if isinstance(employment_types, list) and employment_types:
+            employment_text = ', '.join([str(emp) for emp in employment_types])
+        else:
+            employment_text = 'Full-time'
+        
         job_info = [
             ['Position:', job_data.get('title', 'N/A')],
-            ['Company:', job_data.get('company', 'Various Companies')],
-            ['Category:', job_data.get('category', 'General')],
-            ['Match Score:', f"{job_data.get('match_percentage', 0)}%"]
+            ['Company:', job_data.get('company_name', job_data.get('company', 'Various Companies'))],
+            ['Category:', category_text],
+            ['Employment Type:', employment_text],
+            ['Position Level:', job_data.get('position_level', 'N/A')],
+            ['Work Arrangement:', job_data.get('work_arrangement', 'N/A')],
+            ['Match Score:', f"{job_data.get('match_percentage', 0):.1f}%"]
         ]
         
-        job_table = Table(job_info, colWidths=[2*inch, 4*inch])
+        # Add salary information if available
+        salary_info = []
+        if job_data.get('min_salary') or job_data.get('max_salary'):
+            min_sal = job_data.get('min_salary', 0)
+            max_sal = job_data.get('max_salary', 0)
+            currency = job_data.get('currency', 'SGD')
+            salary_interval = job_data.get('salary_interval', 'Monthly')
+            
+            if min_sal and max_sal:
+                salary_text = f"{currency} {min_sal:,} - {max_sal:,} ({salary_interval})"
+            elif min_sal:
+                salary_text = f"{currency} {min_sal:,}+ ({salary_interval})"
+            elif max_sal:
+                salary_text = f"Up to {currency} {max_sal:,} ({salary_interval})"
+            else:
+                salary_text = 'Competitive'
+            
+            salary_info.append(['Salary Range:', salary_text])
+        
+        # Add location information
+        if job_data.get('address'):
+            salary_info.append(['Location:', job_data.get('address', 'Singapore')])
+        elif job_data.get('postal_code'):
+            salary_info.append(['Location:', f"Singapore {job_data.get('postal_code')}"])
+        
+        # Add MRT information if available
+        nearest_mrt = job_data.get('nearest_mrt_station', [])
+        if isinstance(nearest_mrt, list) and nearest_mrt:
+            mrt_text = ', '.join([str(mrt) for mrt in nearest_mrt[:2]])  # Show first 2 MRT stations
+            salary_info.append(['Nearest MRT:', mrt_text])
+        
+        # Combine job info with salary/location info
+        all_job_info = job_info + salary_info
+        
+        job_table = Table(all_job_info, colWidths=[2*inch, 4*inch])
         job_table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -271,6 +329,55 @@ Sincerely,
         ]))
         story.append(job_table)
         story.append(Spacer(1, 20))
+        
+        # Job Requirements Section
+        story.append(Paragraph("JOB REQUIREMENTS", styles['CustomHeader']))
+        
+        requirements_info = []
+        if job_data.get('min_years_experience'):
+            requirements_info.append(['Experience Required:', job_data.get('min_years_experience', 'N/A')])
+        if job_data.get('min_education_level'):
+            requirements_info.append(['Education Level:', job_data.get('min_education_level', 'N/A')])
+        if job_data.get('no_of_vacancies'):
+            requirements_info.append(['Number of Openings:', str(job_data.get('no_of_vacancies', 1))])
+        
+        # Add timing/shift information
+        timing_shift = job_data.get('timing_shift', [])
+        if isinstance(timing_shift, list) and timing_shift:
+            shift_text = ', '.join([str(shift) for shift in timing_shift])
+            requirements_info.append(['Working Hours:', shift_text])
+        
+        if requirements_info:
+            req_table = Table(requirements_info, colWidths=[2*inch, 4*inch])
+            req_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('TEXTCOLOR', (0, 0), (0, -1), self.colors['secondary']),
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ]))
+            story.append(req_table)
+            story.append(Spacer(1, 15))
+        
+        # Company Information (if available)
+        if job_data.get('company_description') or job_data.get('website'):
+            story.append(Paragraph("COMPANY INFORMATION", styles['CustomHeader']))
+            
+            if job_data.get('website'):
+                story.append(Paragraph(f"Website: {job_data.get('website')}", styles['CustomBody']))
+                story.append(Spacer(1, 5))
+            
+            if job_data.get('company_description'):
+                # Truncate long company descriptions
+                desc = job_data.get('company_description', '')
+                if len(desc) > 500:
+                    desc = desc[:500] + '...'
+                story.append(Paragraph(desc, styles['CustomBody']))
+                story.append(Spacer(1, 15))
         
         # Cover Letter
         story.append(Paragraph("COVER LETTER", styles['CustomHeader']))
@@ -354,6 +461,22 @@ Sincerely,
         buffer.close()
         
         return pdf_bytes
+    
+    def _get_rating(self, score):
+        """Get rating based on score"""
+        if score >= 80: return "⭐⭐⭐⭐⭐ Excellent"
+        elif score >= 70: return "⭐⭐⭐⭐ Very Good"
+        elif score >= 60: return "⭐⭐⭐ Good"
+        elif score >= 50: return "⭐⭐ Fair"
+        else: return "⭐ Needs Improvement"
+    
+    def _get_score_analysis(self, score):
+        """Get analysis text based on score"""
+        if score >= 80: return "Outstanding match - Highly recommended"
+        elif score >= 70: return "Strong alignment - Great opportunity"
+        elif score >= 60: return "Good fit with growth potential"
+        elif score >= 50: return "Moderate match - Consider skills gap"
+        else: return "Limited alignment - Significant upskilling needed"
 
 # Global instance
 pdf_generator = SkillsMatchPDFGenerator()

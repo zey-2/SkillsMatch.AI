@@ -285,9 +285,9 @@ Return a JSON response with this EXACT structure:
         return None
 
 def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
-    """Generate significantly improved mock AI response with advanced matching logic"""
+    """Generate simplified mock AI response with clear matching logic"""
     try:
-        print("🎯 Generating ADVANCED mock AI matching response...")
+        print("🎯 Generating simplified job matching response...")
         print(f"📊 Profile: {profile_data.get('name', 'Unknown')}")
         print(f"📋 Raw skills data: {profile_data.get('skills', [])}")
         
@@ -346,46 +346,58 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
         print(f"🔍 Analyzing {min(100, len(jobs_list))} jobs for matches...")
         
         for job in jobs_list[:100]:  # Analyze more jobs for better matches
-            job_skills = job.get('job_skill_set', []) or []
-            job_skills_lower = [skill.lower().strip() for skill in job_skills if skill and isinstance(skill, str)]
+            # Extract skills from available text fields since job_skill_set doesn't exist
+            job_keywords = (job.get('keywords') or '').lower()
             job_category = (job.get('category') or '').lower()
-            job_title = (job.get('job_title') or '').lower()
+            job_title = (job.get('job_title') or job.get('title') or '').lower()
             job_description = (job.get('job_description') or '').lower()
             
-            # 1. ADVANCED SKILL MATCHING (50% weight)
+            # Extract skills from job text using keyword matching
+            job_skills = []
+            all_job_text = f"{job_keywords} {job_title} {job_category} {job_description}"
+            
+            # Common technical skills to look for
+            common_skills = [
+                'python', 'java', 'javascript', 'sql', 'html', 'css', 'react', 'angular', 'vue',
+                'node', 'django', 'flask', 'spring', 'mysql', 'postgresql', 'mongodb', 'redis',
+                'aws', 'azure', 'docker', 'kubernetes', 'git', 'machine learning', 'ai',
+                'data analysis', 'excel', 'tableau', 'powerbi', 'analytics', 'business intelligence',
+                'project management', 'agile', 'scrum', 'leadership', 'communication',
+                'sales', 'marketing', 'customer service', 'finance', 'accounting'
+            ]
+            
+            for skill in common_skills:
+                if skill in all_job_text:
+                    job_skills.append(skill)
+            
+            job_skills_lower = job_skills
+            
+            # 1. SIMPLE SKILL MATCHING - if user has all required skills = 100%
             matched_skills = []
-            skill_relevance_scores = []
+            
+            print(f"🔍 DEBUG: Processing job '{job_title}' with skills: {job_skills_lower}")
+            print(f"👤 User skills: {user_skills}")
             
             for job_skill in job_skills_lower:
-                best_match_score = 0
-                best_match_skill = None
+                job_skill_clean = job_skill.strip().lower()
                 
+                # Check if user has this required skill
                 for user_skill in user_skills:
-                    # Exact match
-                    if user_skill == job_skill:
-                        best_match_score = 1.0
-                        best_match_skill = job_skill
-                    # Partial match
-                    elif user_skill in job_skill or job_skill in user_skill:
-                        score = max(len(user_skill) / len(job_skill), len(job_skill) / len(user_skill))
-                        if score > best_match_score:
-                            best_match_score = score * 0.8
-                            best_match_skill = job_skill
-                    # Synonym match
-                    else:
-                        for category, synonyms in skill_synonyms.items():
-                            if user_skill in synonyms and job_skill in synonyms:
-                                if 0.7 > best_match_score:
-                                    best_match_score = 0.7
-                                    best_match_skill = job_skill
-                
-                if best_match_score > 0.4:  # Only count meaningful matches
-                    matched_skills.append(best_match_skill)
-                    skill_relevance_scores.append(best_match_score)
+                    user_skill_clean = user_skill.strip().lower()
+                    
+                    # Exact match or contains match
+                    if (job_skill_clean == user_skill_clean or 
+                        job_skill_clean in user_skill_clean or 
+                        user_skill_clean in job_skill_clean):
+                        matched_skills.append(job_skill)
+                        print(f"✅ Matched: '{job_skill}' (user has '{user_skill}')")
+                        break
             
-            avg_skill_relevance = sum(skill_relevance_scores) / len(skill_relevance_scores) if skill_relevance_scores else 0
+            # Calculate simple skill coverage
             skill_coverage = len(matched_skills) / max(len(job_skills_lower), 1) if job_skills_lower else 0
-            skill_score = (avg_skill_relevance * 0.6 + skill_coverage * 0.4)
+            skill_score = skill_coverage  # Simple ratio: matched/required
+            
+            print(f"🎯 Skills calculation: {len(matched_skills)}/{len(job_skills_lower)} = {skill_coverage * 100:.1f}%")
             
             # 2. INDUSTRY/ROLE ALIGNMENT (25% weight) with EXCLUSION RULES
             industry_score = 0.1  # Lower base score
@@ -481,13 +493,12 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             
             match_percentage = min(comprehensive_score * 100, 98)
             
-            # BALANCED QUALITY FILTER: Allow matches with either good skills or industry fit
-            has_meaningful_skills = len(matched_skills) >= 1 and skill_score > 0.15
-            has_industry_alignment = industry_score > 0.2  # Lowered from 0.3 to 0.2
-            meets_threshold = match_percentage >= 20  # Lowered from 30 to 20
+            # SIMPLIFIED QUALITY FILTER: Show all matches with at least 1 skill match
+            has_meaningful_skills = len(matched_skills) >= 1
+            meets_basic_threshold = match_percentage >= 15  # Very low threshold to show more matches
             
-            # Allow match if has either good skills OR industry alignment (not both required)
-            if has_meaningful_skills and (has_industry_alignment or skill_score > 0.4) and meets_threshold:
+            # Show match if has at least 1 skill match and meets basic threshold
+            if has_meaningful_skills and meets_basic_threshold:
                 # Generate intelligent skill gaps
                 skill_gaps = []
                 for skill in job_skills_lower[:6]:
@@ -503,9 +514,13 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                     job_category, skill_gaps, user_experience
                 )
                 
+                # Calculate simple skills-only percentage for consistency
+                skills_only_percentage = (len(matched_skills) / len(job_skills_lower)) * 100 if job_skills_lower else 0
+                
                 scored_jobs.append({
                     'job_id': job['job_id'],
                     'match_percentage': round(match_percentage, 1),
+                    'skills_only_percentage': round(skills_only_percentage, 1),  # Add pure skills match
                     'comprehensive_score': round(comprehensive_score, 3),
                     'skill_match_score': round(skill_score, 3),
                     'industry_match_score': round(industry_score, 3),
@@ -583,12 +598,29 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
         else:
             print("ℹ️  AI: No HR jobs found to exclude")
         
-        print(f"✅ Generated ADVANCED mock AI response with {len(top_matches)} diverse, high-quality matches")
+        print(f"✅ Generated simplified response with {len(top_matches)} matches (showing all found)")
         return mock_response
         
     except Exception as e:
-        print(f"❌ Advanced mock AI response generation failed: {e}")
+        print(f"❌ Mock response generation failed: {e}")
         return None
+
+def _create_simple_match_reason(match_percentage, matched_skills_count, job_category):
+    """Create a user-friendly match reason"""
+    if match_percentage >= 70:
+        if matched_skills_count >= 3:
+            return f"Excellent match! Your skills strongly align with this {job_category.lower()} role, making you a great candidate."
+        else:
+            return f"Great potential! Your profile shows strong alignment with {job_category.lower()} opportunities."
+    elif match_percentage >= 50:
+        if matched_skills_count >= 2:
+            return f"Good fit! Your skills overlap well with this {job_category.lower()} position, with room for growth."
+        else:
+            return f"Promising opportunity! This {job_category.lower()} role could be a good next step in your career."
+    elif match_percentage >= 30:
+        return f"Growth opportunity! This {job_category.lower()} role offers potential to develop new skills while leveraging your existing experience."
+    else:
+        return f"Career pivot opportunity! Explore this {job_category.lower()} role to expand your professional horizons."
 
 def _generate_match_reasoning(match_percentage, matched_skills, industry_score, skill_score, exp_score):
     """Generate intelligent match reasoning based on scores"""
@@ -843,15 +875,21 @@ def initialize_data():
 
 @app.route('/')
 def index():
-    """Main dashboard page"""
+    """Main dashboard page with summary overview"""
+    import json
     config = load_config()
     
-    # Get database statistics
+    # Get database statistics including dashboard data
     stats = {
         'skills_categories': 0,
         'total_opportunities': 0,
+        'total_jobs': 0,
+        'total_profiles': 0,
+        'job_categories': {},
+        'chart_data': {'categories': [], 'values': []},
         'last_scrape': 'Never',
-        'github_configured': bool(config.get('github_token'))
+        'github_configured': bool(config.get('github_token')),
+        'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
     
     if data_loader:
@@ -860,6 +898,90 @@ def index():
         
         if hasattr(data_loader, 'opportunities_data') and data_loader.opportunities_data:
             stats['total_opportunities'] = len(data_loader.opportunities_data.get('opportunities', []))
+    
+    # Get job statistics using EXACT same approach as working jobs_listing route
+    # Move this OUTSIDE data_loader condition so it always executes
+    try:
+        print("🔍 HOME: Attempting database imports...")
+        from database.models import Job, UserProfile
+        from database.db_config import DatabaseConfig
+        print("🔍 HOME: Database imports successful!")
+        
+        # Get database session (exact same pattern as jobs_listing)
+        print("🔍 HOME: Creating database config...")
+        db_config = DatabaseConfig()
+        print("🔍 HOME: Creating session...")
+        session = db_config.SessionLocal()
+        print("🔍 HOME: Session created successfully!")
+        
+        try:
+            # Count total jobs (exact same as jobs_listing)
+            jobs = session.query(Job).filter(Job.is_active == True).all()
+            stats['total_jobs'] = len(jobs)
+            
+            # Count total profiles (only active ones to match Profiles route)
+            profiles = session.query(UserProfile).filter(UserProfile.is_active == True).all()
+            stats['total_profiles'] = len(profiles)
+            
+            # Get job categories for chart (handle Python lists from database)
+            category_counts = {}
+            jobs_with_categories = 0
+            
+            for job in jobs:
+                if job.job_category:
+                    jobs_with_categories += 1
+                    try:
+                        # Handle Python list objects directly (most common case)
+                        if isinstance(job.job_category, list):
+                            for category in job.job_category:
+                                if category and isinstance(category, str):
+                                    category_counts[category] = category_counts.get(category, 0) + 1
+                        # Handle JSON string format like '["F&B"]' 
+                        elif isinstance(job.job_category, str) and job.job_category.startswith('['):
+                            import json
+                            categories = json.loads(job.job_category)
+                            if isinstance(categories, list):
+                                for category in categories:
+                                    if category and isinstance(category, str):
+                                        category_counts[category] = category_counts.get(category, 0) + 1
+                        # Handle plain string categories
+                        elif isinstance(job.job_category, str) and job.job_category.strip():
+                            category_counts[job.job_category.strip()] = category_counts.get(job.job_category.strip(), 0) + 1
+                    except Exception as parse_error:
+                        print(f"🔍 Category parsing error for '{job.job_category}': {parse_error}")
+            
+            # Debug info removed - categories processing working correctly
+            
+            # Sort categories by count and take top 10
+            stats['job_categories'] = dict(sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[:10])
+            
+            # Generate chart data for Plotly
+            if stats['job_categories']:
+                stats['chart_data'] = {
+                    'categories': list(stats['job_categories'].keys()),
+                    'values': list(stats['job_categories'].values())
+                }
+            
+            print(f"🏠 HOME page stats: jobs={stats['total_jobs']}, profiles={stats['total_profiles']}, categories={len(stats['job_categories'])}")
+            
+        finally:
+            session.close()
+            
+    except Exception as db_error:
+        print(f"⚠️ Database error in HOME: {db_error}")
+        print(f"⚠️ Database error type: {type(db_error).__name__}")
+        import traceback
+        traceback.print_exc()
+        # Simple fallback
+        stats['total_jobs'] = 0
+        stats['total_profiles'] = 0
+            
+    # Also try file-based profile counting as additional fallback
+    profiles_dir = Path(__file__).parent.parent / "profiles"
+    if profiles_dir.exists():
+        file_count = len(list(profiles_dir.glob("*.json")))
+        if file_count > 0:
+            stats['total_profiles'] = max(stats['total_profiles'], file_count)
     
     # Check for last scrape date
     scraped_data_dir = Path("../scraped_data")
@@ -882,7 +1004,161 @@ def index():
             except Exception as e:
                 print(f"Error loading profile {profile_file}: {e}")
     
-    return render_template('index.html', stats=stats, profiles=profile_files)
+    # Generate Plotly chart data for job categories (moved outside profiles check)
+    chart_data = None
+    if stats['job_categories']:
+            import json
+            categories = list(stats['job_categories'].keys())
+            counts = list(stats['job_categories'].values())
+            
+            print(f"📊 Chart data - Categories: {len(categories)}, Total jobs in chart: {sum(counts)}")
+            print(f"📊 Sample categories: {categories[:3] if categories else 'None'}")
+            
+            chart_data = {
+                'data': [{
+                    'x': categories,
+                    'y': counts,
+                    'type': 'bar',
+                    'marker': {
+                        'color': 'rgba(164, 183, 211, 0.8)',
+                        'line': {
+                            'color': 'rgba(164, 183, 211, 1.0)',
+                            'width': 1
+                        }
+                    },
+                    'hovertemplate': '<b>%{x}</b><br>Jobs: %{y}<extra></extra>'
+                }],
+                'layout': {
+                    'title': {
+                        'text': 'Job Distribution by Category',
+                        'font': {'size': 18, 'family': 'Arial, sans-serif', 'color': '#1a365d'}
+                    },
+                    'xaxis': {
+                        'title': 'Job Categories',
+                        'tickangle': -45,
+                        'font': {'size': 12}
+                    },
+                    'yaxis': {
+                        'title': 'Number of Jobs',
+                        'font': {'size': 12}
+                    },
+                    'plot_bgcolor': 'rgba(0,0,0,0)',
+                    'paper_bgcolor': 'rgba(0,0,0,0)',
+                    'margin': {'t': 60, 'l': 60, 'r': 30, 'b': 120},
+                    'height': 400
+                }
+            }
+    else:
+        print("⚠️ No job categories found for chart generation")
+        # Ensure we always have chart data even if empty
+        stats['chart_data'] = {'categories': [], 'values': []}
+    
+    # Debug: Show final stats being passed to template
+    print(f"🏠 HOME page stats: jobs={stats.get('total_jobs', 0)}, profiles={stats.get('total_profiles', 0)}, categories={len(stats.get('job_categories', {}))}")
+    # Chart data ready for template rendering
+    
+    return render_template('index.html', stats=stats, profiles=profile_files, chart_data=json.dumps(chart_data) if chart_data else None)
+
+@app.route('/dashboard')
+def dashboard():
+    """Dashboard with summary overview and analytics"""
+    try:
+        # Get database statistics
+        dashboard_stats = {
+            'total_jobs': 0,
+            'total_profiles': 0,
+            'job_categories': {},
+            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Get job statistics from database
+        try:
+            from database.db_config import db_config
+            from database.models import Job, UserProfile
+            
+            with db_config.session_scope() as session:
+                # Count total jobs
+                dashboard_stats['total_jobs'] = session.query(Job).filter(Job.is_active == True).count()
+                
+                # Count total profiles
+                dashboard_stats['total_profiles'] = session.query(UserProfile).count()
+                
+                # Get job categories distribution
+                jobs_with_categories = session.query(Job).filter(
+                    Job.is_active == True,
+                    Job.job_category.isnot(None)
+                ).all()
+                
+                category_counts = {}
+                for job in jobs_with_categories:
+                    if job.job_category:
+                        if isinstance(job.job_category, list):
+                            for category in job.job_category:
+                                if category and isinstance(category, (str, dict)):
+                                    cat_name = str(category) if isinstance(category, str) else category.get('name', str(category))
+                                    if cat_name:
+                                        category_counts[cat_name] = category_counts.get(cat_name, 0) + 1
+                        elif isinstance(job.job_category, str):
+                            if job.job_category:
+                                category_counts[job.job_category] = category_counts.get(job.job_category, 0) + 1
+                
+                # Sort categories by count and take top 10
+                dashboard_stats['job_categories'] = dict(sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[:10])
+                
+        except Exception as db_error:
+            print(f"⚠️ Database error in dashboard: {db_error}")
+            # Fallback to file-based profile counting
+            profiles_dir = Path(__file__).parent.parent / "profiles"
+            if profiles_dir.exists():
+                dashboard_stats['total_profiles'] = len(list(profiles_dir.glob("*.json")))
+        
+        # Generate Plotly chart data for job categories
+        chart_data = None
+        if dashboard_stats['job_categories']:
+            import json
+            categories = list(dashboard_stats['job_categories'].keys())
+            counts = list(dashboard_stats['job_categories'].values())
+            
+            chart_data = {
+                'data': [{
+                    'x': categories,
+                    'y': counts,
+                    'type': 'bar',
+                    'marker': {
+                        'color': 'rgba(164, 183, 211, 0.8)',
+                        'line': {
+                            'color': 'rgba(164, 183, 211, 1.0)',
+                            'width': 1
+                        }
+                    },
+                    'hovertemplate': '<b>%{x}</b><br>Jobs: %{y}<extra></extra>'
+                }],
+                'layout': {
+                    'title': {
+                        'text': 'Job Distribution by Category',
+                        'font': {'size': 18, 'family': 'Arial, sans-serif', 'color': '#1a365d'}
+                    },
+                    'xaxis': {
+                        'title': 'Job Categories',
+                        'tickangle': -45,
+                        'font': {'size': 12}
+                    },
+                    'yaxis': {
+                        'title': 'Number of Jobs',
+                        'font': {'size': 12}
+                    },
+                    'plot_bgcolor': 'rgba(0,0,0,0)',
+                    'paper_bgcolor': 'rgba(0,0,0,0)',
+                    'margin': {'t': 60, 'l': 60, 'r': 30, 'b': 120},
+                    'height': 400
+                }
+            }
+        
+        return render_template('dashboard.html', stats=dashboard_stats, chart_data=json.dumps(chart_data) if chart_data else None)
+        
+    except Exception as e:
+        print(f"❌ Dashboard error: {e}")
+        return render_template('dashboard.html', stats={'total_jobs': 0, 'total_profiles': 0, 'job_categories': {}}, chart_data=None)
 
 
 @app.route('/profiles')
@@ -892,6 +1168,8 @@ def profiles():
         # Use the profile manager for storage abstraction
         profiles_data = profile_manager.list_profiles()
         profile_files = []
+        
+        print(f"📊 Loading {len(profiles_data)} profiles...")
         
         for profile_data in profiles_data:
             # Create profile object with enhanced data structure
@@ -916,15 +1194,53 @@ def profiles():
         # Sort profiles by name
         profile_files.sort(key=lambda x: x['name'].lower())
             
-        # Show storage info
-        storage_info = profile_manager.get_storage_info()
-        print(f"✅ Using {storage_info['type']} storage for profiles")
+        # Show storage info (skip if method doesn't exist)
+        try:
+            storage_info = profile_manager.get_storage_info()
+            print(f"✅ Using {storage_info['type']} storage for profiles")
+        except AttributeError:
+            print("✅ Using profile storage (method unavailable)")
             
     except Exception as e:
         print(f"Error loading profiles: {e}")
         profile_files = []
     
     return render_template('profiles.html', profiles=profile_files)
+
+
+@app.route('/jobs')
+def jobs_listing():
+    """Display all jobs from database"""
+    try:
+        from database.models import Job
+        from database.db_config import DatabaseConfig
+        
+        # Get database session
+        db_config = DatabaseConfig()
+        session = db_config.SessionLocal()
+        
+        try:
+            # Get all active jobs
+            jobs = session.query(Job).filter(Job.is_active == True).order_by(Job.created_at.desc()).all()
+            
+            # Convert to dictionaries for template
+            jobs_data = [job.to_dict() for job in jobs]
+            
+            print(f"📋 Loaded {len(jobs_data)} jobs for listing")
+            
+            return render_template('jobs_listing.html', 
+                                 jobs=jobs_data, 
+                                 total_jobs=len(jobs_data))
+        
+        finally:
+            session.close()
+            
+    except Exception as e:
+        print(f"Error loading jobs: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Error loading jobs listing', 'error')
+        return render_template('jobs_listing.html', jobs=[], total_jobs=0)
 
 
 @app.route('/profile/create')
@@ -1395,22 +1711,33 @@ def api_match():
         try:
             print(f"🔍 Gathering jobs for AI analysis for {profile_data.get('name', 'user')}")
             
-            # Get jobs from PostgreSQL database
+            # Get jobs from SQLite database
             from database.db_config import db_config
             from database.models import Job
             
             with db_config.session_scope() as session:
                 jobs = session.query(Job).filter(Job.is_active == True).limit(200).all()
-                print(f"📊 Found {len(jobs)} active jobs in PostgreSQL database")
+                print(f"📊 Found {len(jobs)} active jobs in SQLite database")
                 
                 for job in jobs:
+                    # Extract job categories and employment types
+                    categories = job.job_category if job.job_category else []
+                    employment_types = job.employment_type if job.employment_type else []
+                    
                     all_available_jobs.append({
                         'job_id': job.job_id,
-                        'job_title': job.job_title,
-                        'category': job.category,
+                        'job_title': job.title,
+                        'company_name': job.company_name,
+                        'category': categories[0] if categories else 'General',
                         'job_description': job.job_description,
-                        'job_skill_set': job.job_skill_set or [],
-                        'source': 'database'
+                        'position_level': job.position_level,
+                        'min_years_experience': job.min_years_experience,
+                        'employment_type': employment_types,
+                        'work_arrangement': job.work_arrangement,
+                        'min_salary': job.min_salary,
+                        'max_salary': job.max_salary,
+                        'location': job.address,
+                        'source': 'findsgjobs_api'
                     })
             
             # Get resume text for vector database integration
@@ -1470,20 +1797,34 @@ def api_match():
                         original_job = next((job for job in all_available_jobs if job['job_id'] == job_id), None)
                         
                         if original_job:
+                            # Extract salary information
+                            salary_info = ""
+                            if original_job.get('min_salary') and original_job.get('max_salary'):
+                                salary_info = f"SGD {original_job['min_salary']:,} - {original_job['max_salary']:,}"
+                            elif original_job.get('min_salary'):
+                                salary_info = f"SGD {original_job['min_salary']:,}+"
+                            elif original_job.get('max_salary'):
+                                salary_info = f"Up to SGD {original_job['max_salary']:,}"
+                            
                             final_matches.append({
                                 'job_id': job_id,
                                 'title': original_job['job_title'],
-                                'company': 'Singapore Companies',
-                                'location': profile_data.get('location', 'Singapore'),
+                                'company': original_job.get('company_name', 'Singapore Companies'),
+                                'location': original_job.get('location', profile_data.get('location', 'Singapore')),
                                 'category': original_job['category'],
                                 'description': original_job['job_description'][:400] + '...' if len(original_job.get('job_description', '')) > 400 else original_job.get('job_description', ''),
-                                'required_skills': original_job['job_skill_set'],
+                                'required_skills': [],  # Will be extracted from job description by AI
+                                'position_level': original_job.get('position_level', ''),
+                                'employment_type': original_job.get('employment_type', []),
+                                'work_arrangement': original_job.get('work_arrangement', ''),
+                                'salary_range': salary_info,
                                 'match_score': ai_match['comprehensive_score'],
                                 'match_percentage': ai_match['match_percentage'],
+                                'skills_only_percentage': ai_match.get('skills_only_percentage', 0),
                                 'matched_skills': ai_match.get('matched_skills', []),
                                 'missing_skills': ai_match.get('skill_gaps', []),
                                 'skills_matched_count': len(ai_match.get('matched_skills', [])),
-                                'total_required_skills': len(original_job['job_skill_set']),
+                                'total_required_skills': len(ai_match.get('matched_skills', []) + ai_match.get('skill_gaps', [])),
                                 'recommendation_reason': ai_match['recommendation_reason'],
                                 'growth_opportunities': ai_match.get('growth_opportunities', ''),
                                 'source': 'ai_enhanced',
@@ -1540,11 +1881,31 @@ def api_match():
             excluded_hr_jobs = []  # Track excluded HR jobs
             
             for job in all_available_jobs[:150]:  # Analyze more jobs
-                job_skills = job.get('job_skill_set', []) or []
-                job_skills_lower = [skill.lower().strip() for skill in job_skills if skill and isinstance(skill, str)]
-                job_title = (job.get('job_title') or '').lower()
+                # Extract skills from available text fields since job_skill_set doesn't exist
+                job_keywords = (job.get('keywords') or '').lower()
+                job_title = (job.get('job_title') or job.get('title') or '').lower()
                 job_category = (job.get('category') or '').lower()
                 job_description = (job.get('job_description') or '').lower()
+                
+                # Extract skills from job text using keyword matching
+                job_skills_extracted = []
+                all_job_text = f"{job_keywords} {job_title} {job_category} {job_description}"
+                
+                # Common technical skills to look for
+                common_skills = [
+                    'python', 'java', 'javascript', 'sql', 'html', 'css', 'react', 'angular', 'vue',
+                    'node', 'django', 'flask', 'spring', 'mysql', 'postgresql', 'mongodb', 'redis',
+                    'aws', 'azure', 'docker', 'kubernetes', 'git', 'machine learning', 'ai',
+                    'data analysis', 'excel', 'tableau', 'powerbi', 'analytics', 'business intelligence',
+                    'project management', 'agile', 'scrum', 'leadership', 'communication',
+                    'sales', 'marketing', 'customer service', 'finance', 'accounting'
+                ]
+                
+                for skill in common_skills:
+                    if skill in all_job_text:
+                        job_skills_extracted.append(skill)
+                
+                job_skills_lower = job_skills_extracted
                 
                 # APPLY SAME EXCLUSION RULES AS ADVANCED MATCHING
                 user_context = f"{' '.join(user_skills)}"
@@ -1620,14 +1981,14 @@ def api_match():
                         'location': 'Singapore',
                         'category': job['category'],
                         'description': job['job_description'][:300] + '...' if len(job.get('job_description', '')) > 300 else job.get('job_description', ''),
-                        'required_skills': job_skills,
+                        'required_skills': job_skills_lower,
                         'match_score': skill_match_score,
                         'match_percentage': round(match_percentage, 1),
                         'matched_skills': matched_skills[:10],
                         'missing_skills': [s for s in job_skills_lower if s not in [m.lower() for m in matched_skills]][:10],
                         'skills_matched_count': len(matched_skills),
                         'total_required_skills': len(job_skills_lower),
-                        'recommendation_reason': f"Traditional skill matching: {len(matched_skills)}/{len(job_skills_lower)} skills matched",
+                        'recommendation_reason': _create_simple_match_reason(match_percentage, len(matched_skills), job['category']),
                         'source': 'traditional',
                         'skill_match_score': skill_match_score,
                         'category_match_score': 0.2,
@@ -1709,17 +2070,36 @@ def generate_job_application_pdf():
                 if job:
                     job_data = {
                         'job_id': job.job_id,
-                        'title': job.job_title,
-                        'company': 'Singapore Companies',  # Default since we don't have specific companies
-                        'category': job.category,
+                        'title': job.title,  # Updated field name
+                        'company': job.company_name or 'Singapore Companies',  # Use actual company name
+                        'company_name': job.company_name,
+                        'category': job.job_category if isinstance(job.job_category, str) else ', '.join(job.job_category) if job.job_category else 'General',
+                        'job_category': job.job_category,  # Keep original for PDF generator
                         'description': job.job_description,
-                        'required_skills': job.job_skill_set or [],
+                        'keywords': job.keywords,  # Job requirements from keywords field
+                        'position_level': job.position_level,
+                        'min_years_experience': job.min_years_experience,
+                        'min_education_level': job.min_education_level,
+                        'no_of_vacancies': job.no_of_vacancies,
+                        'min_salary': job.min_salary,
+                        'max_salary': job.max_salary,
+                        'salary_interval': job.salary_interval,
+                        'currency': job.currency,
+                        'employment_type': job.employment_type,
+                        'work_arrangement': job.work_arrangement,
+                        'nearest_mrt_station': job.nearest_mrt_station,
+                        'timing_shift': job.timing_shift,
+                        'address': job.address,
+                        'postal_code': job.postal_code,
+                        'website': job.website,
+                        'company_description': job.company_description,
+                        'required_skills': [],  # Will be extracted from keywords
                         'match_percentage': 85,  # Default high match since user selected this job
                         'matched_skills': [],  # Will be populated by AI analysis
                         'missing_skills': []   # Will be populated by AI analysis
                     }
                     
-                    # Quick skill matching for PDF
+                    # Quick skill matching for PDF using keywords extraction
                     user_skills = []
                     if profile_data.get('skills'):
                         for skill in profile_data['skills']:
@@ -1730,7 +2110,19 @@ def generate_job_application_pdf():
                             if skill_name:
                                 user_skills.append(skill_name.lower().strip())
                     
-                    job_skills = [skill.lower().strip() for skill in (job.job_skill_set or []) if skill]
+                    # Extract skills from job keywords and description
+                    job_text = f"{job.keywords or ''} {job.job_description or ''}".lower()
+                    common_skills = [
+                        'python', 'java', 'javascript', 'sql', 'html', 'css', 'react', 'angular', 'vue',
+                        'node', 'django', 'flask', 'spring', 'mysql', 'postgresql', 'mongodb', 'redis',
+                        'aws', 'azure', 'docker', 'kubernetes', 'git', 'machine learning', 'ai',
+                        'data analysis', 'excel', 'tableau', 'powerbi', 'analytics', 'business intelligence',
+                        'project management', 'agile', 'scrum', 'leadership', 'communication',
+                        'sales', 'marketing', 'customer service', 'finance', 'accounting'
+                    ]
+                    
+                    job_skills = [skill for skill in common_skills if skill in job_text]
+                    job_data['required_skills'] = job_skills
                     
                     # Find matches
                     matched_skills = []
@@ -1744,7 +2136,7 @@ def generate_job_application_pdf():
                     
                     job_data['matched_skills'] = matched_skills[:8]
                     job_data['missing_skills'] = missing_skills[:6]
-                    job_data['match_percentage'] = min(100, (len(matched_skills) / max(len(job_skills), 1)) * 100) if job_skills else 80
+                    job_data['match_percentage'] = round(min(100, (len(matched_skills) / max(len(job_skills), 1)) * 100), 1) if job_skills else 85.0
                     
                     print(f"📊 Job match analysis: {len(matched_skills)}/{len(job_skills)} skills matched")
                 else:
@@ -1810,6 +2202,192 @@ def generate_job_application_pdf():
 
 
 # Scraping functionality removed - using direct API access instead
+
+
+@app.route('/api/fetch-jobs', methods=['POST'])
+def fetch_jobs_from_api():
+    """Fetch jobs from FindSGJobs API and update database"""
+    try:
+        import requests
+        from datetime import datetime
+        from database.models import Job
+        from database.db_config import db_config
+        
+        print("🔄 Starting job fetch from FindSGJobs API...")
+        
+        # API endpoint
+        api_url = "https://www.findsgjobs.com/apis/job/searchable"
+        
+        # Collect jobs from multiple pages to get 100 jobs total
+        all_jobs_data = []
+        pages_to_fetch = 5  # 20 jobs per page × 5 pages = 100 jobs
+        
+        for page in range(1, pages_to_fetch + 1):
+            try:
+                print(f"📄 Fetching page {page}...")
+                params = {
+                    'page': page,
+                    'items per page': 20  # API default is 20 items per page
+                }
+                
+                response = requests.get(api_url, params=params, timeout=30)
+                response.raise_for_status()
+                
+                api_data = response.json()
+                
+                if api_data.get('data', {}).get('result'):
+                    page_jobs = api_data['data']['result']
+                    all_jobs_data.extend(page_jobs)
+                    print(f"✅ Page {page}: Found {len(page_jobs)} jobs")
+                else:
+                    print(f"⚠️ Page {page}: No job data found")
+                    break
+                    
+            except Exception as page_error:
+                print(f"❌ Error fetching page {page}: {page_error}")
+                break
+        
+        if not all_jobs_data:
+            return jsonify({'success': False, 'error': 'No job data found in API response'}), 400
+        
+        jobs_data = all_jobs_data
+        print(f"📊 Total jobs collected: {len(jobs_data)}")
+        
+        # Create database session
+        session = db_config.get_session()
+        
+        try:
+            # Clear existing jobs
+            session.query(Job).delete()
+            session.commit()
+            print(f"🗑️ Cleared existing jobs from database")
+            
+            jobs_added = 0
+            
+            for job_item in jobs_data:
+                try:
+                    job_data = job_item.get('job', {})
+                    company_data = job_item.get('company', {})
+                    
+                    if not job_data:
+                        continue
+                    
+                    # Parse datetime fields
+                    def parse_api_datetime(date_str):
+                        if not date_str:
+                            return None
+                        try:
+                            return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                        except:
+                            return None
+                    
+                    # Extract employment types
+                    employment_types = []
+                    if job_data.get('EmploymentType'):
+                        employment_types = [et.get('caption', '') for et in job_data['EmploymentType'] if et.get('caption')]
+                    
+                    # Extract job categories
+                    job_categories = []
+                    if job_data.get('JobCategory'):
+                        job_categories = [jc.get('caption', '') for jc in job_data['JobCategory'] if jc.get('caption')]
+                    
+                    # Extract MRT stations
+                    mrt_stations = []
+                    if job_data.get('id_Job_NearestMRTStation'):
+                        mrt_stations = [mrt.get('caption', '') for mrt in job_data['id_Job_NearestMRTStation'] if mrt.get('caption')]
+                    
+                    # Extract timing shifts
+                    timing_shifts = []
+                    if job_data.get('id_Job_TimingShift'):
+                        timing_shifts = [ts.get('caption', '') for ts in job_data['id_Job_TimingShift'] if ts.get('caption')]
+                    
+                    # Extract location data
+                    google_place = company_data.get('GooglePlace', {}) if company_data else {}
+                    
+                    # Create unique job_id if not provided
+                    job_id = job_data.get('id') or f"job_{job_data.get('company_sid', '')}_{jobs_added}"
+                    
+                    # Create job object
+                    job = Job(
+                        job_id=str(job_id),
+                        title=job_data.get('Title', ''),
+                        company_name=company_data.get('CompanyName', '') if company_data else '',
+                        company_sid=job_data.get('company_sid', ''),
+                        activation_date=parse_api_datetime(job_data.get('activation_date')),
+                        expiration_date=parse_api_datetime(job_data.get('expiration_date')),
+                        updated_at=parse_api_datetime(job_data.get('updated_at')),
+                        keywords=job_data.get('keywords', ''),
+                        simple_keywords=job_data.get('simple_keywords', ''),
+                        job_description=job_data.get('JobDescription', ''),
+                        
+                        # Job details
+                        position_level=job_data.get('id_Job_PositionLevel', {}).get('caption', '') if job_data.get('id_Job_PositionLevel') else '',
+                        min_years_experience=job_data.get('MinimumYearsofExperience', {}).get('caption', '') if job_data.get('MinimumYearsofExperience') else '',
+                        min_education_level=job_data.get('MinimumEducationLevel', {}).get('caption', '') if job_data.get('MinimumEducationLevel') else '',
+                        no_of_vacancies=job_data.get('id_Job_Noofvacancies'),
+                        min_salary=job_data.get('id_Job_Salary'),
+                        max_salary=job_data.get('id_Job_MaxSalary'),
+                        salary_interval=job_data.get('id_Job_Interval', {}).get('caption', '') if job_data.get('id_Job_Interval') else '',
+                        currency=job_data.get('id_Job_Currency', {}).get('caption', '') if job_data.get('id_Job_Currency') else '',
+                        employment_type=employment_types,
+                        work_arrangement=job_data.get('id_Job_WorkArrangement', {}).get('caption', '') if job_data.get('id_Job_WorkArrangement') else '',
+                        nearest_mrt_station=mrt_stations,
+                        timing_shift=timing_shifts,
+                        job_category=job_categories,
+                        
+                        # Company details
+                        contact_name=company_data.get('ContactName', '') if company_data else '',
+                        website=company_data.get('Website', '') if company_data else '',
+                        company_description=company_data.get('CompanyDescription', '') if company_data else '',
+                        company_uen=company_data.get('id__CompanyUEN', '') if company_data else '',
+                        company_country_code=company_data.get('id__Companycountrycode', '') if company_data else '',
+                        
+                        # Location
+                        latitude=google_place.get('lat'),
+                        longitude=google_place.get('lng'),
+                        postal_code=google_place.get('postal'),
+                        address=google_place.get('address'),
+                        
+                        # API metadata
+                        job_source=job_item.get('job_source', ''),
+                        api_fetched_at=datetime.utcnow(),
+                        is_active=True
+                    )
+                    
+                    session.add(job)
+                    jobs_added += 1
+                    
+                except Exception as job_error:
+                    print(f"⚠️ Error processing job: {job_error}")
+                    continue
+            
+            # Commit all jobs
+            session.commit()
+            print(f"✅ Successfully added {jobs_added} jobs to database")
+            
+            return jsonify({
+                'success': True,
+                'jobs_count': jobs_added,
+                'message': f'Successfully fetched and stored {jobs_added} jobs from FindSGJobs API'
+            })
+            
+        except Exception as db_error:
+            session.rollback()
+            print(f"❌ Database error: {db_error}")
+            return jsonify({'success': False, 'error': f'Database error: {str(db_error)}'}), 500
+        
+        finally:
+            session.close()
+            
+    except requests.RequestException as req_error:
+        print(f"❌ API request error: {req_error}")
+        return jsonify({'success': False, 'error': f'API request failed: {str(req_error)}'}), 500
+    
+    except Exception as e:
+        print(f"❌ Unexpected error in fetch_jobs_from_api: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Unexpected error: {str(e)}'}), 500
 
 
 @app.route('/chat')
@@ -2147,8 +2725,22 @@ def not_found(error):
     stats = {
         'skills_categories': 0,
         'total_opportunities': 0,
+        'total_jobs': 100,
+        'total_profiles': 3,
+        'job_categories': {
+            'F&B': 25,
+            'Engineering': 15,
+            'Sales / Retail': 12,
+            'Social Services': 10,
+            'Others': 38
+        },
+        'chart_data': {
+            'categories': ['F&B', 'Engineering', 'Sales / Retail', 'Social Services', 'Others'],
+            'values': [25, 15, 12, 10, 38]
+        },
         'last_scrape': 'Never',
-        'github_configured': bool(config.get('github_token'))
+        'github_configured': bool(config.get('github_token')),
+        'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
     return render_template('index.html', stats=stats), 404
 
@@ -2181,7 +2773,7 @@ if __name__ == '__main__':
         port = int(os.environ.get('PORT', 8000))
         socketio.run(app, debug=False, host='0.0.0.0', port=port)
     else:
-        port = int(os.environ.get('PORT', 5003))  # Default to 5003 for local development
+        port = int(os.environ.get('PORT', os.environ.get('FLASK_PORT', 5004)))  # Default to 5004 for local development
         print("🚀 Starting SkillsMatch.AI Web Interface in DEVELOPMENT mode...")
         print(f"🌐 Open your browser to: http://localhost:{port}")
         print("💡 Using localhost for development - no domain setup needed!")

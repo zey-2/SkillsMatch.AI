@@ -1,10 +1,9 @@
 """
-Database configuration and models for SkillMatch.AI PostgreSQL implementation
+Database configuration and models for SkillMatch.AI SQLite implementation
 """
 import os
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, Table
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, Table, JSON
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import JSON, UUID
 from datetime import datetime
 import uuid
 
@@ -216,19 +215,99 @@ class Course(Base):
     is_active = Column(Boolean, default=True)
 
 class Job(Base):
-    """Job postings from CSV import"""
+    """Job model for storing job opportunities from FindSGJobs API"""
     __tablename__ = 'jobs'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    job_id = Column(String, unique=True, nullable=False)  # From CSV job_id column
-    category = Column(String)  # From CSV category column
-    job_title = Column(String, nullable=False)  # From CSV job_title column
-    job_description = Column(Text)  # From CSV job_description column
-    job_skill_set = Column(JSON)  # From CSV job_skill_set column (parsed as JSON list)
+    job_id = Column(String, nullable=False, unique=True)  # From API job.id or unique identifier
+    title = Column(String, nullable=False)  # From API job.Title
+    company_name = Column(String)  # From API company.CompanyName
+    company_sid = Column(String)  # From API job.company_sid
+    activation_date = Column(DateTime)  # From API job.activation_date
+    expiration_date = Column(DateTime)  # From API job.expiration_date
+    updated_at = Column(DateTime)  # From API job.updated_at
+    keywords = Column(Text)  # From API job.keywords
+    simple_keywords = Column(Text)  # From API job.simple_keywords
+    job_description = Column(Text)  # From API job.JobDescription
     
-    # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Job details
+    position_level = Column(String)  # From API job.id_Job_PositionLevel.caption
+    min_years_experience = Column(String)  # From API job.MinimumYearsofExperience.caption
+    min_education_level = Column(String)  # From API job.MinimumEducationLevel.caption
+    no_of_vacancies = Column(Integer)  # From API job.id_Job_Noofvacancies
+    min_salary = Column(Integer)  # From API job.id_Job_Salary
+    max_salary = Column(Integer)  # From API job.id_Job_MaxSalary
+    salary_interval = Column(String)  # From API job.id_Job_Interval.caption
+    currency = Column(String)  # From API job.id_Job_Currency.caption
+    employment_type = Column(JSON)  # From API job.EmploymentType (array)
+    work_arrangement = Column(String)  # From API job.id_Job_WorkArrangement.caption
+    nearest_mrt_station = Column(JSON)  # From API job.id_Job_NearestMRTStation (array)
+    timing_shift = Column(JSON)  # From API job.id_Job_TimingShift (array)
+    
+    # Job categories
+    job_category = Column(JSON)  # From API job.JobCategory (array)
+    
+    # Company details
+    contact_name = Column(String)  # From API company.ContactName
+    website = Column(String)  # From API company.Website
+    company_description = Column(Text)  # From API company.CompanyDescription
+    company_uen = Column(String)  # From API company.id__CompanyUEN
+    company_country_code = Column(String)  # From API company.id__Companycountrycode
+    
+    # Location from GooglePlace
+    latitude = Column(Float)  # From API company.GooglePlace.lat
+    longitude = Column(Float)  # From API company.GooglePlace.lng
+    postal_code = Column(String)  # From API company.GooglePlace.postal
+    address = Column(Text)  # From API company.GooglePlace.address
+    
+    # API metadata
+    job_source = Column(String)  # From API job.job_source
+    api_fetched_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+    
+    # Local metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        """Convert job to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'job_id': self.job_id,
+            'title': self.title,
+            'company_name': self.company_name,
+            'company_sid': self.company_sid,
+            'activation_date': self.activation_date.isoformat() if self.activation_date else None,
+            'expiration_date': self.expiration_date.isoformat() if self.expiration_date else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'keywords': self.keywords,
+            'simple_keywords': self.simple_keywords,
+            'job_description': self.job_description,
+            'position_level': self.position_level,
+            'min_years_experience': self.min_years_experience,
+            'min_education_level': self.min_education_level,
+            'no_of_vacancies': self.no_of_vacancies,
+            'min_salary': self.min_salary,
+            'max_salary': self.max_salary,
+            'salary_interval': self.salary_interval,
+            'currency': self.currency,
+            'employment_type': self.employment_type,
+            'work_arrangement': self.work_arrangement,
+            'nearest_mrt_station': self.nearest_mrt_station,
+            'timing_shift': self.timing_shift,
+            'job_category': self.job_category,
+            'contact_name': self.contact_name,
+            'website': self.website,
+            'company_description': self.company_description,
+            'company_uen': self.company_uen,
+            'company_country_code': self.company_country_code,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'postal_code': self.postal_code,
+            'address': self.address,
+            'job_source': self.job_source,
+            'api_fetched_at': self.api_fetched_at.isoformat() if self.api_fetched_at else None,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 # Database configuration is now in db_config.py
