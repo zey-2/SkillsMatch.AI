@@ -138,17 +138,17 @@ def import_database_modules():
     
     # Attempt 1: Relative import from current directory
     try:
-        from database.models import UserProfile, Job, JobSkill, UserProfileSkill
+        from database.models import UserProfile, Job, UserSkill
         print("✅ Successfully imported database.models using relative paths")
-        return UserProfile, Job, JobSkill, UserProfileSkill
+        return UserProfile, Job, UserSkill
     except ImportError as e1:
         import_attempts.append(f"Relative import: {e1}")
     
     # Attempt 2: Web prefix import
     try:
-        from web.database.models import UserProfile, Job, JobSkill, UserProfileSkill
+        from web.database.models import UserProfile, Job, UserSkill
         print("✅ Successfully imported database.models using web.database paths")
-        return UserProfile, Job, JobSkill, UserProfileSkill
+        return UserProfile, Job, UserSkill
     except ImportError as e2:
         import_attempts.append(f"Web prefix import: {e2}")
     
@@ -163,10 +163,9 @@ def import_database_modules():
                 import database.models as db_models
                 UserProfile = db_models.UserProfile
                 Job = db_models.Job
-                JobSkill = db_models.JobSkill
-                UserProfileSkill = db_models.UserProfileSkill
+                UserSkill = db_models.UserSkill
                 print(f"✅ Successfully imported database.models using path manipulation: {parent_path}")
-                return UserProfile, Job, JobSkill, UserProfileSkill
+                return UserProfile, Job, UserSkill
             except ImportError as e:
                 import_attempts.append(f"Path manipulation ({parent_path}): {e}")
                 continue
@@ -181,16 +180,14 @@ def import_database_modules():
         def __init__(self, **kwargs): pass
     class Job:
         def __init__(self, **kwargs): pass
-    class JobSkill:
-        def __init__(self, **kwargs): pass
-    class UserProfileSkill:
+    class UserSkill:
         def __init__(self, **kwargs): pass
     
     print("⚠️ Using placeholder classes - database functionality limited")
-    return UserProfile, Job, JobSkill, UserProfileSkill
+    return UserProfile, Job, UserSkill
 
 # Import database modules globally
-UserProfile, Job, JobSkill, UserProfileSkill = import_database_modules()
+UserProfile, Job, UserSkill = import_database_modules()
 
 def parse_datetime(date_str):
     """Parse datetime string from database into datetime object"""
