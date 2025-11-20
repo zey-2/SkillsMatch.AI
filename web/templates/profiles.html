@@ -475,6 +475,241 @@
                 }
             });
         }
+        
+        // Initialize Profiles page animations
+        initializeProfilesAnimations();
     });
+
+    // Profiles Page Animation Enhancements
+    function initializeProfilesAnimations() {
+        // Animate page header
+        animatePageHeader();
+        
+        // Animate search section
+        animateSearchSection();
+        
+        // Animate profile cards
+        animateProfileCards();
+        
+        // Add enhanced hover effects
+        addProfileHoverEffects();
+        
+        // Enhance filter animations
+        enhanceFilterAnimations();
+    }
+
+    function animatePageHeader() {
+        const header = document.querySelector('.bg-gradient-light');
+        if (header) {
+            header.style.opacity = '0';
+            header.style.transform = 'translateY(-20px) scale(0.98)';
+            header.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+            
+            setTimeout(() => {
+                header.style.opacity = '1';
+                header.style.transform = 'translateY(0) scale(1)';
+            }, 100);
+            
+            // Animate the New Profile button
+            const newProfileBtn = header.querySelector('.btn-primary');
+            if (newProfileBtn) {
+                newProfileBtn.style.opacity = '0';
+                newProfileBtn.style.transform = 'scale(0.8) rotate(-5deg)';
+                newProfileBtn.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                
+                setTimeout(() => {
+                    newProfileBtn.style.opacity = '1';
+                    newProfileBtn.style.transform = 'scale(1) rotate(0deg)';
+                }, 300);
+            }
+        }
+    }
+
+    function animateSearchSection() {
+        const searchCard = document.querySelector('.row.mb-4 .card');
+        if (searchCard) {
+            searchCard.style.opacity = '0';
+            searchCard.style.transform = 'translateY(20px)';
+            searchCard.style.transition = 'all 0.6s ease-out';
+            
+            setTimeout(() => {
+                searchCard.style.opacity = '1';
+                searchCard.style.transform = 'translateY(0)';
+            }, 200);
+            
+            // Animate search input
+            const searchInput = searchCard.querySelector('#profileSearch');
+            if (searchInput) {
+                searchInput.style.transform = 'scale(0.98)';
+                searchInput.style.transition = 'all 0.4s ease-out';
+                
+                setTimeout(() => {
+                    searchInput.style.transform = 'scale(1)';
+                }, 400);
+            }
+        }
+    }
+
+    function animateProfileCards() {
+        const profileItems = document.querySelectorAll('.profile-item');
+        profileItems.forEach((card, index) => {
+            // Set initial state
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px) scale(0.95)';
+            card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+            
+            // Create intersection observer for this card
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                        const delay = index * 100; // Stagger by 100ms
+                        
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0) scale(1)';
+                            entry.target.classList.add('animated');
+                        }, delay);
+                        
+                        // Stop observing once animated
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '50px'
+            });
+            
+            observer.observe(card);
+        });
+        
+        // Animate skill badges within cards
+        const skillBadges = document.querySelectorAll('.badge');
+        skillBadges.forEach((badge, index) => {
+            badge.style.opacity = '0';
+            badge.style.transform = 'scale(0.8)';
+            badge.style.transition = 'all 0.4s ease-out';
+            
+            setTimeout(() => {
+                badge.style.opacity = '1';
+                badge.style.transform = 'scale(1)';
+            }, 500 + (index * 30));
+        });
+    }
+
+    function addProfileHoverEffects() {
+        const profileCards = document.querySelectorAll('.profile-item .card');
+        profileCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+                this.style.boxShadow = '0 15px 35px rgba(0,0,0,0.1)';
+                this.style.borderColor = 'var(--accent-orange)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+                this.style.boxShadow = '';
+                this.style.borderColor = '';
+            });
+        });
+        
+        // Enhanced button hover effects
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                    this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+                this.style.boxShadow = '';
+            });
+            
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                }, 150);
+            });
+        });
+        
+        // Dropdown menu animations
+        const dropdownToggleButtons = document.querySelectorAll('.dropdown-toggle');
+        dropdownToggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdownMenu = this.nextElementSibling;
+                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                    dropdownMenu.style.opacity = '0';
+                    dropdownMenu.style.transform = 'translateY(-10px) scale(0.95)';
+                    dropdownMenu.style.transition = 'all 0.3s ease-out';
+                    
+                    setTimeout(() => {
+                        dropdownMenu.style.opacity = '1';
+                        dropdownMenu.style.transform = 'translateY(0) scale(1)';
+                    }, 50);
+                }
+            });
+        });
+    }
+
+    function enhanceFilterAnimations() {
+        // Override the original filterProfiles function to add animations
+        const originalFilterProfiles = window.filterProfiles;
+        
+        window.filterProfiles = function() {
+            // Add loading effect to the profiles grid
+            const profilesGrid = document.querySelector('.row:has(.profile-item)');
+            if (profilesGrid) {
+                profilesGrid.style.opacity = '0.6';
+                profilesGrid.style.transform = 'scale(0.98)';
+                profilesGrid.style.transition = 'all 0.3s ease';
+            }
+            
+            // Call original function
+            if (originalFilterProfiles) {
+                originalFilterProfiles();
+            }
+            
+            // Restore and re-animate visible cards
+            setTimeout(() => {
+                if (profilesGrid) {
+                    profilesGrid.style.opacity = '1';
+                    profilesGrid.style.transform = 'scale(1)';
+                }
+                
+                // Re-animate visible profile cards
+                const visibleCards = document.querySelectorAll('.profile-item:not([style*="display: none"])');
+                visibleCards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 50);
+                });
+            }, 100);
+        };
+        
+        // Clear search with animation
+        const originalClearSearch = window.clearSearch;
+        window.clearSearch = function() {
+            const searchInput = document.getElementById('profileSearch');
+            if (searchInput) {
+                searchInput.style.transform = 'scale(1.05)';
+                searchInput.style.transition = 'all 0.2s ease-out';
+                
+                setTimeout(() => {
+                    searchInput.style.transform = 'scale(1)';
+                }, 200);
+            }
+            
+            if (originalClearSearch) {
+                originalClearSearch();
+            }
+        };
+    }
 </script>
 {% endblock %}

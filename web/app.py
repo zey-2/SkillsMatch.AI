@@ -1014,38 +1014,122 @@ def index():
             print(f"📊 Chart data - Categories: {len(categories)}, Total jobs in chart: {sum(counts)}")
             print(f"📊 Sample categories: {categories[:3] if categories else 'None'}")
             
+            # Truncate long category names for display while keeping full names for hover
+            display_categories = []
+            full_categories = []
+            for cat in categories:
+                full_categories.append(cat)
+                if len(cat) > 28:  # Further increased for better display
+                    display_categories.append(cat[:25] + '...')  # Show even more characters
+                else:
+                    display_categories.append(cat)
+            
+            # Create professional gradient colors - 4 blue, 3 teal, 3 orange pattern
+            def generate_gradient_colors(num_categories):
+                """Generate colors with pattern: 4 blue (strong/light), 3 teal (strong/light), 3 orange (strong/light)"""
+                colors = []
+                border_colors = []
+                
+                # Define base colors
+                blue_color = (26, 54, 93)    # #1a365d - Dark Blue
+                teal_color = (56, 178, 172)  # #38b2ac - Teal  
+                orange_color = (237, 137, 54) # #ed8936 - Orange
+                
+                for i in range(num_categories):
+                    # Determine which color group this bar belongs to
+                    if i < 4:
+                        # First 4 bars: Blue
+                        r, g, b = blue_color
+                    elif i < 7:
+                        # Next 3 bars: Teal
+                        r, g, b = teal_color
+                    else:
+                        # Last 3+ bars: Orange
+                        r, g, b = orange_color
+                    
+                    # Alternate between strong and light within each color group
+                    if i % 2 == 0:
+                        # Strong version - slightly enhanced
+                        opacity = 0.95
+                        r = min(r + 15, 255)
+                        g = min(g + 15, 255)
+                        b = min(b + 15, 255)
+                    else:
+                        # Light version - softer tones
+                        opacity = 0.85
+                        r = min(r + 30, 255)
+                        g = min(g + 30, 255)
+                        b = min(b + 30, 255)
+                    
+                    colors.append(f'rgba({r}, {g}, {b}, {opacity})')
+                    
+                    # Darker border colors
+                    border_r = max(r - 20, 10)
+                    border_g = max(g - 20, 10)
+                    border_b = max(b - 20, 10)
+                    border_colors.append(f'rgba({border_r}, {border_g}, {border_b}, 1.0)')
+                
+                return colors, border_colors
+            
+            # Generate gradient colors for all categories
+            bar_colors, bar_border_colors = generate_gradient_colors(len(categories))
+            
             chart_data = {
                 'data': [{
                     'x': categories,
                     'y': counts,
                     'type': 'bar',
                     'marker': {
-                        'color': 'rgba(164, 183, 211, 0.8)',
+                        'color': bar_colors,
                         'line': {
-                            'color': 'rgba(164, 183, 211, 1.0)',
-                            'width': 1
-                        }
+                            'color': bar_border_colors,
+                            'width': 2
+                        },
+                        'opacity': 0.9
                     },
-                    'hovertemplate': '<b>%{x}</b><br>Jobs: %{y}<extra></extra>'
+                    'hovertemplate': '<b style="font-size: 14px; color: #1f2937;">%{x}</b><br>' +
+                                   '<span style="font-size: 16px; font-weight: bold; color: #059669;">%{y} Jobs</span>' +
+                                   '<br><i style="color: #6b7280; font-size: 12px;">Click to view jobs</i><extra></extra>',
+                    'hoverlabel': {
+                        'bgcolor': 'rgba(255, 255, 255, 0.95)',
+                        'bordercolor': 'rgba(229, 231, 235, 1)',
+                        'borderwidth': 1,
+                        'font': {'size': 13, 'family': 'Inter, system-ui, sans-serif'}
+                    }
                 }],
                 'layout': {
                     'title': {
-                        'text': 'Job Distribution by Category',
-                        'font': {'size': 18, 'family': 'Arial, sans-serif', 'color': '#1a365d'}
-                    },
-                    'xaxis': {
-                        'title': 'Job Categories',
-                        'tickangle': -45,
-                        'font': {'size': 12}
+                        'text': '<b>Job Distribution by Category</b>',
+                        'font': {
+                            'size': 24, 
+                            'family': 'Inter, system-ui, sans-serif', 
+                            'color': '#1f2937'
+                        },
+                        'x': 0.5,
+                        'xanchor': 'center',
+                        'pad': {'t': 20, 'b': 20}
                     },
                     'yaxis': {
-                        'title': 'Number of Jobs',
-                        'font': {'size': 12}
+                        'title': {
+                            'text': '<b>Number of Jobs</b>',
+                            'font': {'size': 14, 'family': 'Inter, system-ui, sans-serif', 'color': '#374151'}
+                        },
+                        'tickfont': {'size': 12, 'family': 'Inter, system-ui, sans-serif', 'color': '#6b7280'},
+                        'gridcolor': 'rgba(229, 231, 235, 0.4)',
+                        'zerolinecolor': 'rgba(156, 163, 175, 0.5)',
+                        'linecolor': 'rgba(209, 213, 219, 0.8)',
+                        'linewidth': 1
                     },
-                    'plot_bgcolor': 'rgba(0,0,0,0)',
-                    'paper_bgcolor': 'rgba(0,0,0,0)',
-                    'margin': {'t': 60, 'l': 60, 'r': 30, 'b': 120},
-                    'height': 400
+                    'plot_bgcolor': 'rgba(249, 250, 251, 0.3)',
+                    'paper_bgcolor': 'rgba(255, 255, 255, 0)',
+                    'margin': {'t': 80, 'l': 70, 'r': 40, 'b': 140},
+                    'height': 480,
+                    'font': {'family': 'Inter, system-ui, sans-serif'},
+                    'hoverlabel': {
+                        'bgcolor': 'rgba(255, 255, 255, 0.95)',
+                        'bordercolor': 'rgba(229, 231, 235, 1)',
+                        'borderwidth': 1
+                    }
                 }
             }
     else:
@@ -1119,38 +1203,135 @@ def dashboard():
             categories = list(dashboard_stats['job_categories'].keys())
             counts = list(dashboard_stats['job_categories'].values())
             
+            # Truncate long category names for display while keeping full names for hover
+            display_categories = []
+            full_categories = []
+            for cat in categories:
+                full_categories.append(cat)
+                if len(cat) > 28:  # Further increased for better display
+                    display_categories.append(cat[:25] + '...')  # Show even more characters
+                else:
+                    display_categories.append(cat)
+            
+            # Create professional gradient colors - 4 blue, 3 teal, 3 orange pattern
+            def generate_gradient_colors_dashboard(num_categories):
+                """Generate colors with pattern: 4 blue (strong/light), 3 teal (strong/light), 3 orange (strong/light) for dashboard"""
+                colors = []
+                border_colors = []
+                
+                # Define base colors
+                blue_color = (26, 54, 93)    # #1a365d - Dark Blue
+                teal_color = (56, 178, 172)  # #38b2ac - Teal  
+                orange_color = (237, 137, 54) # #ed8936 - Orange
+                
+                for i in range(num_categories):
+                    # Determine which color group this bar belongs to
+                    if i < 4:
+                        # First 4 bars: Blue
+                        r, g, b = blue_color
+                    elif i < 7:
+                        # Next 3 bars: Teal
+                        r, g, b = teal_color
+                    else:
+                        # Last 3+ bars: Orange
+                        r, g, b = orange_color
+                    
+                    # Alternate between strong and light within each color group
+                    if i % 2 == 0:
+                        # Strong version - slightly enhanced
+                        opacity = 0.9
+                        r = min(r + 15, 255)
+                        g = min(g + 15, 255)
+                        b = min(b + 15, 255)
+                    else:
+                        # Light version - softer tones
+                        opacity = 0.75
+                        r = min(r + 30, 255)
+                        g = min(g + 30, 255)
+                        b = min(b + 30, 255)
+                    
+                    colors.append(f'rgba({r}, {g}, {b}, {opacity})')
+                    
+                    # Darker border colors
+                    border_r = max(r - 20, 10)
+                    border_g = max(g - 20, 10)
+                    border_b = max(b - 20, 10)
+                    border_colors.append(f'rgba({border_r}, {border_g}, {border_b}, 1.0)')
+                
+                return colors, border_colors
+            
+            # Generate gradient colors for all categories
+            bar_colors, bar_border_colors = generate_gradient_colors_dashboard(len(categories))
+            
             chart_data = {
                 'data': [{
-                    'x': categories,
+                    'x': display_categories,
                     'y': counts,
+                    'customdata': full_categories,
                     'type': 'bar',
                     'marker': {
-                        'color': 'rgba(164, 183, 211, 0.8)',
+                        'color': bar_colors,
                         'line': {
-                            'color': 'rgba(164, 183, 211, 1.0)',
-                            'width': 1
-                        }
+                            'color': bar_border_colors,
+                            'width': 2
+                        },
+                        'opacity': 0.9
                     },
-                    'hovertemplate': '<b>%{x}</b><br>Jobs: %{y}<extra></extra>'
+                    'hovertemplate': '<b style="font-size: 14px; color: #1f2937;">%{customdata}</b><br>' +
+                                   '<span style="font-size: 16px; font-weight: bold; color: #059669;">%{y} Jobs</span>' +
+                                   '<br><i style="color: #6b7280; font-size: 12px;">Click to view jobs</i><extra></extra>',
+                    'hoverlabel': {
+                        'bgcolor': 'rgba(255, 255, 255, 0.95)',
+                        'bordercolor': 'rgba(229, 231, 235, 1)',
+                        'borderwidth': 1,
+                        'font': {'size': 13, 'family': 'Inter, system-ui, sans-serif'}
+                    }
                 }],
                 'layout': {
                     'title': {
-                        'text': 'Job Distribution by Category',
-                        'font': {'size': 18, 'family': 'Arial, sans-serif', 'color': '#1a365d'}
+                        'text': '<b>Job Distribution by Category</b>',
+                        'font': {
+                            'size': 24, 
+                            'family': 'Inter, system-ui, sans-serif', 
+                            'color': '#1f2937'
+                        },
+                        'x': 0.5,
+                        'xanchor': 'center',
+                        'pad': {'t': 20, 'b': 20}
                     },
                     'xaxis': {
-                        'title': 'Job Categories',
+                        'title': {
+                            'text': '<b>Job Categories</b>',
+                            'font': {'size': 14, 'family': 'Inter, system-ui, sans-serif', 'color': '#374151'}
+                        },
                         'tickangle': -45,
-                        'font': {'size': 12}
+                        'tickfont': {'size': 11, 'family': 'Inter, system-ui, sans-serif', 'color': '#6b7280'},
+                        'gridcolor': 'rgba(229, 231, 235, 0.3)',
+                        'zerolinecolor': 'rgba(156, 163, 175, 0.4)',
+                        'linecolor': 'rgba(209, 213, 219, 0.8)',
+                        'linewidth': 1
                     },
                     'yaxis': {
-                        'title': 'Number of Jobs',
-                        'font': {'size': 12}
+                        'title': {
+                            'text': '<b>Number of Jobs</b>',
+                            'font': {'size': 14, 'family': 'Inter, system-ui, sans-serif', 'color': '#374151'}
+                        },
+                        'tickfont': {'size': 12, 'family': 'Inter, system-ui, sans-serif', 'color': '#6b7280'},
+                        'gridcolor': 'rgba(229, 231, 235, 0.4)',
+                        'zerolinecolor': 'rgba(156, 163, 175, 0.5)',
+                        'linecolor': 'rgba(209, 213, 219, 0.8)',
+                        'linewidth': 1
                     },
-                    'plot_bgcolor': 'rgba(0,0,0,0)',
-                    'paper_bgcolor': 'rgba(0,0,0,0)',
-                    'margin': {'t': 60, 'l': 60, 'r': 30, 'b': 120},
-                    'height': 400
+                    'plot_bgcolor': 'rgba(249, 250, 251, 0.3)',
+                    'paper_bgcolor': 'rgba(255, 255, 255, 0)',
+                    'margin': {'t': 80, 'l': 70, 'r': 40, 'b': 140},
+                    'height': 480,
+                    'font': {'family': 'Inter, system-ui, sans-serif'},
+                    'hoverlabel': {
+                        'bgcolor': 'rgba(255, 255, 255, 0.95)',
+                        'bordercolor': 'rgba(229, 231, 235, 1)',
+                        'borderwidth': 1
+                    }
                 }
             }
         
@@ -2094,7 +2275,7 @@ def generate_job_application_pdf():
                         'website': job.website,
                         'company_description': job.company_description,
                         'required_skills': [],  # Will be extracted from keywords
-                        'match_percentage': 85,  # Default high match since user selected this job
+                        'match_percentage': 0,  # Will be calculated based on actual matching
                         'matched_skills': [],  # Will be populated by AI analysis
                         'missing_skills': []   # Will be populated by AI analysis
                     }
@@ -2110,6 +2291,11 @@ def generate_job_application_pdf():
                             if skill_name:
                                 user_skills.append(skill_name.lower().strip())
                     
+                    print(f"🔍 PDF DEBUG - User skills: {user_skills}")
+                    print(f"🔍 PDF DEBUG - Job title: {job.title}")
+                    print(f"🔍 PDF DEBUG - Job keywords: {job.keywords}")
+                    print(f"🔍 PDF DEBUG - Job category: {job_data.get('category', 'N/A')}")
+                    
                     # Extract skills from job keywords and description
                     job_text = f"{job.keywords or ''} {job.job_description or ''}".lower()
                     common_skills = [
@@ -2124,21 +2310,121 @@ def generate_job_application_pdf():
                     job_skills = [skill for skill in common_skills if skill in job_text]
                     job_data['required_skills'] = job_skills
                     
-                    # Find matches
+                    # Enhanced skill matching using same algorithm as web interface
                     matched_skills = []
-                    for job_skill in job_skills:
-                        for user_skill in user_skills:
-                            if user_skill in job_skill or job_skill in user_skill:
-                                matched_skills.append(job_skill)
-                                break
+                    skill_relevance_scores = []
+                    job_skills_lower = [skill.lower().strip() for skill in job_skills]
+                    job_title = (job.title or '').lower()
+                    job_category = (job_data.get('category', '') or '').lower()
                     
-                    missing_skills = [skill for skill in job_skills if skill not in [m.lower() for m in matched_skills]]
+                    # Match skills with relevance scoring
+                    for job_skill in job_skills_lower:
+                        best_match_score = 0
+                        best_match_skill = None
+                        
+                        for user_skill in user_skills:
+                            # Exact match
+                            if job_skill == user_skill:
+                                if 1.0 > best_match_score:
+                                    best_match_score = 1.0
+                                    best_match_skill = job_skill
+                            # Partial match (contains)
+                            elif user_skill in job_skill or job_skill in user_skill:
+                                if len(user_skill) >= 3 and len(job_skill) >= 3:  # Avoid short word false matches
+                                    match_ratio = min(len(user_skill), len(job_skill)) / max(len(user_skill), len(job_skill))
+                                    relevance_score = 0.5 + (match_ratio * 0.2)  # 0.5-0.7 range
+                                    if relevance_score > best_match_score:
+                                        best_match_score = relevance_score
+                                        best_match_skill = job_skill
+                        
+                        if best_match_score > 0.3:  # Lower threshold for traditional
+                            matched_skills.append(best_match_skill)
+                            skill_relevance_scores.append(best_match_score)
+                    
+                    # Also check job title and category for skill matches
+                    for user_skill in user_skills:
+                        if user_skill in job_title or user_skill in job_category:
+                            if user_skill not in [m.lower() for m in matched_skills]:
+                                matched_skills.append(f"title_match_{user_skill}")
+                                skill_relevance_scores.append(0.6)
+                    
+                    # Calculate comprehensive match percentage using same algorithm as web interface
+                    if skill_relevance_scores:
+                        avg_relevance = sum(skill_relevance_scores) / len(skill_relevance_scores)
+                        coverage = len(matched_skills) / max(len(job_skills_lower), 1) if job_skills_lower else 0.5
+                        skill_score = (avg_relevance * 0.7 + coverage * 0.3)
+                    else:
+                        skill_score = 0
+                    
+                    # Industry matching (same algorithm as web interface)
+                    user_category = profile_data.get('desired_job_category', '').lower()
+                    job_category_lower = job_data.get('category', '').lower()
+                    
+                    if user_category and user_category in job_category_lower:
+                        industry_score = 0.95
+                    elif any(keyword in job_category_lower for keyword in user_category.split()) if user_category else False:
+                        industry_score = 0.7
+                    else:
+                        industry_score = 0.3  # Cross-industry penalty
+                    
+                    # Experience matching
+                    user_experience = profile_data.get('experience_level', 'Entry')
+                    
+                    # Handle string parsing for min_years_experience
+                    job_min_exp_raw = job.min_years_experience or 0
+                    if isinstance(job_min_exp_raw, str):
+                        # Extract number from strings like "1 Year", "2-3 years", etc.
+                        import re
+                        numbers = re.findall(r'\d+', job_min_exp_raw)
+                        job_min_exp = int(numbers[0]) if numbers else 0
+                    else:
+                        job_min_exp = job_min_exp_raw or 0
+                    
+                    print(f"🔍 PDF DEBUG - User experience: {user_experience}")
+                    print(f"🔍 PDF DEBUG - Job min exp: {job_min_exp} (raw: {job_min_exp_raw}, type: {type(job_min_exp_raw)})")
+                    
+                    exp_levels = {'Entry': 0, 'Mid': 3, 'Senior': 7, 'Executive': 12}
+                    user_exp_years = exp_levels.get(user_experience, 0)
+                    
+                    if user_exp_years >= job_min_exp:
+                        exp_score = 0.9
+                    elif user_exp_years >= job_min_exp * 0.7:
+                        exp_score = 0.7
+                    else:
+                        exp_score = 0.5
+                    
+                    # Location matching (simplified for PDF)
+                    location_score = 1.0  # Default to perfect match
+                    
+                    # Career growth potential
+                    job_description = (job.job_description or '').lower()
+                    growth_indicators = ['lead', 'senior', 'manager', 'director', 'growth', 'development', 'advancement']
+                    growth_score = 0.6 + (sum(1 for indicator in growth_indicators if indicator in job_description) * 0.1)
+                    growth_score = min(growth_score, 1.0)
+                    
+                    # COMPREHENSIVE SCORE CALCULATION (same weights as web interface)
+                    comprehensive_score = (
+                        skill_score * 0.45 + 
+                        industry_score * 0.35 + 
+                        exp_score * 0.12 + 
+                        location_score * 0.04 + 
+                        growth_score * 0.04
+                    )
+                    
+                    match_percentage = min(comprehensive_score * 100, 98)
+                    
+                    missing_skills = [skill for skill in job_skills_lower if skill not in [m.lower() for m in matched_skills]]
                     
                     job_data['matched_skills'] = matched_skills[:8]
                     job_data['missing_skills'] = missing_skills[:6]
-                    job_data['match_percentage'] = round(min(100, (len(matched_skills) / max(len(job_skills), 1)) * 100), 1) if job_skills else 85.0
+                    job_data['match_percentage'] = round(match_percentage, 1)
                     
-                    print(f"📊 Job match analysis: {len(matched_skills)}/{len(job_skills)} skills matched")
+                    print(f"📊 PDF Job match analysis: {len(matched_skills)}/{len(job_skills_lower)} skills matched")
+                    print(f"📊 PDF Skill score: {skill_score:.3f}, Industry score: {industry_score:.3f}")
+                    print(f"📊 PDF Comprehensive score: {comprehensive_score:.3f}")
+                    print(f"📊 PDF Final match percentage: {match_percentage:.1f}%")
+                    print(f"📊 PDF Matched skills: {matched_skills[:5]}")
+                    print(f"📊 PDF Job skills found: {job_skills[:5]}")
                 else:
                     print(f"⚠️ Job {job_id} not found in database")
                     

@@ -412,6 +412,289 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
+
+    // AI Chat Animation Enhancements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize chat interface animations
+        initializeChatAnimations();
+    });
+
+    function initializeChatAnimations() {
+        // Animate sidebar elements
+        animateSidebar();
+        
+        // Animate chat header
+        animateChatHeader();
+        
+        // Animate chat messages area
+        animateChatArea();
+        
+        // Animate input area
+        animateInputArea();
+        
+        // Add enhanced hover effects
+        addHoverEffects();
+        
+        // Add message animations for new messages
+        enhanceMessageAnimations();
+    }
+
+    function animateSidebar() {
+        const sidebar = document.querySelector('.chat-sidebar');
+        if (sidebar) {
+            sidebar.style.opacity = '0';
+            sidebar.style.transform = 'translateX(-20px)';
+            sidebar.style.transition = 'all 0.6s ease-out';
+            
+            setTimeout(() => {
+                sidebar.style.opacity = '1';
+                sidebar.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate sidebar buttons with stagger
+            const buttons = sidebar.querySelectorAll('.btn');
+            buttons.forEach((button, index) => {
+                button.style.opacity = '0';
+                button.style.transform = 'translateX(-15px) scale(0.9)';
+                button.style.transition = 'all 0.4s ease-out';
+                
+                setTimeout(() => {
+                    button.style.opacity = '1';
+                    button.style.transform = 'translateX(0) scale(1)';
+                }, 200 + (index * 100));
+            });
+            
+            // Animate profile select
+            const profileSelect = sidebar.querySelector('.form-select');
+            if (profileSelect) {
+                profileSelect.style.opacity = '0';
+                profileSelect.style.transform = 'translateY(10px)';
+                profileSelect.style.transition = 'all 0.5s ease-out';
+                
+                setTimeout(() => {
+                    profileSelect.style.opacity = '1';
+                    profileSelect.style.transform = 'translateY(0)';
+                }, 600);
+            }
+        }
+    }
+
+    function animateChatHeader() {
+        const header = document.querySelector('.chat-header');
+        if (header) {
+            header.style.opacity = '0';
+            header.style.transform = 'translateY(-20px)';
+            header.style.transition = 'all 0.6s ease-out';
+            
+            setTimeout(() => {
+                header.style.opacity = '1';
+                header.style.transform = 'translateY(0)';
+            }, 200);
+            
+            // Animate status badge
+            const statusBadge = header.querySelector('.badge');
+            if (statusBadge) {
+                statusBadge.style.opacity = '0';
+                statusBadge.style.transform = 'scale(0.8)';
+                statusBadge.style.transition = 'all 0.4s ease-out';
+                
+                setTimeout(() => {
+                    statusBadge.style.opacity = '1';
+                    statusBadge.style.transform = 'scale(1)';
+                }, 400);
+            }
+        }
+    }
+
+    function animateChatArea() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.style.opacity = '0';
+            chatMessages.style.transform = 'translateY(20px) scale(0.98)';
+            chatMessages.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+            
+            setTimeout(() => {
+                chatMessages.style.opacity = '1';
+                chatMessages.style.transform = 'translateY(0) scale(1)';
+            }, 300);
+            
+            // Animate existing messages if any
+            const existingMessages = chatMessages.querySelectorAll('.chat-message');
+            existingMessages.forEach((message, index) => {
+                message.style.opacity = '0';
+                message.style.transform = 'translateY(15px)';
+                message.style.transition = 'all 0.5s ease-out';
+                
+                setTimeout(() => {
+                    message.style.opacity = '1';
+                    message.style.transform = 'translateY(0)';
+                }, 500 + (index * 100));
+            });
+            
+            // Animate setup warning if present
+            const setupWarning = chatMessages.querySelector('.setup-warning');
+            if (setupWarning) {
+                setupWarning.style.opacity = '0';
+                setupWarning.style.transform = 'translateY(30px) scale(0.95)';
+                setupWarning.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                
+                setTimeout(() => {
+                    setupWarning.style.opacity = '1';
+                    setupWarning.style.transform = 'translateY(0) scale(1)';
+                }, 400);
+                
+                // Animate robot icon in setup warning
+                const robotIcon = setupWarning.querySelector('.fa-robot');
+                if (robotIcon) {
+                    robotIcon.style.animation = 'float 3s ease-in-out infinite';
+                }
+            }
+        }
+    }
+
+    function animateInputArea() {
+        const inputContainer = document.querySelector('.chat-input-container');
+        if (inputContainer) {
+            inputContainer.style.opacity = '0';
+            inputContainer.style.transform = 'translateY(20px)';
+            inputContainer.style.transition = 'all 0.6s ease-out';
+            
+            setTimeout(() => {
+                inputContainer.style.opacity = '1';
+                inputContainer.style.transform = 'translateY(0)';
+            }, 500);
+            
+            // Animate input elements
+            const textarea = inputContainer.querySelector('textarea');
+            const sendButton = inputContainer.querySelector('#sendButton');
+            
+            if (textarea) {
+                textarea.style.transform = 'scale(0.98)';
+                textarea.style.transition = 'all 0.4s ease-out';
+                
+                setTimeout(() => {
+                    textarea.style.transform = 'scale(1)';
+                }, 600);
+            }
+            
+            if (sendButton) {
+                sendButton.style.transform = 'scale(0.9)';
+                sendButton.style.transition = 'all 0.4s ease-out';
+                
+                setTimeout(() => {
+                    sendButton.style.transform = 'scale(1)';
+                }, 700);
+            }
+        }
+    }
+
+    function addHoverEffects() {
+        // Enhanced button hover effects
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                    this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+                this.style.boxShadow = '';
+            });
+            
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                }, 150);
+            });
+        });
+        
+        // Robot avatar hover effect
+        const robotAvatar = document.querySelector('.robot-avatar');
+        if (robotAvatar) {
+            robotAvatar.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1) rotate(5deg)';
+                this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+            });
+            
+            robotAvatar.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+                this.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.15)';
+            });
+        }
+    }
+
+    function enhanceMessageAnimations() {
+        // Override the original addMessage function to include animations
+        const originalAddMessage = window.addMessage;
+        
+        window.addMessage = function(sender, message, timestamp = null) {
+            // Call original function
+            if (originalAddMessage) {
+                originalAddMessage(sender, message, timestamp);
+            }
+            
+            // Add animation to the newly added message
+            const chatMessages = document.getElementById('chatMessages');
+            const newMessage = chatMessages.lastElementChild;
+            
+            if (newMessage && newMessage.classList.contains('chat-message')) {
+                newMessage.style.opacity = '0';
+                newMessage.style.transform = 'translateY(20px) scale(0.95)';
+                newMessage.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                
+                // Force reflow
+                newMessage.offsetHeight;
+                
+                setTimeout(() => {
+                    newMessage.style.opacity = '1';
+                    newMessage.style.transform = 'translateY(0) scale(1)';
+                }, 50);
+                
+                // Add typing indicator animation for AI messages
+                if (sender === 'AI') {
+                    const messageContent = newMessage.querySelector('.message-content');
+                    if (messageContent) {
+                        messageContent.style.opacity = '0';
+                        setTimeout(() => {
+                            messageContent.style.opacity = '1';
+                            messageContent.style.animation = 'fadeIn 0.5s ease-out';
+                        }, 200);
+                    }
+                }
+            }
+        };
+        
+        // Enhance typing indicator
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) {
+            const originalShow = typingIndicator.style.display !== 'none';
+            
+            // Override typing indicator display
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const isVisible = typingIndicator.style.display !== 'none';
+                        if (isVisible && !originalShow) {
+                            typingIndicator.style.opacity = '0';
+                            typingIndicator.style.transform = 'translateY(10px)';
+                            typingIndicator.style.transition = 'all 0.3s ease-out';
+                            
+                            setTimeout(() => {
+                                typingIndicator.style.opacity = '1';
+                                typingIndicator.style.transform = 'translateY(0)';
+                            }, 50);
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(typingIndicator, { attributes: true, attributeFilter: ['style'] });
+        }
+    }
 </script>
 
 <style>
@@ -744,6 +1027,72 @@
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade {
+    from { opacity: 1; }
+}
+
+/* Enhanced Chat Animation Styles */
+.chat-sidebar, .chat-header, .chat-input-container {
+    will-change: transform, opacity;
+}
+
+.chat-message {
+    will-change: transform, opacity;
+    transform-origin: center bottom;
+}
+
+.robot-avatar {
+    will-change: transform, box-shadow;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn {
+    will-change: transform, box-shadow;
+    transform-origin: center;
+}
+
+/* Enhanced floating animation for robot icon */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-3px) rotate(1deg); }
+    50% { transform: translateY(-6px) rotate(0deg); }
+    75% { transform: translateY(-3px) rotate(-1deg); }
+}
+
+/* Message entrance animations */
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Typing indicator enhanced animation */
+.typing-indicator {
+    will-change: transform, opacity;
+}
+
+/* Enhanced setup warning animations */
+.setup-warning {
+    will-change: transform, opacity;
+}
+
+.setup-warning .fa-robot {
+    will-change: transform;
+}
+
+/* Smooth transitions for all interactive elements */
+.chat-sidebar .btn,
+.form-select,
+.chat-input-container .form-control,
+.chat-input-container .btn {
+    backface-visibility: hidden;
 }
 
 @keyframes fade {

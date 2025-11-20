@@ -78,6 +78,42 @@
         padding: 1.5rem;
         margin-bottom: 2rem;
     }
+    
+    /* Animation Enhancements */
+    .job-item {
+        will-change: transform, opacity;
+    }
+    
+    .job-card {
+        transform-origin: center;
+        will-change: transform, box-shadow;
+    }
+    
+    .job-category {
+        transform-origin: center;
+        will-change: transform, opacity;
+    }
+    
+    .salary-badge {
+        will-change: transform, opacity;
+    }
+    
+    /* Smooth transitions for all interactive elements */
+    .job-item, .job-card, .job-category, .salary-badge {
+        backface-visibility: hidden;
+    }
+    
+    /* Enhanced loading states */
+    .loading-shimmer {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
 </style>
 {% endblock %}
 
@@ -140,7 +176,8 @@
         <div class="col-lg-6 col-xl-4 mb-4 job-item" 
              data-title="{{ job.title|lower }}" 
              data-company="{{ job.company_name|lower }}"
-             data-category="{{ job.job_category[0] if job.job_category else '' }}"
+             data-category="{{ job.job_category|join('|')|lower if job.job_category else '' }}"
+             data-primary-category="{{ job.job_category[0] if job.job_category else '' }}"
              data-position-level="{{ (job.position_level or '')|lower }}"
              data-experience="{{ (job.min_years_experience or '')|lower }}"
              data-education="{{ (job.min_education_level or '')|lower }}"
@@ -160,7 +197,7 @@
                             <p class="company-name mb-0">{{ job.company_name or 'Company Name' }}</p>
                         </div>
                         {% if job.job_category %}
-                        <span class="job-category">{{ job.job_category[0] }}</span>
+                        <span class="job-category">{{ job.job_category[0] }}{% if job.job_category|length > 1 %} <small>+{{ job.job_category|length - 1 }}</small>{% endif %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -300,15 +337,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const categoryFilter = document.getElementById('filterCategory');
     const jobItems = document.querySelectorAll('.job-item');
     
-    // Extract unique categories
+    // Extract unique categories from all category arrays
     const categories = new Set();
     jobItems.forEach(item => {
-        const category = item.dataset.category;
-        if (category) categories.add(category);
+        const categoryString = item.dataset.category;
+        if (categoryString) {
+            // Split by pipe and add each category
+            const categoryArray = categoryString.split('|');
+            categoryArray.forEach(cat => {
+                if (cat.trim()) categories.add(cat.trim());
+            });
+        }
     });
     
-    // Populate category filter
-    categories.forEach(category => {
+    // Populate category filter (sort alphabetically)
+    const sortedCategories = Array.from(categories).sort();
+    sortedCategories.forEach(category => {
         const option = document.createElement('option');
         option.value = category.toLowerCase();
         option.textContent = category;
@@ -324,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get all searchable fields
             const title = item.dataset.title || '';
             const company = item.dataset.company || '';
-            const category = item.dataset.category.toLowerCase();
+            const categories = item.dataset.category.toLowerCase();
             const positionLevel = item.dataset.positionLevel || '';
             const experience = item.dataset.experience || '';
             const education = item.dataset.education || '';
@@ -352,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 skills.includes(searchTerm);
             
             const matchesCategory = !selectedCategory || 
-                category === selectedCategory;
+                categories.includes(selectedCategory);
             
             if (matchesSearch && matchesCategory) {
                 item.style.display = 'block';
@@ -502,5 +546,147 @@ async function fetchJobsData() {
         button.disabled = false;
     }
 }
+
+// Jobs Listing Animation Enhancements
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply initial hidden state to job cards for animation
+    const jobCards = document.querySelectorAll('.job-item');
+    jobCards.forEach((card, index) => {
+        // Set initial state for animation
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px) scale(0.95)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        // Add animation data attributes
+        card.dataset.animation = 'slideInUp';
+        card.dataset.delay = index * 100; // Stagger by 100ms
+        
+        // Create intersection observer for this card
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                    const delay = parseInt(entry.target.dataset.delay) || 0;
+                    
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0) scale(1)';
+                        entry.target.classList.add('animated');
+                    }, delay);
+                    
+                    // Stop observing once animated
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+        });
+        
+        observer.observe(card);
+    });
+    
+    // Animate filter section
+    const filterSection = document.querySelector('.filter-section');
+    if (filterSection) {
+        filterSection.style.opacity = '0';
+        filterSection.style.transform = 'translateY(-20px)';
+        filterSection.style.transition = 'all 0.5s ease-out';
+        
+        setTimeout(() => {
+            filterSection.style.opacity = '1';
+            filterSection.style.transform = 'translateY(0)';
+        }, 200);
+    }
+    
+    // Animate header
+    const header = document.querySelector('h1');
+    if (header) {
+        header.style.opacity = '0';
+        header.style.transform = 'translateX(-30px)';
+        header.style.transition = 'all 0.6s ease-out';
+        
+        setTimeout(() => {
+            header.style.opacity = '1';
+            header.style.transform = 'translateX(0)';
+        }, 100);
+    }
+    
+    // Enhanced hover effects for job cards
+    jobCards.forEach(card => {
+        const jobCard = card.querySelector('.job-card');
+        if (jobCard) {
+            jobCard.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+                this.style.boxShadow = '0 15px 35px rgba(0,0,0,0.1)';
+            });
+            
+            jobCard.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+                this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+            });
+        }
+    });
+    
+    // Animate category badges with stagger
+    const categoryBadges = document.querySelectorAll('.job-category');
+    categoryBadges.forEach((badge, index) => {
+        badge.style.opacity = '0';
+        badge.style.transform = 'scale(0.8)';
+        badge.style.transition = 'all 0.4s ease-out';
+        
+        setTimeout(() => {
+            badge.style.opacity = '1';
+            badge.style.transform = 'scale(1)';
+        }, 300 + (index * 50));
+    });
+    
+    // Animate salary badges
+    const salaryBadges = document.querySelectorAll('.salary-badge');
+    salaryBadges.forEach((badge, index) => {
+        badge.style.opacity = '0';
+        badge.style.transform = 'translateX(20px)';
+        badge.style.transition = 'all 0.5s ease-out';
+        
+        setTimeout(() => {
+            badge.style.opacity = '1';
+            badge.style.transform = 'translateX(0)';
+        }, 400 + (index * 100));
+    });
+    
+    // Add loading animation for when filtering
+    const originalFilterJobs = window.filterJobs;
+    window.filterJobs = function() {
+        // Add loading effect
+        const jobGrid = document.getElementById('jobGrid');
+        if (jobGrid) {
+            jobGrid.style.opacity = '0.5';
+            jobGrid.style.transform = 'scale(0.98)';
+            jobGrid.style.transition = 'all 0.3s ease';
+            
+            // Call original function
+            if (originalFilterJobs) {
+                originalFilterJobs();
+            }
+            
+            // Restore after filter
+            setTimeout(() => {
+                jobGrid.style.opacity = '1';
+                jobGrid.style.transform = 'scale(1)';
+                
+                // Re-animate visible cards
+                const visibleCards = jobGrid.querySelectorAll('.job-item:not([style*="display: none"])');
+                visibleCards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 50);
+                });
+            }, 100);
+        }
+    };
+});
 </script>
 {% endblock %}

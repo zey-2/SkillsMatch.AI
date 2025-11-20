@@ -12,9 +12,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR"
 WEB_DIR="$PROJECT_DIR/web"
 
-# Kill any existing processes on port 5003
-echo "🧹 Cleaning up port 5003..."
-lsof -ti:5003 | xargs kill -9 2>/dev/null || echo "Port 5003 is clear"
+# Kill any existing processes on port 5004
+echo "🧹 Cleaning up port 5004..."
+lsof -ti:5004 | xargs kill -9 2>/dev/null || echo "Port 5004 is clear"
 
 # Initialize conda in this shell (try multiple locations)
 if [ -f ~/miniconda3/etc/profile.d/conda.sh ]; then
@@ -72,7 +72,7 @@ if [ "$CONDA_DEFAULT_ENV" != "smai" ]; then
     echo "🔧 Running: conda run -n smai python app.py"
     echo "✅ Running in correct conda environment: smai"
     echo "📂 Working directory: $(pwd)"
-    echo "🌐 Starting Flask app on http://localhost:5003"
+    echo "🌐 Starting Flask app on http://localhost:5004"
     echo "💡 App features: Profile Matching, AI Chat, Database Management"
     echo ""
     echo "Press Ctrl+C to stop the server"
@@ -88,7 +88,7 @@ else
     echo "🐍 Using Python: $(which python)"
     echo "📦 Conda environment: $CONDA_DEFAULT_ENV"
     echo "� Working directory: $(pwd)"
-    echo "🌐 Starting Flask app on http://localhost:5003"
+    echo "🌐 Starting Flask app on http://localhost:5004"
     echo "💡 App features: Profile Matching, AI Chat, Database Management"
     echo ""
     echo "Press Ctrl+C to stop the server"

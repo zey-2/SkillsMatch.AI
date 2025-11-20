@@ -12,6 +12,145 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     
+    <!-- Shared Animation Styles -->
+    <style>
+        /* Advanced Scroll Animations - Shared across all pages */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px) rotateY(10deg); }
+            to { opacity: 1; transform: translateX(0) rotateY(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes subtleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        /* Loading state */
+        body { opacity: 0; transition: opacity 0.5s ease-in-out; }
+        body.loaded { opacity: 1; }
+        
+        /* Animation classes */
+        .animate-in {
+            animation-duration: 0.8s;
+            animation-fill-mode: both;
+            animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .fadeInUp { animation-name: fadeInUp; }
+        .fadeInScale { animation-name: fadeInScale; }
+        .slideInUp { animation-name: slideInUp; }
+        .slideInLeft { animation-name: slideInLeft; }
+        .slideInRight { animation-name: slideInRight; }
+        .subtleIn { animation-name: subtleIn; }
+        
+        /* Animation state classes */
+        .animation-complete {
+            animation-play-state: paused;
+            animation-fill-mode: forwards;
+        }
+        
+        .animating { pointer-events: none; }
+        
+        /* Enhanced card animations */
+        .card {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, box-shadow;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card:hover .fas {
+            color: var(--accent-orange);
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+        }
+        
+        /* Button enhancements */
+        .btn {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before { left: 100%; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
+        .btn:active { transform: translateY(-1px) scale(0.98); }
+        
+        /* Icon animations */
+        .fas, .fab {
+            transition: all 0.3s ease;
+            will-change: transform;
+        }
+        
+        /* Scroll progress indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-orange), var(--primary));
+            z-index: 9999;
+            transition: width 0.1s ease-out;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .card:hover { transform: translateY(-4px) scale(1.01); }
+            .btn:hover { transform: translateY(-2px); }
+            .animate-in { animation-duration: 0.6s; }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+    
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -137,6 +276,149 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Shared Animation System -->
+    <script>
+        // Shared Animation System - Applied to all pages
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create scroll progress indicator
+            const scrollProgress = document.createElement('div');
+            scrollProgress.className = 'scroll-progress';
+            scrollProgress.id = 'scrollProgress';
+            document.body.prepend(scrollProgress);
+            
+            // Intersection Observer for animations
+            const observerOptions = {
+                threshold: [0.1, 0.3, 0.5, 0.7, 0.9],
+                rootMargin: '-50px 0px -50px 0px'
+            };
+
+            const animationObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        
+                        // Check if already animated
+                        if (element.classList.contains('animation-complete')) {
+                            return;
+                        }
+                        
+                        const animationType = element.dataset.animation || 'fadeInUp';
+                        const delay = element.dataset.delay || 0;
+                        
+                        element.classList.add('animating');
+                        
+                        setTimeout(() => {
+                            element.classList.add('animate-in', animationType);
+                            
+                            // Handle cards
+                            if (element.classList.contains('card')) {
+                                element.style.transform = 'translateY(0) scale(1)';
+                                element.style.opacity = '1';
+                            }
+                            
+                            // Mark as complete
+                            setTimeout(() => {
+                                element.classList.add('animation-complete');
+                                element.classList.remove('animating');
+                                animationObserver.unobserve(element);
+                            }, 800);
+                            
+                        }, delay);
+                    }
+                });
+            }, observerOptions);
+
+            // Initialize animations for common elements
+            function initializePageAnimations() {
+                // Cards - staggered animation
+                const cards = document.querySelectorAll('.card');
+                cards.forEach((card, index) => {
+                    card.dataset.animation = 'slideInUp';
+                    card.dataset.delay = index * 150;
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(50px) scale(0.95)';
+                    card.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                    animationObserver.observe(card);
+                });
+
+                // Icons - subtle animation
+                const icons = document.querySelectorAll('.fas:not(.navbar .fas), .fab');
+                icons.forEach((icon, index) => {
+                    icon.dataset.animation = 'fadeInUp';
+                    icon.dataset.delay = index * 50;
+                    icon.style.animation = `float 3s ease-in-out ${index * 0.2}s infinite`;
+                    animationObserver.observe(icon);
+                });
+
+                // Section headers
+                const headers = document.querySelectorAll('h1:not(.navbar h1), h2, h3, h4');
+                headers.forEach((header, index) => {
+                    if (!header.closest('.bg-enterprise') && !header.closest('.navbar')) {
+                        header.dataset.animation = 'slideInRight';
+                        header.dataset.delay = index * 100;
+                        header.style.opacity = '0';
+                        header.style.transform = 'translateX(-30px)';
+                        header.style.transition = 'all 0.6s ease-out';
+                        animationObserver.observe(header);
+                    }
+                });
+
+                // Forms and inputs
+                const forms = document.querySelectorAll('form, .form-group, .input-group');
+                forms.forEach((form, index) => {
+                    form.dataset.animation = 'fadeInUp';
+                    form.dataset.delay = index * 100;
+                    animationObserver.observe(form);
+                });
+                
+                // Tables
+                const tables = document.querySelectorAll('table, .table-responsive');
+                tables.forEach((table, index) => {
+                    table.dataset.animation = 'slideInLeft';
+                    table.dataset.delay = index * 200;
+                    animationObserver.observe(table);
+                });
+            }
+
+            // Button hover effects
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                    this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '';
+                });
+                
+                button.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-2px) scale(1.05)';
+                    }, 150);
+                });
+            });
+
+            // Scroll progress
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.pageYOffset;
+                const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = (scrollTop / documentHeight) * 100;
+                scrollProgress.style.width = scrollPercent + '%';
+            });
+
+            // Initialize animations
+            initializePageAnimations();
+            
+            // Mark body as loaded
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 100);
+        });
+    </script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

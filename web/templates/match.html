@@ -707,6 +707,319 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Initialize Match Jobs page animations
+    initializeMatchJobsAnimations();
 });
+
+// Match Jobs Page Animation Enhancements
+function initializeMatchJobsAnimations() {
+    // Animate page header
+    animateMatchHeader();
+    
+    // Animate profile selection section
+    animateProfileSection();
+    
+    // Animate search and filter sections
+    animateSearchFilterSection();
+    
+    // Animate profile cards
+    animateMatchProfileCards();
+    
+    // Animate job results
+    animateJobResults();
+    
+    // Add enhanced interactions
+    addMatchHoverEffects();
+    
+    // Enhance match button animations
+    enhanceMatchButtonAnimations();
+}
+
+function animateMatchHeader() {
+    const header = document.querySelector('h1');
+    if (header) {
+        header.style.opacity = '0';
+        header.style.transform = 'translateX(-30px)';
+        header.style.transition = 'all 0.6s ease-out';
+        
+        setTimeout(() => {
+            header.style.opacity = '1';
+            header.style.transform = 'translateX(0)';
+        }, 100);
+    }
+    
+    // Animate page description
+    const description = document.querySelector('p.text-muted');
+    if (description) {
+        description.style.opacity = '0';
+        description.style.transform = 'translateY(10px)';
+        description.style.transition = 'all 0.5s ease-out';
+        
+        setTimeout(() => {
+            description.style.opacity = '1';
+            description.style.transform = 'translateY(0)';
+        }, 200);
+    }
+}
+
+function animateProfileSection() {
+    const profileCards = document.querySelectorAll('.profiles-container .profile-card-item');
+    profileCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-20px) scale(0.95)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0) scale(1)';
+        }, 200 + (index * 100));
+    });
+    
+    // Animate profile section header
+    const profileHeader = document.querySelector('h3');
+    if (profileHeader) {
+        profileHeader.style.opacity = '0';
+        profileHeader.style.transform = 'translateY(-15px)';
+        profileHeader.style.transition = 'all 0.5s ease-out';
+        
+        setTimeout(() => {
+            profileHeader.style.opacity = '1';
+            profileHeader.style.transform = 'translateY(0)';
+        }, 150);
+    }
+}
+
+function animateSearchFilterSection() {
+    const searchCard = document.querySelector('.card:has(#profileSearch)');
+    if (searchCard) {
+        searchCard.style.opacity = '0';
+        searchCard.style.transform = 'translateY(20px)';
+        searchCard.style.transition = 'all 0.6s ease-out';
+        
+        setTimeout(() => {
+            searchCard.style.opacity = '1';
+            searchCard.style.transform = 'translateY(0)';
+        }, 300);
+        
+        // Animate search input
+        const searchInput = searchCard.querySelector('#profileSearch');
+        if (searchInput) {
+            searchInput.style.transform = 'scale(0.98)';
+            searchInput.style.transition = 'all 0.4s ease-out';
+            
+            setTimeout(() => {
+                searchInput.style.transform = 'scale(1)';
+            }, 500);
+        }
+    }
+    
+    // Animate export button if present
+    const exportButton = document.querySelector('#exportResults');
+    if (exportButton) {
+        exportButton.style.opacity = '0';
+        exportButton.style.transform = 'scale(0.8) rotate(-5deg)';
+        exportButton.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        setTimeout(() => {
+            exportButton.style.opacity = '1';
+            exportButton.style.transform = 'scale(1) rotate(0deg)';
+        }, 400);
+    }
+}
+
+function animateMatchProfileCards() {
+    const profileItems = document.querySelectorAll('.profile-item');
+    profileItems.forEach((card, index) => {
+        // Set initial state
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px) scale(0.95)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        // Create intersection observer for this card
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                    const delay = index * 80; // Stagger by 80ms
+                    
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0) scale(1)';
+                        entry.target.classList.add('animated');
+                    }, delay);
+                    
+                    // Stop observing once animated
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+        });
+        
+        observer.observe(card);
+    });
+}
+
+function animateJobResults() {
+    // Animate job opportunity cards
+    const jobCards = document.querySelectorAll('.job-opportunity-card');
+    jobCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(20px) scale(0.98)';
+        card.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0) scale(1)';
+        }, 600 + (index * 100));
+    });
+    
+    // Animate match percentage badges
+    const matchBadges = document.querySelectorAll('.badge');
+    matchBadges.forEach((badge, index) => {
+        if (badge.textContent.includes('%')) {
+            badge.style.opacity = '0';
+            badge.style.transform = 'scale(0.5) rotate(10deg)';
+            badge.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+            
+            setTimeout(() => {
+                badge.style.opacity = '1';
+                badge.style.transform = 'scale(1) rotate(0deg)';
+            }, 700 + (index * 50));
+        }
+    });
+}
+
+function addMatchHoverEffects() {
+    // Enhanced profile card hover effects
+    const profileCards = document.querySelectorAll('.profile-card-item .card, .profile-item .card');
+    profileCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.03)';
+            this.style.boxShadow = '0 15px 35px rgba(0,0,0,0.12)';
+            this.style.borderColor = 'var(--accent-orange)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = '';
+            this.style.borderColor = '';
+        });
+    });
+    
+    // Enhanced job opportunity card hover effects
+    const jobCards = document.querySelectorAll('.job-opportunity-card');
+    jobCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.02)';
+            this.style.boxShadow = '0 12px 30px rgba(0,0,0,0.1)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = '';
+        });
+    });
+    
+    // Enhanced button hover effects
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            if (!this.disabled) {
+                this.style.transform = 'translateY(-2px) scale(1.05)';
+                this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+            }
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = '';
+        });
+        
+        button.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'translateY(-2px) scale(1.05)';
+            }, 150);
+        });
+    });
+}
+
+function enhanceMatchButtonAnimations() {
+    // Enhance the Find Matches button
+    const findMatchesButtons = document.querySelectorAll('.btn-primary');
+    findMatchesButtons.forEach(button => {
+        if (button.textContent.includes('Find Matches') || button.textContent.includes('Match')) {
+            button.addEventListener('click', function() {
+                // Add loading animation
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Finding Matches...';
+                this.disabled = true;
+                
+                // Simulate processing time for visual feedback
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 2000);
+            });
+        }
+    });
+    
+    // Override filterProfiles to add animations
+    const originalFilterProfiles = window.filterProfiles;
+    window.filterProfiles = function() {
+        // Add loading effect
+        const resultsArea = document.querySelector('.row:has(.profile-item)');
+        if (resultsArea) {
+            resultsArea.style.opacity = '0.6';
+            resultsArea.style.transform = 'scale(0.98)';
+            resultsArea.style.transition = 'all 0.3s ease';
+        }
+        
+        // Call original function
+        if (originalFilterProfiles) {
+            originalFilterProfiles();
+        }
+        
+        // Restore and re-animate
+        setTimeout(() => {
+            if (resultsArea) {
+                resultsArea.style.opacity = '1';
+                resultsArea.style.transform = 'scale(1)';
+            }
+            
+            // Re-animate visible cards
+            const visibleCards = document.querySelectorAll('.profile-item:not([style*="display: none"])');
+            visibleCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        }, 100);
+    };
+    
+    // Clear search with animation
+    const originalClearSearch = window.clearSearch;
+    window.clearSearch = function() {
+        const searchInput = document.getElementById('profileSearch');
+        if (searchInput) {
+            searchInput.style.transform = 'scale(1.05)';
+            searchInput.style.transition = 'all 0.2s ease-out';
+            
+            setTimeout(() => {
+                searchInput.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        if (originalClearSearch) {
+            originalClearSearch();
+        }
+    };
+}
 </script>
 {% endblock %}
