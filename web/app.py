@@ -2651,19 +2651,31 @@ def fetch_jobs_from_api():
     try:
         import requests
         from datetime import datetime
+        
+        # Debug: Check if global imports are available
+        print(f"🔍 FETCH-JOBS: Checking global imports...")
+        print(f"   Job class available: {Job is not None}")
+        print(f"   UserProfile class available: {UserProfile is not None}")
+        print(f"   UserSkill class available: {UserSkill is not None}")
+        
         # Using global imports: Job already imported
         try:
             from database.db_config import db_config
-        except ImportError:
+            print("✅ FETCH-JOBS: Imported database.db_config successfully")
+        except ImportError as e1:
+            print(f"❌ FETCH-JOBS: database.db_config import failed: {e1}")
             try:
                 from web.database.db_config import db_config
-            except ImportError:
+                print("✅ FETCH-JOBS: Imported web.database.db_config successfully")
+            except ImportError as e2:
+                print(f"❌ FETCH-JOBS: web.database.db_config import failed: {e2}")
                 # Create minimal fallback
                 class MinimalDBConfig:
                     @contextlib.contextmanager
                     def session_scope(self):
                         yield None
                 db_config = MinimalDBConfig()
+                print("⚠️ FETCH-JOBS: Using fallback db_config")
         
         print("🔄 Starting job fetch from FindSGJobs API...")
         
@@ -2712,9 +2724,14 @@ def fetch_jobs_from_api():
                 return jsonify({'success': False, 'error': 'Database connection failed'}), 500
                 
             # Clear existing jobs
-            session.query(Job).delete()
-            session.commit()
-            print(f"🗑️ Cleared existing jobs from database")
+            print(f"🗑️ FETCH-JOBS: Attempting to clear existing jobs using Job model...")
+            try:
+                session.query(Job).delete()
+                session.commit()
+                print(f"✅ FETCH-JOBS: Cleared existing jobs from database")
+            except Exception as clear_error:
+                print(f"❌ FETCH-JOBS: Error clearing jobs: {clear_error}")
+                raise
             
             jobs_added = 0
             
@@ -2762,7 +2779,9 @@ def fetch_jobs_from_api():
                     job_id = job_data.get('id') or f"job_{job_data.get('company_sid', '')}_{jobs_added}"
                     
                     # Create job object
-                    job = Job(
+                    print(f"🔧 FETCH-JOBS: Creating Job object for job_id: {job_id}")
+                    try:
+                        job = Job(
                         job_id=str(job_id),
                         title=job_data.get('Title', ''),
                         company_name=company_data.get('CompanyName', '') if company_data else '',
@@ -2806,10 +2825,15 @@ def fetch_jobs_from_api():
                         job_source=job_item.get('job_source', ''),
                         api_fetched_at=datetime.utcnow(),
                         is_active=True
-                    )
-                    
-                    session.add(job)
-                    jobs_added += 1
+                        )
+                        
+                        print(f"✅ FETCH-JOBS: Created Job object successfully")
+                        session.add(job)
+                        jobs_added += 1
+                        
+                    except Exception as job_creation_error:
+                        print(f"❌ FETCH-JOBS: Error creating Job object: {job_creation_error}")
+                        raise
                     
                 except Exception as job_error:
                     print(f"⚠️ Error processing job: {job_error}")
