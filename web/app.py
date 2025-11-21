@@ -23,11 +23,11 @@ def check_conda_environment():
     if is_production:
         print(f"🚀 Running in production environment: {os.environ.get('RENDER_SERVICE_NAME', 'Cloud Platform')}")
         print(f"🐍 Python environment: {conda_env or 'system'}")
-    elif conda_env != 'smai':
-        print("⚠️  WARNING: Not running in 'smai' conda environment!")
+    elif conda_env != 'base':
+        print("⚠️  WARNING: Not running in 'base' conda environment!")
         print(f"📍 Current environment: {conda_env or 'base'}")
         print("🔧 To fix this, activate the environment first:")
-        print("   conda activate smai")
+        print("   conda activate base")
         print("   python app.py")
         print("")
     else:
@@ -48,7 +48,26 @@ try:
     from openai import OpenAI
 except ImportError:
     openai = None
+
+# Import AI-powered skill matching services
+try:
+    from services.ai_skill_matcher import ai_skill_matcher, categorize_skills_ai, find_skill_matches_ai
+    from services.enhanced_job_matcher import enhanced_job_matcher, find_enhanced_matches
+    AI_MATCHING_AVAILABLE = True
+except ImportError:
+    AI_MATCHING_AVAILABLE = False
+    print("⚠️  AI skill matching services not available, using fallback matching")
     OpenAI = None
+
+# Import efficient vector-based job matcher
+try:
+    from services.vector_job_matcher import vector_job_matcher
+    VECTOR_MATCHING_AVAILABLE = True
+    print("✅ Vector job matching service available")
+except ImportError as e:
+    VECTOR_MATCHING_AVAILABLE = False
+    print(f"⚠️ Vector job matching service not available: {e}")
+    vector_job_matcher = None
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -231,6 +250,44 @@ except ImportError as e:
 # Scraping functionality removed - using direct API access instead
 SCRAPER_AVAILABLE = False
 
+# Fast pre-filtering function to reduce AI processing load
+def quick_skill_filter(profile_data, jobs_list, top_n=20):
+    """Quickly filter jobs using basic skill matching before AI analysis"""
+    try:
+        # Extract user skills
+        user_skills = set()
+        if profile_data.get('skills'):
+            for skill in profile_data['skills']:
+                if isinstance(skill, dict):
+                    skill_name = skill.get('skill_name', '').lower()
+                    if skill_name:
+                        user_skills.add(skill_name)
+                elif isinstance(skill, str):
+                    user_skills.add(skill.lower())
+        
+        if not user_skills:
+            # No skills to match, return first N jobs
+            return jobs_list[:top_n]
+        
+        # Score jobs based on skill overlap
+        job_scores = []
+        for job in jobs_list:
+            job_text = f"{job.get('job_title', '')} {job.get('job_description', '')}".lower()
+            
+            # Count skill matches in job text
+            matches = sum(1 for skill in user_skills if skill in job_text)
+            match_ratio = matches / len(user_skills) if user_skills else 0
+            
+            job_scores.append((match_ratio, job))
+        
+        # Sort by match ratio and return top N
+        job_scores.sort(key=lambda x: x[0], reverse=True)
+        return [job for score, job in job_scores[:top_n]]
+        
+    except Exception as e:
+        print(f"⚠️ Quick filter error: {e}")
+        return jobs_list[:top_n]
+
 # AI-Powered Job Matching Function
 def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
     """Use AI to analyze comprehensive user profile and match with jobs"""
@@ -240,12 +297,31 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
     print(f"🔍 AI Debug - API key available: {openai_key is not None}")
     print(f"🔍 AI Debug - API key length: {len(openai_key) if openai_key else 0}")
     
-    if not openai or not openai_key or not OpenAI:
-        print("⚠️ AI not available - falling back to basic matching")
+    if not openai or not OpenAI:
+        print("⚠️ AI modules not available - falling back to basic matching")
+        return None
+    
+    if not openai_key and not github_token:
+        print("⚠️ No AI API keys available - falling back to basic matching")
         return None
     
     try:
-        client = OpenAI(api_key=openai_key)
+        # Use GitHub Models first if OpenAI quota is likely exceeded
+        use_github_first = False
+        if github_token and openai_key:
+            # Check if we recently hit quota limits (simple heuristic)
+            use_github_first = True  # Default to free GitHub Models
+        
+        if use_github_first and github_token:
+            print("🚀 Using GitHub Models (free tier) for AI analysis")
+            client = OpenAI(
+                base_url="https://models.inference.ai.azure.com",
+                api_key=github_token
+            )
+            model_to_use = "gpt-4o-mini"  # Free on GitHub Models
+        else:
+            client = OpenAI(api_key=openai_key)
+            model_to_use = "gpt-4o-mini"  # Most cost-effective
         
         # Build comprehensive profile context
         profile_context = {
@@ -276,9 +352,9 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
         if vector_resume_text:
             resume_context = f"\n\nResume Content Analysis:\n{vector_resume_text[:1000]}..."
         
-        # Create AI prompt for job analysis - analyze more jobs for better matches
+        # Create AI prompt for job analysis - focus on pre-filtered jobs
         job_summaries = []
-        for job in jobs_list[:50]:  # Increased to 50 jobs for better AI analysis
+        for job in jobs_list[:15]:  # Reduced to 15 jobs for faster AI analysis
             job_summary = {
                 'job_id': job.get('job_id', 'unknown'),
                 'title': job.get('job_title', job.get('title', 'Unknown')),
@@ -289,6 +365,39 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
             job_summaries.append(job_summary)
         
         prompt = f"""You are an elite career matching AI with deep expertise in talent acquisition and career development. Conduct a comprehensive analysis of this professional's profile and identify the TOP 5 most strategically aligned opportunities.
+
+You will analyze each opportunity based on these sophisticated criteria:
+
+🎯 ADVANCED MATCHING METHODOLOGY:
+═══════════════════════════════════════════
+1. SKILLS ALIGNMENT (45%): 
+   - Technical Skills Match: Direct overlap between candidate skills and job requirements
+   - Transferable Skills: Adjacent skills that indicate capability to learn required skills
+   - Skill Depth Analysis: Level of expertise vs. role requirements
+   - Emerging Technology Alignment: Future-oriented skill matching
+
+2. INDUSTRY & DOMAIN FIT (30%):
+   - Industry Experience: Previous work in similar domains
+   - Business Context Understanding: Knowledge of industry challenges/opportunities
+   - Regulatory/Compliance Familiarity: Industry-specific knowledge requirements
+   - Market Trends Alignment: Understanding of current industry direction
+
+3. CAREER PROGRESSION LOGIC (15%):
+   - Role Seniority Match: Appropriate level for candidate's experience
+   - Responsibility Scope: Leadership/management requirements alignment
+   - Career Growth Path: Logical next step in professional development
+   - Promotion Readiness: Candidate's readiness for increased responsibility
+
+4. CULTURAL & WORK STYLE FIT (5%):
+   - Work Environment Preferences: Office culture, team dynamics
+   - Communication Style: Collaborative vs. independent work preferences
+   - Values Alignment: Company mission alignment with candidate values
+
+5. STRATEGIC CAREER IMPACT (5%):
+   - Learning Opportunities: Skill development potential
+   - Network Expansion: Professional network growth opportunities
+   - Industry Positioning: Role's impact on candidate's market position
+   - Long-term Career Value: 3-5 year career trajectory enhancement
 
 PROFESSIONAL PROFILE ANALYSIS:
 ═══════════════════════════════════════════
@@ -310,40 +419,37 @@ AVAILABLE OPPORTUNITIES:
 ═══════════════════════════════════════════
 {json.dumps(job_summaries, indent=2)}
 
-COMPREHENSIVE MATCHING CRITERIA:
+ANALYSIS REQUIREMENTS:
 ═══════════════════════════════════════════
-1. 🎯 SKILLS ALIGNMENT (50%): Exact matches, transferable skills, emerging technologies
-2. 🏢 INDUSTRY FIT (25%): Domain expertise, sector experience, market alignment
-3. 📚 EXPERIENCE LEVEL (15%): Role seniority, responsibility scope, career progression
-4. 📍 LOCATION COMPATIBILITY (5%): Geographic preferences, remote flexibility
-5. 🚀 GROWTH POTENTIAL (5%): Learning opportunities, career advancement, skill development
-
-QUALITY STANDARDS:
-- Only recommend roles with >60% overall match
-- Prioritize authentic skill alignment over superficial keyword matching
-- Consider career trajectory and progression logic
-- Evaluate market demand and growth potential
-- Include realistic skill gap analysis
+- Provide detailed reasoning for each match with specific examples
+- Include realistic skill gap analysis with actionable development suggestions
+- Consider 2-3 year career progression trajectory
+- Evaluate compensation alignment and growth potential
+- Assess company culture fit based on available information
+- Only recommend roles with >70% overall strategic fit
 
 Return a JSON response with this EXACT structure:
 {{
     "top_matches": [
         {{
             "job_id": "job_id_here",
-            "match_percentage": 87,
-            "comprehensive_score": 0.87,
-            "skill_match_score": 0.92,
-            "industry_match_score": 0.85,
-            "education_match_score": 0.88,
-            "location_match_score": 1.0,
-            "career_growth_score": 0.83,
+            "overall_match_score": 87,
+            "skills_alignment_score": 92,
+            "industry_fit_score": 85,
+            "career_progression_score": 88,
+            "cultural_fit_score": 90,
+            "strategic_value_score": 83,
             "matched_skills": ["specific", "technical", "skills", "found"],
+            "transferable_skills": ["adjacent", "skills", "applicable"],
             "skill_gaps": ["skill", "to", "develop"],
-            "recommendation_reason": "Compelling explanation of strategic career fit with specific examples",
-            "growth_opportunities": "Detailed career development pathway and learning opportunities"
+            "recommendation_reason": "Comprehensive explanation of strategic career fit with specific examples and measurable impact",
+            "growth_opportunities": "Detailed career development pathway including skill acquisition timeline",
+            "risk_factors": "Potential challenges or areas requiring attention",
+            "success_indicators": "Key metrics to measure success in this role"
         }}
     ],
-    "analysis_summary": "Executive summary of matching methodology and key insights"
+    "analysis_summary": "Executive summary of matching methodology, market insights, and strategic career recommendations",
+    "market_insights": "Current market trends relevant to candidate's profile and selected opportunities"
 }}"""
 
         print("🤖 Requesting AI job matching analysis...")
@@ -389,8 +495,62 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
         print(f"📊 Profile: {profile_data.get('name', 'Unknown')}")
         print(f"📋 Raw skills data: {profile_data.get('skills', [])}")
         
-        # Extract and normalize user skills with synonyms
+        # Extract user skills
         user_skills = []
+        
+        # Use AI-powered skill categorization if available
+        if AI_MATCHING_AVAILABLE:
+            print("🤖 Using AI-powered skill matching")
+            try:
+                # Use enhanced matching service via sync wrapper
+                def run_ai_matching():
+                    import asyncio
+                    try:
+                        loop = asyncio.get_event_loop()
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    return loop.run_until_complete(find_enhanced_matches(profile_data, jobs_list, 20))
+                
+                enhanced_matches = run_ai_matching()
+                
+                # Convert to traditional format for compatibility
+                scored_jobs = []
+                for match in enhanced_matches:
+                    # Find the corresponding job
+                    job = next((j for j in jobs_list if j.get('id') == match.job_id), None)
+                    if job:
+                        scored_jobs.append({
+                            'job': job,
+                            'score': match.match_score,
+                            'reasons': [match.ai_reasoning],
+                            'skill_matches': [m.user_skill for m in match.skill_matches],
+                            'ai_analysis': {
+                                'skill_matches': match.skill_matches,
+                                'match_breakdown': match.match_breakdown,
+                                'recommended_skills': match.recommended_skills
+                            }
+                        })
+                
+                print(f"✅ AI matching found {len(scored_jobs)} matches")
+                # Sort by score and return top matches
+                scored_jobs.sort(key=lambda x: x['score'], reverse=True)
+                return scored_jobs[:20]
+                
+            except Exception as e:
+                error_msg = str(e).lower()
+                if 'unauthorized' in error_msg or '401' in error_msg:
+                    print(f"❌ AI API authorization failed: Please check your API keys")
+                    print(f"💡 Set GITHUB_TOKEN (for GitHub Models) or OPENAI_API_KEY (for OpenAI)")
+                elif 'too many requests' in error_msg or '429' in error_msg:
+                    print(f"⚠️ AI rate limit exceeded. Using enhanced traditional matching.")
+                else:
+                    print(f"❌ AI matching failed: {e}")
+                print(f"🔄 Falling back to enhanced traditional matching...")
+                # Fall through to traditional matching
+        
+        # Traditional matching with enhanced skill synonyms (fallback)
+        print("🔧 Using traditional skill matching with enhanced synonyms")
         skill_synonyms = {
             'python': ['python', 'py', 'python3', 'django', 'flask', 'fastapi', 'pandas', 'numpy', 'scikit-learn', 'python developer', 'python programming'],
             'sql': ['sql', 'mysql', 'postgresql', 'postgres', 'database', 'db', 'sql server', 'oracle', 'sqlite', 'database management', 'database developer', 'database analyst'],
@@ -401,7 +561,13 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             'data': ['data', 'analytics', 'data analysis', 'tableau', 'powerbi', 'excel', 'data analyst', 'business intelligence', 'bi'],
             'web': ['web', 'html', 'css', 'frontend', 'backend', 'fullstack', 'web development', 'web developer'],
             'it': ['it', 'information technology', 'tech', 'technology', 'software', 'programming', 'developer', 'engineer', 'analyst', 'consultant'],
-            'software': ['software', 'software development', 'software engineer', 'programmer', 'coding', 'development']
+            'software': ['software', 'software development', 'software engineer', 'programmer', 'coding', 'development'],
+            # Healthcare and Medical Skills (Enhanced)
+            'healthcare': ['healthcare', 'medical', 'health', 'clinical', 'hospital', 'clinic', 'patient care', 'nursing', 'nurse', 'medical assistant', 'healthcare professional', 'medical professional', 'clinical care'],
+            'nursing': ['nurse', 'nursing', 'patient care', 'clinical care', 'healthcare', 'medical care', 'bedside manner', 'patient support', 'medical assistance', 'healthcare assistant'],
+            'medical': ['medical', 'medicine', 'clinical', 'healthcare', 'physician', 'doctor', 'tcm', 'traditional chinese medicine', 'medical consultation', 'diagnosis', 'treatment', 'therapy'],
+            'patient care': ['patient care', 'patient support', 'clinical care', 'bedside manner', 'healthcare', 'nursing', 'medical care', 'patient interaction', 'care coordination'],
+            'clinical': ['clinical', 'medical', 'healthcare', 'patient care', 'clinical assessment', 'clinical skills', 'medical procedures', 'clinical experience']
         }
         
         if profile_data.get('skills'):
@@ -452,17 +618,37 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             
             # Extract skills from job text using keyword matching
             job_skills = []
-            all_job_text = f"{job_keywords} {job_title} {job_category} {job_description}"
+            all_job_text = f"{job_keywords} {job_title} {job_category} {job_description}".lower()
             
-            # Common technical skills to look for
+            # Enhanced skill detection including healthcare/medical skills
             common_skills = [
+                # Technical Skills
                 'python', 'java', 'javascript', 'sql', 'html', 'css', 'react', 'angular', 'vue',
                 'node', 'django', 'flask', 'spring', 'mysql', 'postgresql', 'mongodb', 'redis',
                 'aws', 'azure', 'docker', 'kubernetes', 'git', 'machine learning', 'ai',
                 'data analysis', 'excel', 'tableau', 'powerbi', 'analytics', 'business intelligence',
+                # Business & Soft Skills
                 'project management', 'agile', 'scrum', 'leadership', 'communication',
-                'sales', 'marketing', 'customer service', 'finance', 'accounting'
+                'sales', 'marketing', 'customer service', 'finance', 'accounting',
+                # Healthcare & Medical Skills
+                'healthcare', 'medical', 'nursing', 'patient care', 'clinical', 'physician',
+                'doctor', 'tcm', 'traditional chinese medicine', 'medical consultation',
+                'diagnosis', 'treatment', 'therapy', 'clinical care', 'medical assistant',
+                'healthcare professional', 'medical professional', 'bedside manner',
+                'patient support', 'care coordination', 'clinical assessment'
             ]
+            
+            # Enhanced healthcare job detection
+            healthcare_indicators = [
+                'physician', 'doctor', 'nurse', 'tcm', 'medical', 'clinical', 'healthcare',
+                'hospital', 'clinic', 'patient', 'treatment', 'consultation', 'therapy'
+            ]
+            
+            # Check if this is a healthcare job and add appropriate skills
+            is_healthcare_job = any(indicator in all_job_text for indicator in healthcare_indicators)
+            if is_healthcare_job:
+                job_skills.extend(['healthcare', 'medical', 'patient care', 'clinical'])
+                print(f"🏥 Detected healthcare job: {job_title} - added healthcare skills")
             
             for skill in common_skills:
                 if skill in all_job_text:
@@ -479,7 +665,8 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             for job_skill in job_skills_lower:
                 job_skill_clean = job_skill.strip().lower()
                 
-                # Check if user has this required skill
+                # Check if user has this required skill (direct match)
+                skill_matched = False
                 for user_skill in user_skills:
                     user_skill_clean = user_skill.strip().lower()
                     
@@ -488,8 +675,24 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                         job_skill_clean in user_skill_clean or 
                         user_skill_clean in job_skill_clean):
                         matched_skills.append(job_skill)
-                        print(f"✅ Matched: '{job_skill}' (user has '{user_skill}')")
+                        print(f"✅ Direct Match: '{job_skill}' (user has '{user_skill}')")
+                        skill_matched = True
                         break
+                
+                # If no direct match, check skill synonyms for semantic matching
+                if not skill_matched:
+                    for user_skill in user_skills:
+                        user_skill_clean = user_skill.strip().lower()
+                        
+                        # Check if user skill and job skill are in the same synonym group
+                        for skill_category, synonyms in skill_synonyms.items():
+                            if (user_skill_clean in synonyms and job_skill_clean in synonyms):
+                                matched_skills.append(job_skill)
+                                print(f"✅ Synonym Match: '{job_skill}' ↔ '{user_skill}' (both in {skill_category} category)")
+                                skill_matched = True
+                                break
+                        if skill_matched:
+                            break
             
             # Calculate simple skill coverage
             skill_coverage = len(matched_skills) / max(len(job_skills_lower), 1) if job_skills_lower else 0
@@ -2120,14 +2323,19 @@ def api_match():
             print(f"⚠️ Error gathering jobs: {gather_error}")
             matching_info['gather_error'] = str(gather_error)
         
-        # 2. AI ENHANCED MATCHING: Use AI to analyze comprehensive profile
+        # 2. FAST PRE-FILTERING: Use quick skill matching to narrow down jobs
+        print(f"🚀 Fast pre-filtering {len(all_available_jobs)} jobs...")
+        pre_filtered_jobs = quick_skill_filter(profile_data, all_available_jobs, top_n=20)
+        print(f"📊 Pre-filtered to {len(pre_filtered_jobs)} promising jobs")
+        
+        # 3. AI ENHANCED MATCHING: Use AI on pre-filtered jobs only
         final_matches = []
-        if use_ai_matching and all_available_jobs:
+        if use_ai_matching and pre_filtered_jobs:
             try:
-                print(f"🤖 Starting AI-enhanced job matching analysis...")
+                print(f"🤖 Starting AI analysis on {len(pre_filtered_jobs)} pre-filtered jobs...")
                 ai_results = ai_enhanced_job_matching(
                     profile_data=profile_data, 
-                    jobs_list=all_available_jobs[:100],  # Increased for better matches
+                    jobs_list=pre_filtered_jobs,  # Much smaller list!
                     vector_resume_text=resume_text
                 )
                 
@@ -2163,7 +2371,7 @@ def api_match():
                                 'work_arrangement': original_job.get('work_arrangement', ''),
                                 'salary_range': salary_info,
                                 'match_score': ai_match['comprehensive_score'],
-                                'match_percentage': ai_match['match_percentage'],
+                                'match_percentage': ai_match.get('overall_match_score', ai_match.get('match_percentage', 0)),
                                 'skills_only_percentage': ai_match.get('skills_only_percentage', 0),
                                 'matched_skills': ai_match.get('matched_skills', []),
                                 'missing_skills': ai_match.get('skill_gaps', []),
@@ -2382,6 +2590,104 @@ def api_match():
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Matching failed: {str(e)}'}), 500
+
+
+@app.route('/api/match-efficient', methods=['POST'])
+def api_match_efficient():
+    """Efficient Vector-Based Job Matching - Single AI Call Approach"""
+    try:
+        data = request.get_json()
+        profile_id = data.get('profile_id')
+        limit = data.get('limit', 10)
+        
+        if not profile_id:
+            return jsonify({'error': 'Profile ID is required'}), 400
+        
+        # Check if vector matching is available
+        if not VECTOR_MATCHING_AVAILABLE or not vector_job_matcher:
+            return jsonify({
+                'error': 'Vector matching not available',
+                'fallback_info': 'Please use /api/match endpoint',
+                'vector_setup_required': True
+            }), 503
+        
+        # Load profile from PostgreSQL
+        profile_data = profile_manager.load_profile(profile_id)
+        if not profile_data:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        print(f"🚀 Starting efficient vector-based matching for {profile_data.get('name', 'user')}")
+        
+        # Use the efficient vector matcher - this is the magic!
+        matching_result = vector_job_matcher.match_jobs_efficiently(
+            profile_data=profile_data,
+            limit=limit
+        )
+        
+        if matching_result.get('method') == 'error':
+            return jsonify({
+                'error': 'Vector matching failed',
+                'details': matching_result.get('analysis', 'Unknown error')
+            }), 500
+        
+        # Helper function to clean HTML from text
+        def clean_html_text(text):
+            if not text:
+                return ''
+            import re
+            # Remove HTML tags
+            text = re.sub(r'<[^>]+>', ' ', str(text))
+            # Remove HTML entities
+            text = re.sub(r'&[a-zA-Z0-9#]+;', ' ', text)
+            # Clean up whitespace
+            text = re.sub(r'\s+', ' ', text).strip()
+            return text
+        
+        # Format response for frontend compatibility with clean HTML
+        formatted_matches = []
+        for match in matching_result.get('matches', []):
+            formatted_match = {
+                'job_id': match.get('job_id'),
+                'job_title': clean_html_text(match.get('title')),
+                'company_name': clean_html_text(match.get('company_name')),
+                'location': clean_html_text(match.get('location')),
+                'job_description': clean_html_text(match.get('description')),
+                'match_percentage': 90 - (match.get('match_rank', 1) * 5),  # Simulated scores
+                'match_reason': f"Vector similarity match #{match.get('match_rank', 1)}",
+                'source': 'vector_database',
+                'job_category': ['Technology'],  # Default category
+                'employment_type': ['Full-time'],  # Default type
+                'min_salary': None,
+                'max_salary': None,
+                'currency': 'SGD'
+            }
+            formatted_matches.append(formatted_match)
+        
+        # Response with performance metrics
+        response_data = {
+            'status': 'success',
+            'matching_method': 'efficient_vector',
+            'profile_name': profile_data.get('name', 'Unknown'),
+            'profile_title': profile_data.get('title', ''),
+            'total_matches': len(formatted_matches),
+            'total_jobs_considered': matching_result.get('total_jobs_considered', 0),
+            'ai_calls_used': matching_result.get('ai_calls_used', 0),
+            'performance_improvement': f"Used {matching_result.get('ai_calls_used', 0)} AI calls instead of {matching_result.get('total_jobs_considered', 100)}",
+            'vector_analysis': matching_result.get('analysis', {}),
+            'matches': formatted_matches
+        }
+        
+        print(f"✅ Efficient matching complete: {len(formatted_matches)} matches, {matching_result.get('ai_calls_used', 0)} AI calls")
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"Efficient Match API error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': f'Efficient matching failed: {str(e)}',
+            'suggestion': 'Try running generate_job_vectors.py first'
+        }), 500
 
 
 @app.route('/api/generate-job-application-pdf', methods=['POST'])

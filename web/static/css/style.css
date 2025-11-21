@@ -89,6 +89,29 @@ body {
     box-shadow: 0 8px 25px rgba(56, 178, 172, 0.15);
 }
 
+/* Job Card Styling */
+.job-card {
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.job-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.job-card .job-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+}
+
+.job-card .company-name {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
 /* Skill and Industry Badges */
 .badge {
     font-size: 0.85em;
@@ -638,6 +661,34 @@ body {
         opacity: 1; 
         transform: translateY(0); 
     }
+}
+
+/* Disable slideUp and slideInUp animations for Match Jobs specifically */
+#matchingResults .slide-up,
+#matchingResults .job-card,
+#resultsContainer .slide-up,
+#resultsContainer .job-card,
+#matchingResults .animate__slideInUp,
+#resultsContainer .animate__slideInUp,
+#matchingResults .animate__animated,
+#resultsContainer .animate__animated {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+}
+
+/* Force immediate display for match results */
+#matchingResults .card,
+#resultsContainer .card,
+#matchingResults .col-lg-6,
+#resultsContainer .col-lg-6,
+#matchingResults .col-md-6,
+#resultsContainer .col-md-6 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
 }
 
 /* Profile Card Dropdown Menu Fixes */

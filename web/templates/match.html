@@ -4,6 +4,26 @@
 
 {% block extra_head %}
 <style>
+    /* DISABLE slideInUp animation for Match Jobs page only */
+    .slideInUp {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    
+    /* Disable all slideInUp-related animations on match results */
+    #matchingResults .slideInUp,
+    #resultsContainer .slideInUp,
+    #matchingResults [data-animation="slideInUp"],
+    #resultsContainer [data-animation="slideInUp"],
+    #matchingResults .animate__slideInUp,
+    #resultsContainer .animate__slideInUp {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        visibility: visible !important;
+    }
+    
     /* Ensure export button has prominent green border */
     #exportResults.btn-outline-success {
         border-color: #28a745 !important;
@@ -179,8 +199,8 @@
                                             </div>
                                             {% endif %}
                                             
-                                            <button style="background: linear-gradient(135deg, var(--primary-light), var(--primary))" class="btn btn-primary btn-sm w-100 match-btn" onclick="startMatching('{{ profile.id }}')">
-                                                <i class="fas fa-search me-1"></i>Find Matches
+                                            <button style="background: linear-gradient(135deg, var(--primary-light), var(--primary))" class="btn btn-primary btn-sm w-100 match-btn" onclick="startEfficientMatching('{{ profile.id }}')">
+                                                <i class="fas fa-search me-1"></i>Find Jobs
                                             </button>
                                         </div>
                                     </div>
@@ -305,16 +325,62 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- Load the simplified matching JavaScript -->
+<script src="{{ url_for('static', filename='js/match-simple.js') }}"></script>
+
 <script>
-// Main function to start job matching process
+// Use the simplified matching function
 function startMatching(profileId) {
     console.log('🔍 Starting job matching for profile:', profileId);
+    window.currentProfileId = profileId; // Store for PDF generation
+    performSimpleMatching(profileId);
+}
+
+// Essential utility functions
+function viewJob(jobId) {
+    console.log('👁️ Viewing job:', jobId);
+    // TODO: Implement job detail view
+    alert('Job details view coming soon!');
+}
+
+function clearSearch() {
+    console.log('🧹 Clearing search');
+    location.reload();
+}
+
+// Function to clear previous results
+function clearPreviousResults() {
+    console.log('🧹 Starting clearPreviousResults');
     
-    // Store profile ID globally for PDF generation
-    window.currentProfileId = profileId;
+    const resultsContainer = document.getElementById('resultsContainer');
+    const progressSection = document.getElementById('matchingProgress');
+    const resultsSection = document.getElementById('matchingResults');
     
-    // Call the actual matching function
-    performMatching(profileId);
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+        console.log('✅ Results container cleared');
+    } else {
+        console.log('⚠️ Results container not found');
+    }
+    
+    if (progressSection) {
+        progressSection.style.display = 'none';
+        console.log('✅ Progress section hidden');
+    } else {
+        console.log('⚠️ Progress section not found');
+    }
+    
+    if (resultsSection) {
+        resultsSection.style.display = 'none';
+        console.log('✅ Results section hidden');
+    } else {
+        console.log('⚠️ Results section not found');
+    }
+    
+    // Force a small delay to ensure DOM updates
+    setTimeout(() => {
+        console.log('🧹 Previous results clearing completed');
+    }, 50);
 }
 
 // Function to perform the actual API call
@@ -389,6 +455,380 @@ function updateProgress(percentage, message) {
     }
 }
 
+// Efficient matching function - uses vector database
+function startEfficientMatching(profileId) {
+    console.log('⚡ Starting EFFICIENT vector-based matching for profile:', profileId);
+    
+    // Prevent double clicks by disabling all match buttons temporarily
+    const matchButtons = document.querySelectorAll('.match-btn');
+    matchButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Finding Matches...';
+    });
+    
+    // Re-enable buttons after a delay
+    setTimeout(() => {
+        matchButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-rocket me-1"></i>Find Matches';
+        });
+    }, 3000);
+    
+    // Store profile ID globally for PDF generation
+    window.currentProfileId = profileId;
+    
+    // Call the efficient matching function
+    performEfficientMatching(profileId);
+}
+
+// OVERRIDE: Use simplified version
+async function performEfficientMatching(profileId) {
+    // Check if the external simplified matching function is available
+    if (typeof window.performSimpleMatching === 'function') {
+        console.log('✅ Using external simplified matching');
+        window.performSimpleMatching(profileId);
+    } else {
+        console.log('⚠️ External script not loaded, using fallback matching');
+        // Fallback to inline simple matching
+        performInlineSimpleMatching(profileId);
+    }
+}
+
+// Fallback inline simple matching function
+function performInlineSimpleMatching(profileId) {
+    console.log('🔄 Using inline fallback matching for profile:', profileId);
+    
+    // Show progress
+    const progressSection = document.getElementById('matchingProgress');
+    if (progressSection) {
+        progressSection.style.display = 'block';
+        updateProgress(20, 'Starting job matching...');
+    }
+    
+    // Make API call
+    fetch('/api/match-efficient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId, limit: 10 })
+    })
+    .then(response => {
+        updateProgress(60, 'Processing matches...');
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        updateProgress(100, 'Complete!');
+        if (typeof window.displaySimpleResults === 'function') {
+            window.displaySimpleResults(data);
+        } else {
+            displayEfficientResults(data);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Matching error:', error);
+        showError('Matching failed: ' + error.message);
+        if (progressSection) progressSection.style.display = 'none';
+    });
+}
+
+// OVERRIDE: Use simplified display  
+function displayEfficientResults(data) {
+    displaySimpleResults(data);
+}
+
+// Keep this for compatibility but redirect to simple version
+async function performEfficientMatchingOLD(profileId) {
+    const matchKey = `matching_${profileId}`;
+    
+    try {
+        // Prevent duplicate calls with unique key per profile
+        if (window[matchKey]) {
+            console.log('⚠️ Matching already in progress for profile:', profileId);
+            return;
+        }
+        
+        // Set unique flag immediately to prevent race conditions
+        window[matchKey] = true;
+        window.matchingInProgress = true;
+        console.log('🚀 Making EFFICIENT API call for profile:', profileId);
+        
+        // Show progress section
+        const progressSection = document.getElementById('matchingProgress');
+        const resultsSection = document.getElementById('matchingResults');
+        
+        if (progressSection) {
+            progressSection.style.display = 'block';
+            progressSection.scrollIntoView({behavior: 'smooth'});
+        }
+        if (resultsSection) {
+            resultsSection.style.display = 'none';  
+        }
+        
+        // Update progress for efficient matching
+        updateProgress(30, 'Loading job database...');
+        
+        const response = await fetch('/api/match-efficient', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                profile_id: profileId,
+                limit: 10
+            })
+        });
+        
+        updateProgress(70, 'Analyzing job matches...');
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 503) {
+                throw new Error('Efficient matching not available. ' + errorData.fallback_info);
+            }
+            throw new Error('API request failed: ' + response.statusText);
+        }
+        
+        const data = await response.json();
+        console.log('✅ EFFICIENT API response received');
+        console.log('📊 Data structure:', {
+            hasMatches: !!(data && data.matches),
+            matchesLength: data && data.matches ? data.matches.length : 0,
+            profileName: data ? data.profile_name : 'none',
+            totalMatches: data ? data.total_matches : 'none',
+            dataKeys: data ? Object.keys(data) : []
+        });
+        console.log('🔍 Full data object:', data);
+        
+        updateProgress(100, 'Matching complete!');
+        
+        // Reset both flags before displaying results
+        window[matchKey] = false;
+        window.matchingInProgress = false;
+        
+        // Call display function once
+        console.log('🎯 Calling displayEfficientResults');
+        displayEfficientResults(data);
+        
+    } catch (error) {
+        console.error('❌ Efficient matching error:', error);
+        
+        // Reset both flags on error
+        window[matchKey] = false;
+        window.matchingInProgress = false;
+        
+        if (error.message.includes('not available')) {
+            showError('⚠️ Vector database not ready. Please run: python generate_job_vectors.py first, or use Standard matching.');
+        } else {
+            showError('Failed to find efficient matches: ' + error.message);
+        }
+    }
+}
+
+// Function to display efficient matching results
+function displayEfficientResults(data) {
+    console.log('🎯 displayEfficientResults called with data:', data);
+    
+    try {
+        const resultsSection = document.getElementById('matchingResults');
+        const container = document.getElementById('resultsContainer');
+        const headerInfo = document.getElementById('matchResultsHeader');
+        const progressSection = document.getElementById('matchingProgress');
+        
+        console.log('📍 DOM elements found:', {
+            resultsSection: !!resultsSection,
+            container: !!container,
+            headerInfo: !!headerInfo,
+            progressSection: !!progressSection
+        });
+        
+        // Hide progress and show results
+        if (progressSection) {
+            progressSection.style.display = 'none';
+            console.log('✅ Progress section hidden');
+        }
+        if (resultsSection) {
+            resultsSection.style.display = 'block';
+            console.log('✅ Results section shown');
+        }
+        
+        // Update header
+        if (headerInfo) {
+            headerInfo.innerHTML = `
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Matches for ${data.profile_name || 'Profile'}</h5>
+                <small class="text-muted">Found ${data.total_matches || 0} opportunities</small>
+            `;
+            console.log('✅ Header updated');
+        }
+    
+    if (container && data.matches && data.matches.length > 0) {
+        console.log(`🔨 Starting to generate ${data.matches.length} job cards`);
+        let html = '<div class="row g-4">';
+        
+        data.matches.slice(0, 6).forEach((match, index) => {
+            console.log(`🏗️ Generating card ${index + 1}:`, {
+                title: match.job_title,
+                company: match.company_name,
+                percentage: match.match_percentage
+            });
+            const comprehensiveScore = parseFloat((match.match_percentage || 85).toFixed(1));
+            const scoreClass = comprehensiveScore >= 80 ? 'success' : comprehensiveScore >= 60 ? 'warning' : 'info';
+            
+            // Clean and escape data to prevent layout issues
+            function sanitizeText(text, maxLength = null) {
+                if (!text) return '';
+                let cleaned = text.toString()
+                    .replace(/'/g, '&#39;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/`/g, '&#96;')
+                    .replace(/\$/g, '&#36;')
+                    .replace(/\\/g, '&#92;')
+                    .replace(/\n/g, ' ')
+                    .replace(/\r/g, ' ')
+                    .replace(/\t/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                return maxLength ? cleaned.substring(0, maxLength) : cleaned;
+            }
+            
+            const jobTitle = sanitizeText(match.job_title || 'Job Opportunity', 60);
+            const companyName = sanitizeText(match.company_name || 'Various Companies', 40);
+            const location = sanitizeText(match.location || 'Singapore', 30);
+            const description = sanitizeText(match.job_description || 'Exciting opportunity matching your profile.', 120);
+            
+            html += `
+                <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
+                    <div class="job-card shadow-sm h-100" style="border-radius: 12px; border: 1px solid #e9ecef; display: flex; flex-direction: column;">
+                        <!-- Job Header with Gradient -->
+                        <div class="card-header bg-gradient-light border-0 p-4" style="border-radius: 12px 12px 0 0; flex-shrink: 0;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1 pe-3">
+                                    <h5 class="job-title mb-1 fw-bold text-truncate" style="font-size: 1.1rem; color: #2c3e50;">${jobTitle}</h5>
+                                    <p class="company-name mb-0 text-muted fw-normal text-truncate" style="font-size: 0.9rem;">${companyName}</p>
+                                </div>
+                                <span class="badge bg-${scoreClass} px-2 py-1 flex-shrink-0" style="font-size: 0.8rem; font-weight: 600;">${comprehensiveScore.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Job Body -->
+                        <div class="card-body p-4 flex-grow-1 d-flex flex-column">
+                            <!-- Job Details -->
+                            <div class="job-details mb-3 flex-shrink-0">
+                                <div class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-map-marker-alt me-2 text-primary" style="width: 16px;"></i>
+                                    <span class="fw-normal" style="font-size: 0.9rem;">${location}</span>
+                                </div>
+                                <div class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-briefcase me-2 text-success" style="width: 16px;"></i>
+                                    <span class="fw-normal" style="font-size: 0.9rem;">Full-time</span>
+                                </div>
+                                <div class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-chart-line me-2 text-info" style="width: 16px;"></i>
+                                    <span class="fw-normal" style="font-size: 0.9rem;">Match: ${comprehensiveScore.toFixed(1)}%</span>
+                                </div>
+                            </div>
+
+                            <!-- Job Description Preview -->
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-0 fw-normal" style="font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                    ${description}...
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer with Gradient -->
+                        <div class="card-footer bg-gradient-light border-0 p-4" style="border-radius: 0 0 12px 12px; flex-shrink: 0;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted fw-normal">AI Matched</small>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="viewJob('${match.job_id || index}')">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                    <button class="btn btn-sm btn-primary fw-semibold" onclick="generateJobApplicationPDF('${match.job_id || index}', '${jobTitle.replace(/'/g, "\\'")}', ${comprehensiveScore.toFixed(1)})">
+                                        <i class="fas fa-file-pdf me-1"></i>Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        
+        console.log('📝 Generated HTML length:', html.length);
+        console.log('📝 Generated HTML preview:', html.substring(0, 200) + '...');
+        
+        container.innerHTML = html;
+        console.log('✅ HTML injected into container');
+        
+        // Verify the cards were actually created
+        const createdCards = container.querySelectorAll('.card');
+        console.log(`✅ Created ${createdCards.length} cards in DOM`);
+        
+        // Clear any existing animations that might interfere
+        createdCards.forEach((card, idx) => {
+            card.style.transform = 'none';
+            card.style.opacity = '1';
+            card.style.transition = 'none';
+            console.log(`🎨 Card ${idx + 1} styles reset`);
+        });
+        
+        // Scroll to results smoothly
+        setTimeout(() => {
+            if (resultsSection) {
+                resultsSection.scrollIntoView({behavior: 'smooth'});
+                console.log('📜 Scrolled to results section');
+            }
+        }, 100);
+    } else {
+            console.log('❌ No matches to display');
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5>No efficient matches found</h5>
+                    <p class="text-muted">The vector database might need setup or your profile needs more details.</p>
+                    <button class="btn btn-primary" onclick="location.reload()">Try Again</button>
+                </div>
+            `;
+        }
+        
+        console.log('✅ displayEfficientResults completed successfully');
+        
+        // Reset the matching flag
+        window.matchingInProgress = false;
+        
+    } catch (error) {
+        console.error('❌ Error in displayEfficientResults:', error);
+        console.error('❌ Data received:', data);
+        
+        // Reset the matching flag even on error
+        window.matchingInProgress = false;
+        
+        // Show error message to user
+        const container = document.getElementById('resultsContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5>Error displaying results</h5>
+                    <p class="text-muted">There was an error processing the job matches. Please try again.</p>
+                    <button class="btn btn-primary" onclick="location.reload()">Reload Page</button>
+                </div>
+            `;
+        }
+        
+        // Also show results section even on error
+        const resultsSection = document.getElementById('matchingResults');
+        if (resultsSection) resultsSection.style.display = 'block';
+        
+        const progressSection = document.getElementById('matchingProgress');
+        if (progressSection) progressSection.style.display = 'none';
+    }
+}
+
 // Function to display matching results
 function displayResults(data) {
     const resultsSection = document.getElementById('matchingResults');
@@ -418,7 +858,7 @@ function displayResults(data) {
             
             html += `
                 <div class="col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm job-opportunity-card">
+                    <div class="card shadow-sm job-opportunity-card" style="min-height: 300px;">
                         <!-- Header with Gradient -->
                         <div class="card-header bg-gradient-light border-0 p-4" style="border-radius: 12px 12px 0 0;">
                             <div class="d-flex justify-content-between align-items-start">
@@ -642,9 +1082,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const newSearchBtn = document.getElementById('newSearch');
     if (newSearchBtn) {
         newSearchBtn.addEventListener('click', function() {
-            document.getElementById('matchingProgress').style.display = 'none';
-            document.getElementById('matchingResults').style.display = 'none';
+            console.log('🔄 Starting new search - clearing everything');
+            
+            // Clear all results and progress
+            clearPreviousResults();
+            
+            // Reset profile selection visual state
+            const profileCards = document.querySelectorAll('.profile-selector');
+            profileCards.forEach(card => {
+                card.classList.remove('border-primary', 'bg-light');
+                card.style.borderWidth = '';
+            });
+            
+            // Clear global profile ID and reset flags
+            window.currentProfileId = null;
+            window.matchingInProgress = false;
+            
+            // Scroll to top
             window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            console.log('✅ New search ready - please select a profile');
         });
     }
     

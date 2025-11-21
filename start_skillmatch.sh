@@ -4,7 +4,7 @@
 # Usage: ./start_skillmatch.sh
 
 echo "🚀 SkillsMatch.AI Universal Startup Script"
-echo "📍 This script ensures 'smai' conda environment is always activated"
+echo "📍 This script ensures 'base' conda environment is always activated"
 echo ""
 
 # Get the directory where this script is located
@@ -32,12 +32,12 @@ else
     exit 1
 fi
 
-# Check if smai environment exists
-if ! conda env list | grep -q "smai"; then
-    echo "❌ Error: 'smai' conda environment not found!"
+# Check if base environment exists
+if ! conda env list | grep -q "base"; then
+    echo "❌ Error: 'base' conda environment not found!"
     echo "📝 Please create it first:"
-    echo "   conda create -n smai python=3.11"
-    echo "   conda activate smai"
+    echo "   conda create -n base python=3.11"
+    echo "   conda activate base"
     echo "   pip install -r requirements.txt"
     echo ""
     echo "📋 Available environments:"
@@ -45,7 +45,7 @@ if ! conda env list | grep -q "smai"; then
     exit 1
 fi
 
-echo "🔧 Activating smai environment..."
+echo "🔧 Activating base environment..."
 
 # Change to web directory
 cd "$WEB_DIR" || {
@@ -57,20 +57,20 @@ cd "$WEB_DIR" || {
 echo "🔧 Forcing conda activation..."
 
 # Method 1: Standard conda activate
-conda activate smai 2>/dev/null
+conda activate base 2>/dev/null
 
 # Method 2: Force activation if first attempt failed
-if [ "$CONDA_DEFAULT_ENV" != "smai" ]; then
+if [ "$CONDA_DEFAULT_ENV" != "base" ]; then
     echo "🔄 First activation attempt failed, trying alternative methods..."
     eval "$(conda shell.bash hook)"
-    conda activate smai
+    conda activate base
 fi
 
 # Method 3: Use conda run if activation still failed
-if [ "$CONDA_DEFAULT_ENV" != "smai" ]; then
+if [ "$CONDA_DEFAULT_ENV" != "base" ]; then
     echo "⚠️  Direct activation failed. Using conda run as primary method..."
-    echo "🔧 Running: conda run -n smai python app.py"
-    echo "✅ Running in correct conda environment: smai"
+    echo "🔧 Running: conda run -n base python app.py"
+    echo "✅ Running in correct conda environment: base"
     echo "📂 Working directory: $(pwd)"
     echo "🌐 Starting Flask app on http://localhost:5004"
     echo "💡 App features: Profile Matching, AI Chat, Database Management"
@@ -80,9 +80,9 @@ if [ "$CONDA_DEFAULT_ENV" != "smai" ]; then
     echo ""
     
     # Use conda run to ensure correct environment
-    conda run -n smai python app.py
+    conda run -n base python app.py
 else
-    echo "✅ smai environment activated successfully!"
+    echo "✅ base environment activated successfully!"
     
     # Verify Python environment
     echo "🐍 Using Python: $(which python)"

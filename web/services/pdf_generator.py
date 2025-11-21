@@ -278,7 +278,8 @@ Sincerely,
             ['Employment Type:', employment_text],
             ['Position Level:', job_data.get('position_level', 'N/A')],
             ['Work Arrangement:', job_data.get('work_arrangement', 'N/A')],
-            ['Match Score:', f"{job_data.get('match_percentage', 0):.1f}%"]
+            # Match score removed per user request
+            # ['Match Score:', f"{job_data.get('match_percentage', 0):.1f}%"]
         ]
         
         # Add salary information if available

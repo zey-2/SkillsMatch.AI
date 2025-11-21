@@ -188,7 +188,7 @@
              data-requirements="{{ (job.job_requirements|striptags|lower) if job.job_requirements else '' }}"
              data-location="{{ (job.location or '')|lower }}"
              data-skills="{{ (job.skills_required|join(', ') if job.skills_required else '')|lower }}">
-            <div class="job-card h-100">
+            <div class="job-card" style="min-height: 320px;">
                 <!-- Job Header with Gradient -->
                 <div class="card-header bg-gradient-light border-0 p-4" style="border-radius: 12px 12px 0 0;">
                     <div class="d-flex justify-content-between align-items-start">
