@@ -219,7 +219,7 @@ try:
 except ImportError as e:
     print(f"Warning: SkillMatch core modules not available: {e}")
     SkillMatchAgent = None
-    UserProfile = None
+    # UserProfile = None  # DON'T override the database UserProfile model!
     SkillItem = None
     ExperienceLevel = None
     UserPreferences = None
