@@ -1015,21 +1015,39 @@ def index():
             from web.database.db_config import DatabaseConfig
         print("🔍 HOME: Database imports successful!")
         
-        # Get database session (exact same pattern as jobs_listing)
-        print("🔍 HOME: Creating database config...")
-        db_config = DatabaseConfig()
-        print("🔍 HOME: Creating session...")
-        session = db_config.SessionLocal()
-        print("🔍 HOME: Session created successfully!")
-        
+        # Get database config using same pattern as working routes
         try:
-            # Count total jobs (exact same as jobs_listing)
-            jobs = session.query(Job).filter(Job.is_active == True).all()
-            stats['total_jobs'] = len(jobs)
-            
-            # Count total profiles (only active ones to match Profiles route)
-            profiles = session.query(UserProfile).filter(UserProfile.is_active == True).all()
-            stats['total_profiles'] = len(profiles)
+            from database.db_config import db_config
+            print("✅ HOME: Imported database.db_config successfully")
+        except ImportError:
+            try:
+                from web.database.db_config import db_config
+                print("✅ HOME: Imported web.database.db_config successfully")
+            except ImportError:
+                # Create minimal fallback
+                class MinimalDBConfig:
+                    @contextlib.contextmanager
+                    def session_scope(self):
+                        yield None
+                db_config = MinimalDBConfig()
+                print("⚠️ HOME: Using fallback db_config")
+        
+        # Use same session pattern as working jobs_listing route
+        with db_config.session_scope() as session:
+            if session is None:
+                print("⚠️ HOME: Database session is None - using fallback")
+                stats['total_jobs'] = 0
+                stats['total_profiles'] = 0
+            else:
+                # Count total jobs (exact same as jobs_listing)
+                jobs = session.query(Job).filter(Job.is_active == True).all()
+                stats['total_jobs'] = len(jobs)
+                
+                # Count total profiles (only active ones to match Profiles route)
+                profiles = session.query(UserProfile).filter(UserProfile.is_active == True).all()
+                stats['total_profiles'] = len(profiles)
+                
+                print(f"📊 HOME: Found {stats['total_jobs']} jobs and {stats['total_profiles']} profiles")
             
             # Get job categories for chart (handle Python lists from database)
             category_counts = {}
@@ -1070,10 +1088,7 @@ def index():
                     'values': list(stats['job_categories'].values())
                 }
             
-            print(f"🏠 HOME page stats: jobs={stats['total_jobs']}, profiles={stats['total_profiles']}, categories={len(stats['job_categories'])}")
-            
-        finally:
-            session.close()
+                print(f"🏠 HOME page stats: jobs={stats['total_jobs']}, profiles={stats['total_profiles']}, categories={len(stats['job_categories'])}")
             
     except Exception as db_error:
         print(f"⚠️ Database error in HOME: {db_error}")
