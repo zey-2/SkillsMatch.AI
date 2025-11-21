@@ -1038,14 +1038,22 @@ def index():
                 print("⚠️ HOME: Database session is None - using fallback")
                 stats['total_jobs'] = 0
                 stats['total_profiles'] = 0
+                jobs = []  # Empty list for job categories processing
             else:
                 # Count total jobs (exact same as jobs_listing)
                 jobs = session.query(Job).filter(Job.is_active == True).all()
                 stats['total_jobs'] = len(jobs)
                 
                 # Count total profiles (only active ones to match Profiles route)
-                profiles = session.query(UserProfile).filter(UserProfile.is_active == True).all()
-                stats['total_profiles'] = len(profiles)
+                print(f"🔍 HOME: UserProfile class: {UserProfile}")
+                print(f"🔍 HOME: UserProfile.is_active: {getattr(UserProfile, 'is_active', 'NOT FOUND')}")
+                try:
+                    profiles = session.query(UserProfile).filter(UserProfile.is_active == True).all()
+                    stats['total_profiles'] = len(profiles)
+                    print(f"✅ HOME: Successfully queried {len(profiles)} profiles")
+                except Exception as profile_error:
+                    print(f"❌ HOME: Error querying profiles: {profile_error}")
+                    stats['total_profiles'] = 0
                 
                 print(f"📊 HOME: Found {stats['total_jobs']} jobs and {stats['total_profiles']} profiles")
             
