@@ -44,7 +44,9 @@ class VectorJobMatcher:
                     self.jobs_data = json.load(f)
                 logger.info(f"📊 Loaded {len(self.jobs_data)} jobs")
             else:
-                logger.warning("⚠️ Job vector data not found - run generate_job_vectors.py first")
+                logger.warning(
+                    "⚠️ Job vector data not found - run scripts/generate_job_vectors.py first"
+                )
             
             # Load embeddings
             embeddings_file = data_dir / "job_embeddings.pkl"
@@ -53,7 +55,9 @@ class VectorJobMatcher:
                     self.job_embeddings = pickle.load(f)
                 logger.info(f"🎯 Loaded {len(self.job_embeddings)} job embeddings")
             else:
-                logger.warning("⚠️ Job embeddings not found - run generate_job_vectors.py first")
+                logger.warning(
+                    "⚠️ Job embeddings not found - run scripts/generate_job_vectors.py first"
+                )
                 
         except Exception as e:
             logger.error(f"❌ Error loading job vectors: {e}")

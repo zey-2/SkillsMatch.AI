@@ -91,7 +91,7 @@ SkillsMatch.AI is a comprehensive AI-powered platform that matches users with jo
 
 4. **Set up configuration and API keys**
    ```bash
-   python skillsmatch.py setup
+  python skillmatch.py setup
    ```
    
    **Required API Keys:**
@@ -105,14 +105,66 @@ SkillsMatch.AI is a comprehensive AI-powered platform that matches users with jo
 
 5. **Initialize vector database** (Optional but recommended)
    ```bash
-   python initialize_vector_db.py
+  python scripts/initialize_vector_db.py
    ```
 
 ### First Run
 
 Try the sample profile:
 ```bash
-python skillsmatch.py match --profile profiles/john_developer.json
+python skillmatch.py match --profile profiles/john_developer.json
+```
+
+### Entry Points (Start Here)
+- **CLI**: `python skillmatch.py`
+- **Web app (local)**: `python web/app.py`
+- **Production (WSGI)**: `gunicorn wsgi:application`
+
+Utility scripts live in `scripts/`.
+
+## 🚀 Deployment (SQLite on Render)
+
+SQLite is the default database for Render deployments. It removes external
+dependencies and simplifies deployment because the database file is bundled
+and initialized during build.
+
+### Why SQLite on Render
+- No external database service required
+- Lower cost and fewer moving parts
+- Faster startup and no network latency
+- Persistent disk keeps the database between deploys
+
+### Render Setup
+1. Create a new Web Service and connect the repo.
+2. Build command:
+  ```bash
+  pip install -r requirements-render.txt && python init_sqlite.py
+  ```
+3. Start command:
+  ```bash
+  gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2
+  ```
+4. Environment variables:
+  - `USE_SQLITE=true`
+  - `RENDER=true`
+  - `OPENAI_API_KEY=...`
+  - `GITHUB_TOKEN=...` (optional)
+
+### Files Involved
+- `requirements-render.txt`: minimal production dependencies
+- `render.yaml`: example Render configuration
+- `init_sqlite.py`: creates tables and sample data
+- `wsgi.py`: production entry point
+
+### Database Location
+- Production: `/opt/render/project/src/web/data/skillsmatch.db`
+- Local: `web/data/skillsmatch.db`
+
+### Local SQLite Test
+```bash
+export USE_SQLITE=true
+cd web
+python app.py
 ```
 
 ## 🏗️ System Architecture
@@ -632,33 +684,33 @@ SkillsMatch.AI provides several CLI commands:
 #### 🔍 Find Matching Opportunities
 ```bash
 # Use existing profile
-python skillsmatch.py match --profile profiles/john_developer.json
+python skillmatch.py match --profile profiles/john_developer.json
 
 # Interactive profile creation
-python skillsmatch.py match --interactive
+python skillmatch.py match --interactive
 ```
 
 #### 📚 Analyze Skill Gaps
 ```bash
 # General skill gap analysis
-python skillsmatch.py gaps --profile profiles/john_developer.json
+python skillmatch.py gaps --profile profiles/john_developer.json
 
 # Target-specific analysis
-python skillsmatch.py gaps --profile profiles/john_developer.json --target-role "Senior Data Scientist"
+python skillmatch.py gaps --profile profiles/john_developer.json --target-role "Senior Data Scientist"
 ```
 
 #### 🎓 Find Learning Opportunities
 ```bash
 # Search for specific skills
-python skillsmatch.py learn --skills "machine learning, deep learning" --difficulty intermediate --max-cost 500
+python skillmatch.py learn --skills "machine learning, deep learning" --difficulty intermediate --max-cost 500
 
 # Free courses only
-python skillsmatch.py learn --skills "python, sql" --max-cost 0
+python skillmatch.py learn --skills "python, sql" --max-cost 0
 ```
 
 #### 💬 Interactive Chat
 ```bash
-python skillsmatch.py chat
+python skillmatch.py chat
 ```
 
 
@@ -702,19 +754,19 @@ asyncio.run(main())
 ### Core SkillsMatch.AI Commands
 ```bash
 # Setup (first time only)
-python skillsmatch.py setup
+python skillmatch.py setup
 
 # Find job matches
-python skillsmatch.py match --profile profiles/john_developer.json
+python skillmatch.py match --profile profiles/john_developer.json
 
 # Analyze skill gaps  
-python skillsmatch.py gaps --profile profiles/john_developer.json
+python skillmatch.py gaps --profile profiles/john_developer.json
 
 # Find learning opportunities
-python skillsmatch.py learn --skills "python, machine learning"
+python skillmatch.py learn --skills "python, machine learning"
 
 # Chat with AI career advisor
-python skillsmatch.py chat
+python skillmatch.py chat
 ```
 
 ### File Structure After Setup

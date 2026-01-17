@@ -2686,7 +2686,7 @@ def api_match_efficient():
         traceback.print_exc()
         return jsonify({
             'error': f'Efficient matching failed: {str(e)}',
-            'suggestion': 'Try running generate_job_vectors.py first'
+            'suggestion': 'Try running scripts/generate_job_vectors.py first'
         }), 500
 
 

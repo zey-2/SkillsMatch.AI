@@ -619,7 +619,7 @@ async function performEfficientMatchingOLD(profileId) {
         window.matchingInProgress = false;
         
         if (error.message.includes('not available')) {
-            showError('⚠️ Vector database not ready. Please run: python generate_job_vectors.py first, or use Standard matching.');
+            showError('⚠️ Vector database not ready. Please run: python scripts/generate_job_vectors.py first, or use Standard matching.');
         } else {
             showError('Failed to find efficient matches: ' + error.message);
         }
