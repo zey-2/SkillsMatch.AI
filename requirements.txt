@@ -13,51 +13,22 @@ python-dotenv>=1.0.0
 pydantic>=2.4.0
 click>=8.1.0
 rich>=13.0.0
-asyncio-mqtt>=0.11.0
 
-# Data processing and validation
-jsonschema>=4.19.0
-pyyaml>=6.0.1
-
-# PDF generation
-reportlab>=4.0.0
-
-# PDF processing and document analysis
+# PDF processing and generation
 PyPDF2>=3.0.0
 pdfplumber>=0.11.0
 python-docx>=1.2.0
+reportlab>=4.0.0
+
+# HTTP clients
 requests>=2.31.0
-httpx>=0.25.0
 
 # Vector database for semantic search
 chromadb>=0.4.15
 sentence-transformers>=2.2.2
 
-# Direct API access (replacing scraping)
-# beautifulsoup4>=4.12.0  # Removed - using direct API access
-# lxml>=4.9.0  # Removed - using direct API access  
-# selenium>=4.15.0  # Removed - using direct API access
-
 # Database and storage (SQLite - bundled with Python)
 SQLAlchemy>=2.0.23
-alembic>=1.12.0
-
-# Security and authentication
-cryptography>=41.0.7
-bcrypt>=4.1.2
-PyJWT>=2.8.0
-
-# Monitoring and logging
-structlog>=23.2.0
-sentry-sdk>=1.38.0
-prometheus-client>=0.19.0
-
-# Caching and performance
-redis>=5.0.1
-diskcache>=5.6.0
-
-# Email and notifications
-sendgrid>=6.10.0
 
 # Web Framework (Essential for deployment)
 Flask>=3.0.0
@@ -68,16 +39,3 @@ Werkzeug>=3.0.0
 # Production server (for web interface)
 gunicorn>=21.2.0
 eventlet>=0.33.3
-
-# Development and testing
-pytest>=7.4.3
-pytest-asyncio>=0.21.0
-pytest-cov>=4.1.0
-black>=23.11.0
-flake8>=6.1.0
-bandit>=1.7.5
-mypy>=1.7.0
-
-# Optional: For advanced NLP
-sentence-transformers>=2.2.0
-transformers>=4.35.0

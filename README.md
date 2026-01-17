@@ -1,15 +1,32 @@
-# SkillsMatch.AI 🎯
+# SkillsMatch.AI
 
-**Intelligent Career and Skill Matching System**
+AI‑powered career and skill matching with a CLI and a Flask web app.
 
-SkillsMatch.AI is a comprehensive AI-powered platform that matches users with jobs, projects, and learning opportunities based on their skills, experience, and preferences. Built with Microsoft Agent Framework, powered by GitHub models and ChatGPT Pro, featuring vector database integration and modern web interface.
+## Entry Points
+- **CLI**: `python skillmatch.py`
+- **Web app (local)**: `python web/app.py`
+- **Production (WSGI)**: `gunicorn wsgi:application`
 
-![Python](https://img.shields.io/badge/python-v3.11+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![AI Framework](https://img.shields.io/badge/AI-Microsoft%20Agent%20Framework-purple.svg)
-![Vector DB](https://img.shields.io/badge/Vector%20DB-TF--IDF%20Similarity-orange.svg)
-![Web Framework](https://img.shields.io/badge/Web-Flask%20%2B%20Bootstrap%205-green.svg)
-![AI Models](https://img.shields.io/badge/AI-GPT--4o%20%2B%20GitHub%20Models-red.svg)
+## Quick Start
+```bash
+conda create -n smai python=3.11
+conda activate smai
+pip install -r requirements.txt
+python skillmatch.py setup
+python skillmatch.py match --profile profiles/john_developer.json
+```
+
+## Docs
+- Architecture: [docs/architecture.md](docs/architecture.md)
+- CLI: [docs/cli.md](docs/cli.md)
+- Web: [docs/web.md](docs/web.md)
+- Deployment: [docs/deployment.md](docs/deployment.md)
+- Configuration: [docs/configuration.md](docs/configuration.md)
+- Data & vectors: [docs/data.md](docs/data.md)
+
+## Configuration
+- **Secrets** go in `.env` (not committed)
+- **Non‑secret settings** go in `config/config.json` (see `config/config.example.json`)
 
 ## ✨ Features
 

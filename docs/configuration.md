@@ -1,0 +1,12 @@
+# Configuration
+
+## Secrets
+Store secrets in `.env` or environment variables. Do not commit secrets.
+
+Example keys:
+- `OPENAI_API_KEY`
+- `GITHUB_TOKEN`
+- `SECRET_KEY`
+
+## Non‑secret Settings
+Store non‑secret settings in `config/config.json` (see `config/config.example.json`).
