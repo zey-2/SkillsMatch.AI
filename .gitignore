@@ -130,6 +130,7 @@ dmypy.json
 
 # SkillMatch.AI specific
 config/config.json
+config/*.example.json
 .env
 *.log
 profiles/personal_*.json
