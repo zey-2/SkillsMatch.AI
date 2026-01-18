@@ -20,7 +20,7 @@ from web.app import app  # noqa: E402
 def test_profiles_route_detailed() -> None:
     """Run a detailed inspection of the /profiles route."""
     with app.test_client() as client:
-        print("\ud83e\uddea Testing actual /profiles route...")
+        print("[TEST] Testing actual /profiles route...")
 
         response = client.get("/profiles")
         print(f"Status Code: {response.status_code}")
@@ -40,35 +40,30 @@ def test_profiles_route_detailed() -> None:
                 "Create button": "New Profile" in response_text,
             }
 
-            print("\ud83d\udd0d Content Analysis:")
+            print("[DEBUG] Content Analysis:")
             for check, result in checks.items():
-                status = "\u2705" if result else "\u274c"
+                status = "[OK]" if result else "[FAIL]"
                 print(f"   {status} {check}")
 
-            if not checks["Profile name - Ruby"] and not checks[
-                "Profile name - Test"
-            ]:
+            if not checks["Profile name - Ruby"] and not checks["Profile name - Test"]:
                 if checks["Empty state"]:
                     print(
-                        "\n\u26a0\ufe0f  ISSUE FOUND: Template is showing empty "
+                        "\n[WARNING] ISSUE FOUND: Template is showing empty "
                         "state despite having profiles!"
                     )
-                    print(
-                        "   This suggests the {% if profiles %} condition is "
-                        "failing"
-                    )
+                    print("   This suggests the {% if profiles %} condition is failing")
                 else:
                     print(
-                        "\n\u274c UNKNOWN ISSUE: Neither profiles nor empty "
+                        "\n[ERROR] UNKNOWN ISSUE: Neither profiles nor empty "
                         "state showing"
                     )
 
                 if "DEBUG: About to render template with" in response_text:
-                    print("   \u2705 Debug output found - profiles processed")
+                    print("   [OK] Debug output found - profiles processed")
                 else:
-                    print("   \u274c Debug output missing - route may be failing")
+                    print("   [ERROR] Debug output missing - route may be failing")
 
-            print("\n\ud83d\udccb HTML snippet around profiles section:")
+            print("\n[DEBUG] HTML snippet around profiles section:")
             lines = response_text.split("\n")
             for i, line in enumerate(lines):
                 if "Profiles Grid" in line or "No Profiles Yet" in line:
@@ -79,7 +74,7 @@ def test_profiles_route_detailed() -> None:
                         print(f"{prefix}{lines[j]}")
                     break
         else:
-            print(f"\u274c Route failed with status {response.status_code}")
+            print(f"[ERROR] Route failed with status {response.status_code}")
 
 
 if __name__ == "__main__":

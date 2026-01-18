@@ -12,10 +12,14 @@ Provides:
 import pytest
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch
 from typing import Dict, List, Any
+
+# Add parent directory to path to allow importing from 'web' package
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Configure pytest
 pytest_plugins = []

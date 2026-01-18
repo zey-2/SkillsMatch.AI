@@ -21,37 +21,37 @@ from web.storage import profile_manager  # noqa: E402
 def test_profiles_route() -> None:
     """Test the /profiles route with a test client."""
     with app.test_client() as client:
-        print("\ud83e\uddea Testing /profiles route...")
+        print("[TEST] Testing /profiles route...")
 
         response = client.get("/profiles")
         print(f"Status Code: {response.status_code}")
 
         if response.status_code == 200:
-            print("\u2705 Route accessible")
+            print("[OK] Route accessible")
             response_text = response.get_data(as_text=True)
 
             if "profile.name" in response_text or "No profiles found" in response_text:
-                print("\u2705 Template rendered correctly")
+                print("[OK] Template rendered correctly")
 
                 if "RUBY FERDIANTO" in response_text:
-                    print("\u2705 Ruby's profile found in HTML")
+                    print("[OK] Ruby's profile found in HTML")
                 elif "Comprehensive Test User" in response_text:
-                    print("\u2705 Test profile found in HTML")
+                    print("[OK] Test profile found in HTML")
                 else:
-                    print("\u26a0\ufe0f  Profiles exist but not showing in HTML")
+                    print("[WARNING] Profiles exist but not showing in HTML")
                     print("First 500 chars of response:")
                     print(response_text[:500])
             else:
-                print("\u274c Template not rendering profiles correctly")
+                print("[ERROR] Template not rendering profiles correctly")
                 print("First 300 chars of response:")
                 print(response_text[:300])
         else:
-            print(f"\u274c Route failed with status {response.status_code}")
+            print(f"[ERROR] Route failed with status {response.status_code}")
             print(response.get_data(as_text=True)[:300])
 
 
 if __name__ == "__main__":
-    print("\ud83d\udd0d Direct profile manager test:")
+    print("[DEBUG] Direct profile manager test:")
     profiles = profile_manager.list_profiles()
     print(f"Found {len(profiles)} profiles directly")
     for profile in profiles:

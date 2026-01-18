@@ -35,18 +35,18 @@ def check_conda_environment():
 
     if is_production:
         print(
-            f"🚀 Running in production environment: {os.environ.get('RENDER_SERVICE_NAME', 'Cloud Platform')}"
+            f"[PROD] Running in production environment: {os.environ.get('RENDER_SERVICE_NAME', 'Cloud Platform')}"
         )
         print(f"🐍 Python environment: {conda_env or 'system'}")
     elif conda_env != "smai":
-        print("⚠️  WARNING: Not running in 'smai' conda environment!")
+        print("[WARNING]  WARNING: Not running in 'smai' conda environment!")
         print(f"📍 Current environment: {conda_env or 'base'}")
         print("🔧 To fix this, activate the environment first:")
         print("   conda activate smai")
         print("   python web/app.py")
         print("")
     else:
-        print(f"✅ Running in correct conda environment: {conda_env}")
+        print(f"[OK] Running in correct conda environment: {conda_env}")
 
 
 # Check environment on import (only in development)
@@ -127,7 +127,9 @@ try:
         )
 except ImportError:
     AI_MATCHING_AVAILABLE = False
-    print("⚠️  AI skill matching services not available, using fallback matching")
+    print(
+        "[WARNING]  AI skill matching services not available, using fallback matching"
+    )
 
 # Import efficient vector-based job matcher (resolved by import_manager)
 try:
@@ -135,7 +137,7 @@ try:
         from services.vector_job_matcher import vector_job_matcher
 except ImportError as e:
     VECTOR_MATCHING_AVAILABLE = False
-    print(f"⚠️ Vector job matching service not available: {e}")
+    print(f"[WARNING] Vector job matching service not available: {e}")
     vector_job_matcher = None
 
 # Vector search service import
@@ -145,9 +147,9 @@ try:
     except ImportError:
         from web.services.simple_vector_service import get_vector_service
     VECTOR_SEARCH_AVAILABLE = True
-    print("✅ Vector search service available")
+    print("[OK] Vector search service available")
 except ImportError as e:
-    print(f"⚠️ Vector search service not available: {e}")
+    print(f"[WARNING] Vector search service not available: {e}")
     VECTOR_SEARCH_AVAILABLE = False
 
 # Add src to path
@@ -180,10 +182,12 @@ openai_key = os.environ.get("OPENAI_API_KEY")
 github_token = os.environ.get("GITHUB_TOKEN")
 
 if openai_key:
-    print(f"✅ OpenAI API key loaded from .env (length: {len(openai_key)} characters)")
-    print("🚀 Using OpenAI model: gpt-5-mini")
+    print(
+        f"[OK] OpenAI API key loaded from .env (length: {len(openai_key)} characters)"
+    )
+    print("[PROD] Using OpenAI model: gpt-5-mini")
 else:
-    print("❌ No AI API keys found - will use enhanced basic matching")
+    print("[FAIL] No AI API keys found - will use enhanced basic matching")
 
 
 def parse_datetime(date_str):
@@ -263,7 +267,7 @@ def quick_skill_filter(profile_data, jobs_list, top_n=20):
         return [job for score, job in job_scores[:top_n]]
 
     except Exception as e:
-        print(f"⚠️ Quick filter error: {e}")
+        print(f"[WARNING] Quick filter error: {e}")
         return jobs_list[:top_n]
 
 
@@ -271,17 +275,17 @@ def quick_skill_filter(profile_data, jobs_list, top_n=20):
 def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
     """Use AI to analyze comprehensive user profile and match with jobs"""
     # Debug AI availability
-    print(f"🔍 AI Debug - openai module: {openai is not None}")
-    print(f"🔍 AI Debug - OpenAI class: {OpenAI is not None}")
-    print(f"🔍 AI Debug - API key available: {openai_key is not None}")
-    print(f"🔍 AI Debug - API key length: {len(openai_key) if openai_key else 0}")
+    print(f"[DEBUG] AI Debug - openai module: {openai is not None}")
+    print(f"[DEBUG] AI Debug - OpenAI class: {OpenAI is not None}")
+    print(f"[DEBUG] AI Debug - API key available: {openai_key is not None}")
+    print(f"[DEBUG] AI Debug - API key length: {len(openai_key) if openai_key else 0}")
 
     if not openai or not OpenAI:
-        print("⚠️ AI modules not available - falling back to basic matching")
+        print("[WARNING] AI modules not available - falling back to basic matching")
         return None
 
     if not openai_key and not github_token:
-        print("⚠️ No AI API keys available - falling back to basic matching")
+        print("[WARNING] No AI API keys available - falling back to basic matching")
         return None
 
     try:
@@ -342,7 +346,7 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
 
 You will analyze each opportunity based on these sophisticated criteria:
 
-🎯 ADVANCED MATCHING METHODOLOGY:
+[GOAL] ADVANCED MATCHING METHODOLOGY:
 ═══════════════════════════════════════════
 1. SKILLS ALIGNMENT (45%): 
    - Technical Skills Match: Direct overlap between candidate skills and job requirements
@@ -375,17 +379,17 @@ You will analyze each opportunity based on these sophisticated criteria:
 
 PROFESSIONAL PROFILE ANALYSIS:
 ═══════════════════════════════════════════
-👤 Name: {profile_context["name"]}
-🎯 Current Title: {profile_context["title"]}
+[INFO] Name: {profile_context["name"]}
+[GOAL] Current Title: {profile_context["title"]}
 📍 Location: {profile_context["location"]}
-📊 Experience Level: {profile_context["experience_level"]}
+[INFO] Experience Level: {profile_context["experience_level"]}
 📝 Professional Summary: {profile_context["summary"]}
 
 🛠️ Core Skills: {", ".join(profile_context["skills"][:15])}
 
-💼 Work Experience: {len(profile_context["work_experience"])} positions
+[INFO] Work Experience: {len(profile_context["work_experience"])} positions
 🎓 Education: {len(profile_context["education"])} entries
-🚀 Career Goals: {profile_context["goals"]}
+[PROD] Career Goals: {profile_context["goals"]}
 
 {resume_context}
 
@@ -426,7 +430,7 @@ Return a JSON response with this EXACT structure:
     "market_insights": "Current market trends relevant to candidate's profile and selected opportunities"
 }}"""
 
-        print("🤖 Requesting AI job matching analysis...")
+        print("[AGENT] Requesting AI job matching analysis...")
 
         # Use gpt-5-mini for matching
         models_to_try = ["gpt-5-mini"]
@@ -447,11 +451,11 @@ Return a JSON response with this EXACT structure:
                 )
 
                 ai_analysis = json.loads(response.choices[0].message.content)
-                print(f"✅ AI job matching completed using {model}")
+                print(f"[OK] AI job matching completed using {model}")
                 return ai_analysis
 
             except Exception as model_error:
-                print(f"⚠️ Model {model} failed: {model_error}")
+                print(f"[WARNING] Model {model} failed: {model_error}")
                 # Check for quota exceeded error
                 if (
                     "quota" in str(model_error).lower()
@@ -464,7 +468,7 @@ Return a JSON response with this EXACT structure:
                 continue
 
         print(
-            "❌ All AI models failed for job matching - generating enhanced mock response"
+            "[FAIL] All AI models failed for job matching - generating enhanced mock response"
         )
         return _generate_enhanced_mock_ai_response(profile_data, jobs_list)
 
@@ -476,16 +480,16 @@ Return a JSON response with this EXACT structure:
 def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
     """Generate simplified mock AI response with clear matching logic"""
     try:
-        print("🎯 Generating simplified job matching response...")
-        print(f"📊 Profile: {profile_data.get('name', 'Unknown')}")
-        print(f"📋 Raw skills data: {profile_data.get('skills', [])}")
+        print("[GOAL] Generating simplified job matching response...")
+        print(f"[INFO] Profile: {profile_data.get('name', 'Unknown')}")
+        print(f"[INFO] Raw skills data: {profile_data.get('skills', [])}")
 
         # Extract user skills
         user_skills = []
 
         # Use AI-powered skill categorization if available
         if AI_MATCHING_AVAILABLE:
-            print("🤖 Using AI-powered skill matching")
+            print("[AGENT] Using AI-powered skill matching")
             try:
                 # Use enhanced matching service via sync wrapper
                 def run_ai_matching():
@@ -526,7 +530,7 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                             }
                         )
 
-                print(f"✅ AI matching found {len(scored_jobs)} matches")
+                print(f"[OK] AI matching found {len(scored_jobs)} matches")
                 # Sort by score and return top matches
                 scored_jobs.sort(key=lambda x: x["score"], reverse=True)
                 return scored_jobs[:20]
@@ -534,17 +538,19 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             except Exception as e:
                 error_msg = str(e).lower()
                 if "unauthorized" in error_msg or "401" in error_msg:
-                    print(f"❌ AI API authorization failed: Please check your API keys")
+                    print(
+                        f"[FAIL] AI API authorization failed: Please check your API keys"
+                    )
                     print(
                         f"💡 Set GITHUB_TOKEN (for GitHub Models) or OPENAI_API_KEY (for OpenAI)"
                     )
                 elif "too many requests" in error_msg or "429" in error_msg:
                     print(
-                        f"⚠️ AI rate limit exceeded. Using enhanced traditional matching."
+                        f"[WARNING] AI rate limit exceeded. Using enhanced traditional matching."
                     )
                 else:
-                    print(f"❌ AI matching failed: {e}")
-                print(f"🔄 Falling back to enhanced traditional matching...")
+                    print(f"[FAIL] AI matching failed: {e}")
+                print(f"[RETRY] Falling back to enhanced traditional matching...")
                 # Fall through to traditional matching
 
         # Traditional matching with enhanced skill synonyms (fallback)
@@ -737,10 +743,10 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
         user_title = (profile_data.get("title") or "").lower()
         user_summary = (profile_data.get("summary") or "").lower()
 
-        print(f"🔍 Processed user skills: {user_skills}")
-        print(f"💼 User title: {user_title}")
+        print(f"[DEBUG] Processed user skills: {user_skills}")
+        print(f"[INFO] User title: {user_title}")
         print(f"📍 User location: {user_location}")
-        print(f"📊 Experience level: {user_experience}")
+        print(f"[INFO] Experience level: {user_experience}")
 
         # Industry keywords for better matching
         industry_keywords = {
@@ -857,7 +863,7 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
         # Enhanced job scoring with multiple factors
         scored_jobs = []
         excluded_hr_jobs_ai = []  # Track excluded HR jobs in AI matching
-        print(f"🔍 Analyzing {min(100, len(jobs_list))} jobs for matches...")
+        print(f"[DEBUG] Analyzing {min(100, len(jobs_list))} jobs for matches...")
 
         for job in jobs_list[:100]:  # Analyze more jobs for better matches
             # Extract skills from available text fields since job_skill_set doesn't exist
@@ -977,9 +983,9 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             matched_skills = []
 
             print(
-                f"🔍 DEBUG: Processing job '{job_title}' with skills: {job_skills_lower}"
+                f"[DEBUG] DEBUG: Processing job '{job_title}' with skills: {job_skills_lower}"
             )
-            print(f"👤 User skills: {user_skills}")
+            print(f"[INFO] User skills: {user_skills}")
 
             for job_skill in job_skills_lower:
                 job_skill_clean = job_skill.strip().lower()
@@ -997,7 +1003,7 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                     ):
                         matched_skills.append(job_skill)
                         print(
-                            f"✅ Direct Match: '{job_skill}' (user has '{user_skill}')"
+                            f"[OK] Direct Match: '{job_skill}' (user has '{user_skill}')"
                         )
                         skill_matched = True
                         break
@@ -1015,7 +1021,7 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                             ):
                                 matched_skills.append(job_skill)
                                 print(
-                                    f"✅ Synonym Match: '{job_skill}' ↔ '{user_skill}' (both in {skill_category} category)"
+                                    f"[OK] Synonym Match: '{job_skill}' ↔ '{user_skill}' (both in {skill_category} category)"
                                 )
                                 skill_matched = True
                                 break
@@ -1031,7 +1037,7 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
             skill_score = skill_coverage  # Simple ratio: matched/required
 
             print(
-                f"🎯 Skills calculation: {len(matched_skills)}/{len(job_skills_lower)} = {skill_coverage * 100:.1f}%"
+                f"[GOAL] Skills calculation: {len(matched_skills)}/{len(job_skills_lower)} = {skill_coverage * 100:.1f}%"
             )
 
             # 2. INDUSTRY/ROLE ALIGNMENT (25% weight) with EXCLUSION RULES
@@ -1259,11 +1265,11 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                     }
                 )
 
-        print(f"🎯 Total jobs analyzed: {min(100, len(jobs_list))}")
-        print(f"📊 Jobs meeting criteria: {len(scored_jobs)}")
+        print(f"[GOAL] Total jobs analyzed: {min(100, len(jobs_list))}")
+        print(f"[INFO] Jobs meeting criteria: {len(scored_jobs)}")
         if scored_jobs:
-            print(f"🏆 Top job score: {scored_jobs[0]['comprehensive_score']:.3f}")
-            print(f"🎯 Top job skills: {scored_jobs[0]['matched_skills'][:3]}")
+            print(f"[INFO] Top job score: {scored_jobs[0]['comprehensive_score']:.3f}")
+            print(f"[GOAL] Top job skills: {scored_jobs[0]['matched_skills'][:3]}")
 
         # Sort by comprehensive score and intelligent ranking
         scored_jobs.sort(
@@ -1305,11 +1311,11 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
         # FALLBACK: If no matches found, provide lower-threshold matches
         if not top_matches and scored_jobs:
             print(
-                "⚠️ No high-quality matches found, providing best available matches..."
+                "[WARNING] No high-quality matches found, providing best available matches..."
             )
             top_matches = scored_jobs[:5]  # Take top 5 regardless of strict criteria
         elif not top_matches:
-            print("⚠️ No matches found at all - returning empty results")
+            print("[WARNING] No matches found at all - returning empty results")
 
         # Create enhanced AI-style response
         mock_response = {
@@ -1334,18 +1340,18 @@ def _generate_enhanced_mock_ai_response(profile_data, jobs_list):
                 print()
             print("=" * 60)
             print(
-                f"✅ AI Successfully excluded {len(excluded_hr_jobs_ai)} HR jobs from IT professional matching"
+                f"[OK] AI Successfully excluded {len(excluded_hr_jobs_ai)} HR jobs from IT professional matching"
             )
         else:
             print("ℹ️  AI: No HR jobs found to exclude")
 
         print(
-            f"✅ Generated simplified response with {len(top_matches)} matches (showing all found)"
+            f"[OK] Generated simplified response with {len(top_matches)} matches (showing all found)"
         )
         return mock_response
 
     except Exception as e:
-        print(f"❌ Mock response generation failed: {e}")
+        print(f"[FAIL] Mock response generation failed: {e}")
         return None
 
 
@@ -1462,7 +1468,7 @@ def generate_ai_summary(profile_data):
 
                 resume_path = os.path.join("uploads", "resumes", resume_file)
                 if os.path.exists(resume_path):
-                    print(f"📄 Parsing resume PDF: {resume_file}")
+                    print(f"[INFO] Parsing resume PDF: {resume_file}")
                     with pdfplumber.open(resume_path) as pdf:
                         full_text = ""
                         for page in pdf.pages:
@@ -1473,24 +1479,24 @@ def generate_ai_summary(profile_data):
                         if full_text.strip():
                             resume_content = full_text.strip()
                             print(
-                                f"✅ Successfully extracted {len(full_text)} characters from resume"
+                                f"[OK] Successfully extracted {len(full_text)} characters from resume"
                             )
                         else:
                             resume_content = f"Has resume file: {resume_file} (could not extract text)"
-                            print("⚠️ PDF found but no text could be extracted")
+                            print("[WARNING] PDF found but no text could be extracted")
                 else:
                     resume_content = (
                         f"Resume file referenced: {resume_file} (file not found)"
                     )
-                    print(f"⚠️ Resume file not found at: {resume_path}")
+                    print(f"[WARNING] Resume file not found at: {resume_path}")
 
             except ImportError:
                 print(
-                    "⚠️ pdfplumber not available - install with: pip install pdfplumber"
+                    "[WARNING] pdfplumber not available - install with: pip install pdfplumber"
                 )
                 resume_content = f"Has resume: {resume_file}"
             except Exception as e:
-                print(f"❌ Could not read resume file {resume_file}: {e}")
+                print(f"[FAIL] Could not read resume file {resume_file}: {e}")
                 resume_content = f"Has resume: {resume_file}"
 
         # Create prompt for AI summary
@@ -1555,15 +1561,15 @@ Create a professional, engaging summary that highlights their unique value propo
                 )
 
                 summary = response.choices[0].message.content.strip()
-                print(f"✅ Generated AI summary using {model}: {summary[:50]}...")
+                print(f"[OK] Generated AI summary using {model}: {summary[:50]}...")
                 return summary
 
             except Exception as model_error:
-                print(f"⚠️ Model {model} failed: {model_error}")
+                print(f"[WARNING] Model {model} failed: {model_error}")
                 continue
 
         # If all models fail
-        print("❌ All AI models failed for summary generation")
+        print("[FAIL] All AI models failed for summary generation")
         return None
 
     except Exception as e:
@@ -1702,7 +1708,7 @@ def index():
     # Get job statistics using EXACT same approach as working jobs_listing route
     # Move this OUTSIDE data_loader condition so it always executes
     try:
-        print("🔍 HOME: Attempting database imports...")
+        print("[DEBUG] HOME: Attempting database imports...")
         # Using global imports: Job, UserProfile already imported
         try:
             from database.db_config import DatabaseConfig
@@ -1717,18 +1723,18 @@ def index():
                         return "sqlite:///job_opportunities.db"
 
             from web.database.db_config import DatabaseConfig
-        print("🔍 HOME: Database imports successful!")
+        print("[DEBUG] HOME: Database imports successful!")
 
         # Get database config using same pattern as working routes
         try:
             from database.db_config import db_config
 
-            print("✅ HOME: Imported database.db_config successfully")
+            print("[OK] HOME: Imported database.db_config successfully")
         except ImportError:
             try:
                 from web.database.db_config import db_config
 
-                print("✅ HOME: Imported web.database.db_config successfully")
+                print("[OK] HOME: Imported web.database.db_config successfully")
             except ImportError:
                 # Create minimal fallback
                 class MinimalDBConfig:
@@ -1737,12 +1743,12 @@ def index():
                         yield None
 
                 db_config = MinimalDBConfig()
-                print("⚠️ HOME: Using fallback db_config")
+                print("[WARNING] HOME: Using fallback db_config")
 
         # Use same session pattern as working jobs_listing route
         with db_config.session_scope() as session:
             if session is None:
-                print("⚠️ HOME: Database session is None - using fallback")
+                print("[WARNING] HOME: Database session is None - using fallback")
                 stats["total_jobs"] = 0
                 stats["total_profiles"] = 0
                 jobs = []  # Empty list for job categories processing
@@ -1752,9 +1758,9 @@ def index():
                 stats["total_jobs"] = len(jobs)
 
                 # Count total profiles (only active ones to match Profiles route)
-                print(f"🔍 HOME: UserProfile class: {UserProfile}")
+                print(f"[DEBUG] HOME: UserProfile class: {UserProfile}")
                 print(
-                    f"🔍 HOME: UserProfile.is_active: {getattr(UserProfile, 'is_active', 'NOT FOUND')}"
+                    f"[DEBUG] HOME: UserProfile.is_active: {getattr(UserProfile, 'is_active', 'NOT FOUND')}"
                 )
                 try:
                     profiles = (
@@ -1763,13 +1769,13 @@ def index():
                         .all()
                     )
                     stats["total_profiles"] = len(profiles)
-                    print(f"✅ HOME: Successfully queried {len(profiles)} profiles")
+                    print(f"[OK] HOME: Successfully queried {len(profiles)} profiles")
                 except Exception as profile_error:
-                    print(f"❌ HOME: Error querying profiles: {profile_error}")
+                    print(f"[FAIL] HOME: Error querying profiles: {profile_error}")
                     stats["total_profiles"] = 0
 
                 print(
-                    f"📊 HOME: Found {stats['total_jobs']} jobs and {stats['total_profiles']} profiles"
+                    f"[INFO] HOME: Found {stats['total_jobs']} jobs and {stats['total_profiles']} profiles"
                 )
 
             # Get job categories for chart (handle Python lists from database)
@@ -1810,7 +1816,7 @@ def index():
                             )
                     except Exception as parse_error:
                         print(
-                            f"🔍 Category parsing error for '{job.job_category}': {parse_error}"
+                            f"[DEBUG] Category parsing error for '{job.job_category}': {parse_error}"
                         )
 
             # Debug info removed - categories processing working correctly
@@ -1828,12 +1834,12 @@ def index():
                 }
 
                 print(
-                    f"🏠 HOME page stats: jobs={stats['total_jobs']}, profiles={stats['total_profiles']}, categories={len(stats['job_categories'])}"
+                    f"[HOME] HOME page stats: jobs={stats['total_jobs']}, profiles={stats['total_profiles']}, categories={len(stats['job_categories'])}"
                 )
 
     except Exception as db_error:
-        print(f"⚠️ Database error in HOME: {db_error}")
-        print(f"⚠️ Database error type: {type(db_error).__name__}")
+        print(f"[WARNING] Database error in HOME: {db_error}")
+        print(f"[WARNING] Database error type: {type(db_error).__name__}")
         import traceback
 
         traceback.print_exc()
@@ -1880,9 +1886,9 @@ def index():
         counts = list(stats["job_categories"].values())
 
         print(
-            f"📊 Chart data - Categories: {len(categories)}, Total jobs in chart: {sum(counts)}"
+            f"[INFO] Chart data - Categories: {len(categories)}, Total jobs in chart: {sum(counts)}"
         )
-        print(f"📊 Sample categories: {categories[:3] if categories else 'None'}")
+        print(f"[INFO] Sample categories: {categories[:3] if categories else 'None'}")
 
         # Truncate long category names for display while keeping full names for hover
         display_categories = []
@@ -2010,13 +2016,13 @@ def index():
             },
         }
     else:
-        print("⚠️ No job categories found for chart generation")
+        print("[WARNING] No job categories found for chart generation")
         # Ensure we always have chart data even if empty
         stats["chart_data"] = {"categories": [], "values": []}
 
     # Debug: Show final stats being passed to template
     print(
-        f"🏠 HOME page stats: jobs={stats.get('total_jobs', 0)}, profiles={stats.get('total_profiles', 0)}, categories={len(stats.get('job_categories', {}))}"
+        f"[HOME] HOME page stats: jobs={stats.get('total_jobs', 0)}, profiles={stats.get('total_profiles', 0)}, categories={len(stats.get('job_categories', {}))}"
     )
     # Chart data ready for template rendering
 
@@ -2102,7 +2108,7 @@ def dashboard():
                 )
 
         except Exception as db_error:
-            print(f"⚠️ Database error in dashboard: {db_error}")
+            print(f"[WARNING] Database error in dashboard: {db_error}")
             # Fallback to file-based profile counting
             profiles_dir = Path(__file__).parent.parent / "profiles"
             if profiles_dir.exists():
@@ -2281,7 +2287,7 @@ def dashboard():
         )
 
     except Exception as e:
-        print(f"❌ Dashboard error: {e}")
+        print(f"[FAIL] Dashboard error: {e}")
         return render_template(
             "dashboard.html",
             stats={"total_jobs": 0, "total_profiles": 0, "job_categories": {}},
@@ -2297,7 +2303,7 @@ def profiles():
         profiles_data = profile_manager.list_profiles()
         profile_files = []
 
-        print(f"📊 Loading {len(profiles_data)} profiles...")
+        print(f"[INFO] Loading {len(profiles_data)} profiles...")
 
         for profile_data in profiles_data:
             # Create profile object with enhanced data structure
@@ -2332,9 +2338,9 @@ def profiles():
         # Show storage info (skip if method doesn't exist)
         try:
             storage_info = profile_manager.get_storage_info()
-            print(f"✅ Using {storage_info['type']} storage for profiles")
+            print(f"[OK] Using {storage_info['type']} storage for profiles")
         except AttributeError:
-            print("✅ Using profile storage (method unavailable)")
+            print("[OK] Using profile storage (method unavailable)")
 
     except Exception as e:
         print(f"Error loading profiles: {e}")
@@ -2346,7 +2352,7 @@ def profiles():
 @app.route("/jobs")
 def jobs_listing():
     """Display all jobs from database"""
-    print("🔍 JOBS LISTING: Starting job listing request...")
+    print("[DEBUG] JOBS LISTING: Starting job listing request...")
     try:
         # Using global imports: Job already imported
         try:
@@ -2362,12 +2368,12 @@ def jobs_listing():
                         yield None
 
                 db_config = MinimalDBConfig()
-                print("⚠️ Using fallback db_config")
+                print("[WARNING] Using fallback db_config")
 
         # Use the same pattern as other working routes
         with db_config.session_scope() as session:
             if session is None:
-                print("⚠️ Database session is None - using fallback")
+                print("[WARNING] Database session is None - using fallback")
                 return render_template("jobs_listing.html", jobs=[], total_jobs=0)
 
             # Get all active jobs
@@ -2381,7 +2387,7 @@ def jobs_listing():
             # Convert to dictionaries for template
             jobs_data = [job.to_dict() for job in jobs]
 
-            print(f"📋 Loaded {len(jobs_data)} jobs for listing")
+            print(f"[INFO] Loaded {len(jobs_data)} jobs for listing")
 
             return render_template(
                 "jobs_listing.html", jobs=jobs_data, total_jobs=len(jobs_data)
@@ -2584,14 +2590,14 @@ def save_profile():
                         )
                         if success:
                             print(
-                                f"✅ Resume added to vector database: {resume_filename}"
+                                f"[OK] Resume added to vector database: {resume_filename}"
                             )
                         else:
                             print(
-                                f"⚠️ Failed to add resume to vector database: {resume_filename}"
+                                f"[WARNING] Failed to add resume to vector database: {resume_filename}"
                             )
                     except Exception as e:
-                        print(f"❌ Vector search error: {e}")
+                        print(f"[FAIL] Vector search error: {e}")
 
                 # Generate AI summary from PDF if no existing summary
                 if not profile_data.get("summary"):
@@ -2599,14 +2605,14 @@ def save_profile():
                         from .utils.pdf_extractor import extract_resume_text
                         from .utils.ai_summarizer import generate_profile_summary
 
-                        print("🔍 Analyzing PDF for professional summary...")
+                        print("[DEBUG] Analyzing PDF for professional summary...")
 
                         # Extract text from PDF
                         pdf_result = extract_resume_text(str(resume_path))
 
                         if pdf_result["success"]:
                             print(
-                                f"✅ PDF text extracted ({pdf_result['word_count']} words)"
+                                f"[OK] PDF text extracted ({pdf_result['word_count']} words)"
                             )
 
                             # Generate AI summary
@@ -2617,22 +2623,24 @@ def save_profile():
                             if summary_result["success"]:
                                 profile_data["summary"] = summary_result["summary"]
                                 print(
-                                    f"✅ AI summary generated using {summary_result['model_used']}"
+                                    f"[OK] AI summary generated using {summary_result['model_used']}"
                                 )
                                 print(
                                     f"📝 Summary: {summary_result['summary'][:100]}..."
                                 )
                             else:
                                 print(
-                                    f"⚠️ AI summary generation failed: {summary_result['error']}"
+                                    f"[WARNING] AI summary generation failed: {summary_result['error']}"
                                 )
                         else:
                             print(
-                                f"⚠️ PDF text extraction failed: {pdf_result['error']}"
+                                f"[WARNING] PDF text extraction failed: {pdf_result['error']}"
                             )
 
                     except Exception as e:
-                        print(f"⚠️ PDF analysis error (continuing without summary): {e}")
+                        print(
+                            f"[WARNING] PDF analysis error (continuing without summary): {e}"
+                        )
 
         # Save profile
         profiles_dir = Path(__file__).parent.parent / "profiles"
@@ -2650,7 +2658,7 @@ def save_profile():
         if success:
             if is_editing:
                 flash(
-                    f"✅ Profile '{profile_data['name']}' updated successfully!",
+                    f"[OK] Profile '{profile_data['name']}' updated successfully!",
                     "success",
                 )
             else:
@@ -2659,7 +2667,7 @@ def save_profile():
                     "success",
                 )
         else:
-            flash("❌ Error saving profile to database", "error")
+            flash("[FAIL] Error saving profile to database", "error")
         return redirect(url_for("profiles"))
 
     except Exception as e:
@@ -2692,7 +2700,7 @@ def view_profile(profile_id):
                     resume_path = uploads_dir / resume_filename
 
                     if resume_path.exists():
-                        print(f"🔍 Generating summary from PDF: {resume_filename}")
+                        print(f"[DEBUG] Generating summary from PDF: {resume_filename}")
 
                         # Extract text from PDF
                         from .utils.pdf_extractor import extract_resume_text
@@ -2702,7 +2710,7 @@ def view_profile(profile_id):
 
                         if pdf_result["success"]:
                             print(
-                                f"✅ PDF text extracted ({pdf_result['word_count']} words)"
+                                f"[OK] PDF text extracted ({pdf_result['word_count']} words)"
                             )
 
                             # Generate AI summary from extracted text
@@ -2713,31 +2721,31 @@ def view_profile(profile_id):
                             if summary_result["success"]:
                                 profile_data["summary"] = summary_result["summary"]
                                 print(
-                                    f"✅ AI summary generated using {summary_result['model_used']}"
+                                    f"[OK] AI summary generated using {summary_result['model_used']}"
                                 )
 
                                 # Save the updated profile with AI summary
                                 try:
                                     profile_manager.save_profile(profile_data)
-                                    print("✅ Profile updated with AI summary")
+                                    print("[OK] Profile updated with AI summary")
                                 except Exception as e:
                                     print(
                                         f"Warning: Could not save AI summary to profile: {e}"
                                     )
                             else:
                                 print(
-                                    f"⚠️ AI summary generation failed: {summary_result['error']}"
+                                    f"[WARNING] AI summary generation failed: {summary_result['error']}"
                                 )
                         else:
                             print(
-                                f"⚠️ PDF text extraction failed: {pdf_result['error']}"
+                                f"[WARNING] PDF text extraction failed: {pdf_result['error']}"
                             )
 
                     else:
-                        print(f"⚠️ Resume file not found: {resume_path}")
+                        print(f"[WARNING] Resume file not found: {resume_path}")
 
                 except Exception as e:
-                    print(f"⚠️ Error processing PDF resume: {e}")
+                    print(f"[WARNING] Error processing PDF resume: {e}")
 
             # Fallback to profile-based summary if no PDF or PDF processing failed
             if not profile_data.get("summary"):
@@ -2949,7 +2957,7 @@ def api_match():
 
         try:
             print(
-                f"🔍 Gathering jobs for AI analysis for {profile_data.get('name', 'user')}"
+                f"[DEBUG] Gathering jobs for AI analysis for {profile_data.get('name', 'user')}"
             )
 
             # Get jobs from SQLite database - using global imports: Job already imported
@@ -2969,7 +2977,7 @@ def api_match():
 
             with db_config.session_scope() as session:
                 jobs = session.query(Job).filter(Job.is_active == True).limit(200).all()
-                print(f"📊 Found {len(jobs)} active jobs in SQLite database")
+                print(f"[INFO] Found {len(jobs)} active jobs in SQLite database")
 
                 for job in jobs:
                     # Extract job categories and employment types
@@ -3011,10 +3019,10 @@ def api_match():
                                 if page_text:
                                     resume_text += page_text + "\n"
                         print(
-                            f"📄 Extracted {len(resume_text)} characters from resume PDF"
+                            f"[INFO] Extracted {len(resume_text)} characters from resume PDF"
                         )
                     except Exception as pdf_error:
-                        print(f"⚠️ PDF extraction error: {pdf_error}")
+                        print(f"[WARNING] PDF extraction error: {pdf_error}")
 
             # Fallback to profile text if no resume
             if not resume_text:
@@ -3036,22 +3044,22 @@ def api_match():
                 resume_text = "\n".join(profile_parts)
 
         except Exception as gather_error:
-            print(f"⚠️ Error gathering jobs: {gather_error}")
+            print(f"[WARNING] Error gathering jobs: {gather_error}")
             matching_info["gather_error"] = str(gather_error)
 
         # 2. FAST PRE-FILTERING: Use quick skill matching to narrow down jobs
-        print(f"🚀 Fast pre-filtering {len(all_available_jobs)} jobs...")
+        print(f"[PROD] Fast pre-filtering {len(all_available_jobs)} jobs...")
         pre_filtered_jobs = quick_skill_filter(
             profile_data, all_available_jobs, top_n=20
         )
-        print(f"📊 Pre-filtered to {len(pre_filtered_jobs)} promising jobs")
+        print(f"[INFO] Pre-filtered to {len(pre_filtered_jobs)} promising jobs")
 
         # 3. AI ENHANCED MATCHING: Use AI on pre-filtered jobs only
         final_matches = []
         if use_ai_matching and pre_filtered_jobs:
             try:
                 print(
-                    f"🤖 Starting AI analysis on {len(pre_filtered_jobs)} pre-filtered jobs..."
+                    f"[AGENT] Starting AI analysis on {len(pre_filtered_jobs)} pre-filtered jobs..."
                 )
                 ai_results = ai_enhanced_job_matching(
                     profile_data=profile_data,
@@ -3061,7 +3069,7 @@ def api_match():
 
                 if ai_results and "top_matches" in ai_results:
                     print(
-                        f"✅ AI found {len(ai_results['top_matches'])} enhanced matches"
+                        f"[OK] AI found {len(ai_results['top_matches'])} enhanced matches"
                     )
 
                     # Convert AI results to our format
@@ -3173,16 +3181,16 @@ def api_match():
                     )
                 else:
                     print(
-                        "⚠️ AI matching returned no results, falling back to traditional matching"
+                        "[WARNING] AI matching returned no results, falling back to traditional matching"
                     )
 
             except Exception as ai_error:
-                print(f"⚠️ AI matching failed: {ai_error}")
+                print(f"[WARNING] AI matching failed: {ai_error}")
                 matching_info["ai_error"] = str(ai_error)
 
         # 3. FALLBACK: Traditional matching if AI fails or disabled
         if not final_matches and all_available_jobs:
-            print("🔄 Using traditional skill-based matching as fallback")
+            print("[RETRY] Using traditional skill-based matching as fallback")
 
             # Extract user skills
             user_skills = []
@@ -3200,7 +3208,7 @@ def api_match():
             user_skills = list(set([skill for skill in user_skills if skill]))
 
             # Enhanced traditional skill matching with synonyms
-            print(f"🔍 User skills for traditional matching: {user_skills}")
+            print(f"[DEBUG] User skills for traditional matching: {user_skills}")
 
             # Skill synonyms for traditional matching
             traditional_synonyms = {
@@ -3445,7 +3453,7 @@ def api_match():
                     print()
                 print("=" * 60)
                 print(
-                    f"✅ Successfully excluded {len(excluded_hr_jobs)} HR jobs from IT professional matching"
+                    f"[OK] Successfully excluded {len(excluded_hr_jobs)} HR jobs from IT professional matching"
                 )
             else:
                 print("ℹ️  No HR jobs found to exclude")
@@ -3506,7 +3514,7 @@ def api_match_efficient():
             return jsonify({"error": "Profile not found"}), 404
 
         print(
-            f"🚀 Starting efficient vector-based matching for {profile_data.get('name', 'user')}"
+            f"[PROD] Starting efficient vector-based matching for {profile_data.get('name', 'user')}"
         )
 
         # Use the efficient vector matcher - this is the magic!
@@ -3572,7 +3580,7 @@ def api_match_efficient():
         }
 
         print(
-            f"✅ Efficient matching complete: {len(formatted_matches)} matches, {matching_result.get('ai_calls_used', 0)} AI calls"
+            f"[OK] Efficient matching complete: {len(formatted_matches)} matches, {matching_result.get('ai_calls_used', 0)} AI calls"
         )
         return jsonify(response_data)
 
@@ -3601,7 +3609,9 @@ def generate_job_application_pdf():
         if not profile_id or not job_id:
             return jsonify({"error": "Profile ID and Job ID are required"}), 400
 
-        print(f"📄 Generating PDF application for profile {profile_id}, job {job_id}")
+        print(
+            f"[INFO] Generating PDF application for profile {profile_id}, job {job_id}"
+        )
 
         # Load profile data
         profile_data = profile_manager.load_profile(profile_id)
@@ -3676,11 +3686,11 @@ def generate_job_application_pdf():
                             if skill_name:
                                 user_skills.append(skill_name.lower().strip())
 
-                    print(f"🔍 PDF DEBUG - User skills: {user_skills}")
-                    print(f"🔍 PDF DEBUG - Job title: {job.title}")
-                    print(f"🔍 PDF DEBUG - Job keywords: {job.keywords}")
+                    print(f"[DEBUG] PDF DEBUG - User skills: {user_skills}")
+                    print(f"[DEBUG] PDF DEBUG - Job title: {job.title}")
+                    print(f"[DEBUG] PDF DEBUG - Job keywords: {job.keywords}")
                     print(
-                        f"🔍 PDF DEBUG - Job category: {job_data.get('category', 'N/A')}"
+                        f"[DEBUG] PDF DEBUG - Job category: {job_data.get('category', 'N/A')}"
                     )
 
                     # Extract skills from job keywords and description
@@ -3823,9 +3833,9 @@ def generate_job_application_pdf():
                     else:
                         job_min_exp = job_min_exp_raw or 0
 
-                    print(f"🔍 PDF DEBUG - User experience: {user_experience}")
+                    print(f"[DEBUG] PDF DEBUG - User experience: {user_experience}")
                     print(
-                        f"🔍 PDF DEBUG - Job min exp: {job_min_exp} (raw: {job_min_exp_raw}, type: {type(job_min_exp_raw)})"
+                        f"[DEBUG] PDF DEBUG - Job min exp: {job_min_exp} (raw: {job_min_exp_raw}, type: {type(job_min_exp_raw)})"
                     )
 
                     exp_levels = {"Entry": 0, "Mid": 3, "Senior": 7, "Executive": 12}
@@ -3884,20 +3894,20 @@ def generate_job_application_pdf():
                     job_data["match_percentage"] = round(match_percentage, 1)
 
                     print(
-                        f"📊 PDF Job match analysis: {len(matched_skills)}/{len(job_skills_lower)} skills matched"
+                        f"[INFO] PDF Job match analysis: {len(matched_skills)}/{len(job_skills_lower)} skills matched"
                     )
                     print(
-                        f"📊 PDF Skill score: {skill_score:.3f}, Industry score: {industry_score:.3f}"
+                        f"[INFO] PDF Skill score: {skill_score:.3f}, Industry score: {industry_score:.3f}"
                     )
-                    print(f"📊 PDF Comprehensive score: {comprehensive_score:.3f}")
-                    print(f"📊 PDF Final match percentage: {match_percentage:.1f}%")
-                    print(f"📊 PDF Matched skills: {matched_skills[:5]}")
-                    print(f"📊 PDF Job skills found: {job_skills[:5]}")
+                    print(f"[INFO] PDF Comprehensive score: {comprehensive_score:.3f}")
+                    print(f"[INFO] PDF Final match percentage: {match_percentage:.1f}%")
+                    print(f"[INFO] PDF Matched skills: {matched_skills[:5]}")
+                    print(f"[INFO] PDF Job skills found: {job_skills[:5]}")
                 else:
-                    print(f"⚠️ Job {job_id} not found in database")
+                    print(f"[WARNING] Job {job_id} not found in database")
 
         except Exception as db_error:
-            print(f"⚠️ Database job lookup failed: {db_error}")
+            print(f"[WARNING] Database job lookup failed: {db_error}")
 
         # Fallback job data if not found in database
         if not job_data:
@@ -3912,7 +3922,7 @@ def generate_job_application_pdf():
                 "matched_skills": [],
                 "missing_skills": [],
             }
-            print("📋 Using fallback job data")
+            print("[INFO] Using fallback job data")
 
         # Import PDF generator
         try:
@@ -3937,11 +3947,11 @@ def generate_job_application_pdf():
                 },
             )
 
-            print(f"✅ Generated PDF application ({len(pdf_bytes)} bytes)")
+            print(f"[OK] Generated PDF application ({len(pdf_bytes)} bytes)")
             return response
 
         except ImportError as import_error:
-            print(f"❌ PDF generator import failed: {import_error}")
+            print(f"[FAIL] PDF generator import failed: {import_error}")
             return jsonify(
                 {
                     "error": "PDF generation not available. Please install reportlab: pip install reportlab"
@@ -3969,13 +3979,13 @@ def generate_job_application_pdf():
 @app.route("/api/fetch-jobs", methods=["POST"])
 def fetch_jobs_from_api():
     """Fetch jobs from FindSGJobs API and update database"""
-    print("🔄 FETCH-JOBS API: Starting job fetch request...")
+    print("[RETRY] FETCH-JOBS API: Starting job fetch request...")
     try:
         import requests
         from datetime import datetime
 
         # Debug: Check if global imports are available
-        print(f"🔍 FETCH-JOBS: Checking global imports...")
+        print(f"[DEBUG] FETCH-JOBS: Checking global imports...")
         print(f"   Job class available: {Job is not None}")
         print(f"   UserProfile class available: {UserProfile is not None}")
         print(f"   UserSkill class available: {UserSkill is not None}")
@@ -3984,15 +3994,15 @@ def fetch_jobs_from_api():
         try:
             from database.db_config import db_config
 
-            print("✅ FETCH-JOBS: Imported database.db_config successfully")
+            print("[OK] FETCH-JOBS: Imported database.db_config successfully")
         except ImportError as e1:
-            print(f"❌ FETCH-JOBS: database.db_config import failed: {e1}")
+            print(f"[FAIL] FETCH-JOBS: database.db_config import failed: {e1}")
             try:
                 from web.database.db_config import db_config
 
-                print("✅ FETCH-JOBS: Imported web.database.db_config successfully")
+                print("[OK] FETCH-JOBS: Imported web.database.db_config successfully")
             except ImportError as e2:
-                print(f"❌ FETCH-JOBS: web.database.db_config import failed: {e2}")
+                print(f"[FAIL] FETCH-JOBS: web.database.db_config import failed: {e2}")
 
                 # Create minimal fallback
                 class MinimalDBConfig:
@@ -4001,9 +4011,9 @@ def fetch_jobs_from_api():
                         yield None
 
                 db_config = MinimalDBConfig()
-                print("⚠️ FETCH-JOBS: Using fallback db_config")
+                print("[WARNING] FETCH-JOBS: Using fallback db_config")
 
-        print("🔄 Starting job fetch from FindSGJobs API...")
+        print("[RETRY] Starting job fetch from FindSGJobs API...")
 
         # API endpoint
         api_url = "https://www.findsgjobs.com/apis/job/searchable"
@@ -4014,7 +4024,7 @@ def fetch_jobs_from_api():
 
         for page in range(1, pages_to_fetch + 1):
             try:
-                print(f"📄 Fetching page {page}...")
+                print(f"[INFO] Fetching page {page}...")
                 params = {
                     "page": page,
                     "items per page": 20,  # API default is 20 items per page
@@ -4028,13 +4038,13 @@ def fetch_jobs_from_api():
                 if api_data.get("data", {}).get("result"):
                     page_jobs = api_data["data"]["result"]
                     all_jobs_data.extend(page_jobs)
-                    print(f"✅ Page {page}: Found {len(page_jobs)} jobs")
+                    print(f"[OK] Page {page}: Found {len(page_jobs)} jobs")
                 else:
-                    print(f"⚠️ Page {page}: No job data found")
+                    print(f"[WARNING] Page {page}: No job data found")
                     break
 
             except Exception as page_error:
-                print(f"❌ Error fetching page {page}: {page_error}")
+                print(f"[FAIL] Error fetching page {page}: {page_error}")
                 break
 
         if not all_jobs_data:
@@ -4043,12 +4053,12 @@ def fetch_jobs_from_api():
             ), 400
 
         jobs_data = all_jobs_data
-        print(f"📊 Total jobs collected: {len(jobs_data)}")
+        print(f"[INFO] Total jobs collected: {len(jobs_data)}")
 
         # Use consistent database session pattern like other routes
         with db_config.session_scope() as session:
             if session is None:
-                print("⚠️ Database session is None - using fallback")
+                print("[WARNING] Database session is None - using fallback")
                 return jsonify(
                     {"success": False, "error": "Database connection failed"}
                 ), 500
@@ -4058,9 +4068,9 @@ def fetch_jobs_from_api():
             try:
                 session.query(Job).delete()
                 session.commit()
-                print(f"✅ FETCH-JOBS: Cleared existing jobs from database")
+                print(f"[OK] FETCH-JOBS: Cleared existing jobs from database")
             except Exception as clear_error:
-                print(f"❌ FETCH-JOBS: Error clearing jobs: {clear_error}")
+                print(f"[FAIL] FETCH-JOBS: Error clearing jobs: {clear_error}")
                 raise
 
             jobs_added = 0
@@ -4218,23 +4228,23 @@ def fetch_jobs_from_api():
                             is_active=True,
                         )
 
-                        print(f"✅ FETCH-JOBS: Created Job object successfully")
+                        print(f"[OK] FETCH-JOBS: Created Job object successfully")
                         session.add(job)
                         jobs_added += 1
 
                     except Exception as job_creation_error:
                         print(
-                            f"❌ FETCH-JOBS: Error creating Job object: {job_creation_error}"
+                            f"[FAIL] FETCH-JOBS: Error creating Job object: {job_creation_error}"
                         )
                         raise
 
                 except Exception as job_error:
-                    print(f"⚠️ Error processing job: {job_error}")
+                    print(f"[WARNING] Error processing job: {job_error}")
                     continue
 
             # Commit all jobs
             session.commit()
-            print(f"✅ Successfully added {jobs_added} jobs to database")
+            print(f"[OK] Successfully added {jobs_added} jobs to database")
 
             return jsonify(
                 {
@@ -4245,13 +4255,13 @@ def fetch_jobs_from_api():
             )
 
     except requests.RequestException as req_error:
-        print(f"❌ API request error: {req_error}")
+        print(f"[FAIL] API request error: {req_error}")
         return jsonify(
             {"success": False, "error": f"API request failed: {str(req_error)}"}
         ), 500
 
     except Exception as e:
-        print(f"❌ Unexpected error in fetch_jobs_from_api: {e}")
+        print(f"[FAIL] Unexpected error in fetch_jobs_from_api: {e}")
         import traceback
 
         traceback.print_exc()
@@ -4397,7 +4407,7 @@ if __name__ == "__main__":
 
     # Production vs Development configuration
     if os.environ.get("FLASK_ENV") == "production":
-        print("🚀 Starting SkillsMatch.AI in PRODUCTION mode...")
+        print("[PROD] Starting SkillsMatch.AI in PRODUCTION mode...")
         print("🌐 Available at: https://skillsmatch.ai")
         # In production, use a proper WSGI server like Gunicorn
         port = int(os.environ.get("PORT", 8000))
@@ -4406,7 +4416,7 @@ if __name__ == "__main__":
         port = int(
             os.environ.get("PORT", os.environ.get("FLASK_PORT", 5004))
         )  # Default to 5004 for local development
-        print("🚀 Starting SkillsMatch.AI Web Interface in DEVELOPMENT mode...")
+        print("[PROD] Starting SkillsMatch.AI Web Interface in DEVELOPMENT mode...")
         print(f"🌐 Open your browser to: http://localhost:{port}")
         print("💡 Using localhost for development - no domain setup needed!")
         print("� Direct API access configured for data integration")

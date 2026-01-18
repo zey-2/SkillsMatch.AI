@@ -69,7 +69,7 @@ class ImportManager:
         database_paths = self._get_database_paths()
 
         if self.is_production:
-            self._log("🔍 Checking database paths:")
+            self._log("[DEBUG] Checking database paths:")
             for i, path in enumerate(database_paths, 1):
                 exists = "EXISTS" if os.path.exists(path) else "NOT FOUND"
                 self._log(f"   Path {i}: {path} - {exists}")
@@ -78,7 +78,7 @@ class ImportManager:
         try:
             from database.models import UserProfile, Job, UserSkill
 
-            self._log("✅ Successfully imported database.models using relative paths")
+            self._log("[OK] Successfully imported database.models using relative paths")
             result = (UserProfile, Job, UserSkill)
             self._cache[attempt_key] = result
             return result
@@ -90,7 +90,7 @@ class ImportManager:
             from web.database.models import UserProfile, Job, UserSkill
 
             self._log(
-                "✅ Successfully imported database.models using web.database paths"
+                "[OK] Successfully imported database.models using web.database paths"
             )
             result = (UserProfile, Job, UserSkill)
             self._cache[attempt_key] = result
@@ -113,7 +113,7 @@ class ImportManager:
                     UserSkill = db_models.UserSkill
 
                     self._log(
-                        f"✅ Successfully imported database.models using "
+                        f"[OK] Successfully imported database.models using "
                         f"path manipulation: {parent_path}"
                     )
                     result = (UserProfile, Job, UserSkill)
@@ -128,7 +128,7 @@ class ImportManager:
         # Strategy 4: Placeholder classes (fallback)
         if create_placeholders:
             if self.is_production:
-                self._log("❌ All database import attempts failed:")
+                self._log("[ERROR] All database import attempts failed:")
                 for attempt in self.import_attempts[attempt_key]:
                     self._log(f"   - {attempt}")
 
@@ -144,7 +144,9 @@ class ImportManager:
                 def __init__(self, **kwargs):
                     pass
 
-            self._log("⚠️ Using placeholder classes - database functionality limited")
+            self._log(
+                "[WARNING] Using placeholder classes - database functionality limited"
+            )
             result = (UserProfile, Job, UserSkill)
             self._cache[attempt_key] = result
             return result
@@ -186,10 +188,10 @@ class ImportManager:
             try:
                 from skillmatch import SkillMatchAgent
 
-                self._log("✅ SkillMatch core modules loaded successfully")
+                self._log("[OK] SkillMatch core modules loaded successfully")
             except Exception as agent_error:
                 self._log(
-                    f"⚠️  SkillMatch agent not available "
+                    f"[WARNING] SkillMatch agent not available "
                     f"(OpenAI compatibility issue): {agent_error}"
                 )
                 self.import_attempts[attempt_key].append(
@@ -210,7 +212,7 @@ class ImportManager:
                 # The app still works fine without it
                 pass
             else:
-                self._log(f"⚠️  SkillMatch core modules not available: {e}")
+                self._log(f"[WARNING] SkillMatch core modules not available: {e}")
 
             result = (False, None, None, None)
             self._cache[attempt_key] = result
@@ -237,10 +239,10 @@ class ImportManager:
             from openai import OpenAI  # noqa: F401
 
             openai_available = True
-            self._log("✅ OpenAI SDK available")
+            self._log("[OK] OpenAI SDK available")
         except ImportError as e:
             self.import_attempts[attempt_key].append(f"OpenAI SDK: {e}")
-            self._log("⚠️ OpenAI SDK not available")
+            self._log("[WARNING] OpenAI SDK not available")
 
         # AI Matching services
         ai_matching_available = False
@@ -249,10 +251,10 @@ class ImportManager:
             from services.enhanced_job_matcher import find_enhanced_matches  # noqa: F401
 
             ai_matching_available = True
-            self._log("✅ AI skill matching services available")
+            self._log("[OK] AI skill matching services available")
         except ImportError as e:
             self.import_attempts[attempt_key].append(f"AI matching services: {e}")
-            self._log("⚠️ AI skill matching services not available")
+            self._log("[WARNING] AI skill matching services not available")
 
         # Vector matching services
         vector_matching_available = False
@@ -260,10 +262,10 @@ class ImportManager:
             from services.vector_job_matcher import vector_job_matcher  # noqa: F401
 
             vector_matching_available = True
-            self._log("✅ Vector job matching service available")
+            self._log("[OK] Vector job matching service available")
         except ImportError as e:
             self.import_attempts[attempt_key].append(f"Vector job matching: {e}")
-            self._log("⚠️ Vector job matching service not available")
+            self._log("[WARNING] Vector job matching service not available")
 
         result = (openai_available, ai_matching_available, vector_matching_available)
         self._cache[attempt_key] = result
@@ -305,13 +307,13 @@ class ImportManager:
                 # Extract the last imported object
                 imported_name = strategy.split()[-1]
                 if imported_name in namespace:
-                    self._log(f"✅ Successfully imported {module_name}: {strategy}")
+                    self._log(f"[OK] Successfully imported {module_name}: {strategy}")
                     return namespace[imported_name]
             except Exception as e:
                 self.import_attempts[attempt_key].append(f"{strategy}: {e}")
 
         if fallback_to_none:
-            self._log(f"⚠️ {module_name} not available (fallback to None)")
+            self._log(f"[WARNING] {module_name} not available (fallback to None)")
             return None
 
         raise ImportError(
@@ -356,7 +358,7 @@ class ImportManager:
         all_valid = True
         for check_name, check_func in critical_checks.items():
             valid = check_func()
-            status = "✅" if valid else "❌"
+            status = "[OK]" if valid else "[FAIL]"
             self._log(f"{status} {check_name}")
             all_valid = all_valid and valid
 
@@ -431,8 +433,8 @@ def initialize_imports(is_production: bool = False) -> ImportManager:
     # Validate critical imports
     if not manager.validate_critical_imports():
         if is_production:
-            print("⚠️ Some imports failed validation, check logs for details")
+            print("[WARNING] Some imports failed validation, check logs for details")
         else:
-            print("⚠️ Running with degraded functionality")
+            print("[WARNING] Running with degraded functionality")
 
     return manager
