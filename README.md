@@ -18,12 +18,23 @@ python web/app.py
 ```
 
 ## Docs
-- Architecture: [docs/architecture.md](docs/architecture.md)
-- CLI: [docs/cli.md](docs/cli.md)
-- Web: [docs/web.md](docs/web.md)
-- Deployment: [docs/deployment.md](docs/deployment.md)
-- Configuration: [docs/configuration.md](docs/configuration.md)
-- Data & vectors: [docs/data.md](docs/data.md)
+- **Getting Started**: [QUICKSTART.md](QUICKSTART.md) - Quick setup guide
+- **Deployment**: [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) - Local, Docker, Render, AWS
+- **API Reference**: [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - Complete endpoint documentation
+- **Configuration**: [docs/CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md) - All configuration options
+- **Production Checklist**: [docs/PRODUCTION_READINESS_CHECKLIST.md](docs/PRODUCTION_READINESS_CHECKLIST.md) - Pre-deployment verification
+- **Architecture**: [docs/architecture.md](docs/architecture.md) - System design
+- **CLI**: [docs/cli.md](docs/cli.md) - Command-line interface
+- **Web**: [docs/web.md](docs/web.md) - Web application guide
+- **Data & Vectors**: [docs/data.md](docs/data.md) - Vector database details
+
+### Technical Debt Resolution
+- **Phase 1A**: [PHASE_1A_IMPLEMENTATION_REPORT.md](PHASE_1A_IMPLEMENTATION_REPORT.md) - Import system centralization
+- **Phase 1B**: [PHASE_1B_IMPLEMENTATION_REPORT.md](PHASE_1B_IMPLEMENTATION_REPORT.md) - Test infrastructure
+- **Phase 2**: [PHASE_2_COMPLETE.md](PHASE_2_COMPLETE.md) - App refactoring
+- **Phase 3**: [PHASE_3_PROGRESS.md](PHASE_3_PROGRESS.md) - Performance optimization
+- **Phase 4**: [PHASE_4_SUMMARY.md](PHASE_4_SUMMARY.md) - Documentation & type hints
+- **Status**: [TECHNICAL_DEBT_STATUS.md](TECHNICAL_DEBT_STATUS.md) - Current remediation status
 
 ## Configuration
 - **Secrets** go in `.env` (not committed)

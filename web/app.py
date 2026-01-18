@@ -53,6 +53,35 @@ def check_conda_environment():
 if not os.environ.get("RENDER"):
     check_conda_environment()
 
+# Add paths for imports - handle both development and production
+app_dir = Path(__file__).parent
+project_root = app_dir.parent
+src_dir = project_root / "src"
+
+# Debug path information in production
+is_production = (
+    os.environ.get("RENDER") or os.environ.get("RAILWAY") or os.environ.get("HEROKU")
+)
+if is_production:
+    print(f"📍 App directory: {app_dir}")
+    print(f"📍 Project root: {project_root}")
+    print(f"📍 Src directory: {src_dir}")
+    print(f"📍 Current working directory: {os.getcwd()}")
+    print(f"📍 Python path before: {sys.path[:3]}")
+
+sys.path.insert(0, str(src_dir))  # Add src directory (for skillmatch package)
+sys.path.insert(0, str(project_root))  # Add project root
+sys.path.insert(0, str(app_dir))  # Add web directory
+sys.path.insert(0, os.getcwd())  # Add current working directory
+
+if is_production:
+    print(f"📍 Python path after: {sys.path[:5]}")
+
+# Initialize centralized import manager EARLY (before Flask imports)
+from web.core import initialize_imports
+
+import_manager = initialize_imports(is_production=is_production)
+
 from flask import (
     Flask,
     render_template,
@@ -67,37 +96,43 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 # import eventlet  # Commented out due to SSL issue
 
-# AI imports
+# AI imports - resolve using centralized manager
+openai_available, AI_MATCHING_AVAILABLE, VECTOR_MATCHING_AVAILABLE = (
+    import_manager.resolve_ai_services()
+)
+
+# Import OpenAI if available
 try:
-    import openai
-    from openai import OpenAI
+    if openai_available:
+        import openai
+        from openai import OpenAI
+    else:
+        openai = None
+        OpenAI = None
 except ImportError:
     openai = None
+    OpenAI = None
 
-# Import AI-powered skill matching services
+# Import AI-powered skill matching services (resolved by import_manager)
 try:
-    from services.ai_skill_matcher import (
-        ai_skill_matcher,
-        categorize_skills_ai,
-        find_skill_matches_ai,
-    )
-    from services.enhanced_job_matcher import (
-        enhanced_job_matcher,
-        find_enhanced_matches,
-    )
-
-    AI_MATCHING_AVAILABLE = True
+    if AI_MATCHING_AVAILABLE:
+        from services.ai_skill_matcher import (
+            ai_skill_matcher,
+            categorize_skills_ai,
+            find_skill_matches_ai,
+        )
+        from services.enhanced_job_matcher import (
+            enhanced_job_matcher,
+            find_enhanced_matches,
+        )
 except ImportError:
     AI_MATCHING_AVAILABLE = False
     print("⚠️  AI skill matching services not available, using fallback matching")
-    OpenAI = None
 
-# Import efficient vector-based job matcher
+# Import efficient vector-based job matcher (resolved by import_manager)
 try:
-    from services.vector_job_matcher import vector_job_matcher
-
-    VECTOR_MATCHING_AVAILABLE = True
-    print("✅ Vector job matching service available")
+    if VECTOR_MATCHING_AVAILABLE:
+        from services.vector_job_matcher import vector_job_matcher
 except ImportError as e:
     VECTOR_MATCHING_AVAILABLE = False
     print(f"⚠️ Vector job matching service not available: {e}")
@@ -115,26 +150,13 @@ except ImportError as e:
     print(f"⚠️ Vector search service not available: {e}")
     VECTOR_SEARCH_AVAILABLE = False
 
-# Add paths for imports - handle both development and production
-app_dir = Path(__file__).parent
-project_root = app_dir.parent
+# Add src to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-# Debug path information in production
-is_production = (
-    os.environ.get("RENDER") or os.environ.get("RAILWAY") or os.environ.get("HEROKU")
+# Resolve database models using centralized manager
+UserProfile, Job, UserSkill = import_manager.resolve_database_models(
+    create_placeholders=True
 )
-if is_production:
-    print(f"📍 App directory: {app_dir}")
-    print(f"📍 Project root: {project_root}")
-    print(f"📍 Current working directory: {os.getcwd()}")
-    print(f"📍 Python path before: {sys.path[:3]}")
-
-sys.path.insert(0, str(project_root))  # Add project root
-sys.path.insert(0, str(app_dir))  # Add web directory
-sys.path.insert(0, os.getcwd())  # Add current working directory
-
-if is_production:
-    print(f"📍 Python path after: {sys.path[:5]}")
 
 # Import storage layer
 try:
@@ -159,9 +181,7 @@ github_token = os.environ.get("GITHUB_TOKEN")
 
 if openai_key:
     print(f"✅ OpenAI API key loaded from .env (length: {len(openai_key)} characters)")
-    print(
-        "🚀 Using latest OpenAI models: GPT-4o, GPT-4 Turbo (including ChatGPT Pro models)"
-    )
+    print("🚀 Using latest OpenAI models: GPT-5-mini")
     if github_token:
         print("🔄 GitHub token also available as fallback")
 elif github_token:
@@ -169,95 +189,6 @@ elif github_token:
     print("🚀 Using GitHub Copilot Pro models: GPT-5, O1, DeepSeek-R1")
 else:
     print("❌ No AI API keys found - will use enhanced basic matching")
-
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-
-# Global database imports with comprehensive fallback handling
-def import_database_modules():
-    """Import database modules with comprehensive fallback handling."""
-    import_attempts = []
-
-    # Check if database directory exists in various locations
-    database_paths = [
-        os.path.join(os.getcwd(), "database"),  # Current working directory
-        os.path.join(os.getcwd(), "web", "database"),  # Web subdirectory in cwd
-        os.path.join(os.path.dirname(__file__), "database"),  # Local to app.py
-        os.path.join(
-            os.path.dirname(__file__), "..", "web", "database"
-        ),  # Parent web directory
-    ]
-
-    if is_production:
-        print(f"🔍 Checking database paths:")
-        for i, path in enumerate(database_paths, 1):
-            exists = os.path.exists(path)
-            print(f"   Path {i}: {path} - {'EXISTS' if exists else 'NOT FOUND'}")
-
-    # Attempt 1: Relative import from current directory
-    try:
-        from database.models import UserProfile, Job, UserSkill
-
-        print("✅ Successfully imported database.models using relative paths")
-        return UserProfile, Job, UserSkill
-    except ImportError as e1:
-        import_attempts.append(f"Relative import: {e1}")
-
-    # Attempt 2: Web prefix import
-    try:
-        from web.database.models import UserProfile, Job, UserSkill
-
-        print("✅ Successfully imported database.models using web.database paths")
-        return UserProfile, Job, UserSkill
-    except ImportError as e2:
-        import_attempts.append(f"Web prefix import: {e2}")
-
-    # Attempt 3: Direct path manipulation
-    for database_path in database_paths:
-        if os.path.exists(database_path):
-            try:
-                parent_path = os.path.dirname(database_path)
-                if parent_path not in sys.path:
-                    sys.path.insert(0, parent_path)
-
-                import database.models as db_models
-
-                UserProfile = db_models.UserProfile
-                Job = db_models.Job
-                UserSkill = db_models.UserSkill
-                print(
-                    f"✅ Successfully imported database.models using path manipulation: {parent_path}"
-                )
-                return UserProfile, Job, UserSkill
-            except ImportError as e:
-                import_attempts.append(f"Path manipulation ({parent_path}): {e}")
-                continue
-
-    # If all fails, create placeholders
-    if is_production:
-        print(f"❌ All database import attempts failed:")
-        for attempt in import_attempts:
-            print(f"   - {attempt}")
-
-    class UserProfile:
-        def __init__(self, **kwargs):
-            pass
-
-    class Job:
-        def __init__(self, **kwargs):
-            pass
-
-    class UserSkill:
-        def __init__(self, **kwargs):
-            pass
-
-    print("⚠️ Using placeholder classes - database functionality limited")
-    return UserProfile, Job, UserSkill
-
-
-# Import database modules globally
-UserProfile, Job, UserSkill = import_database_modules()
 
 
 def parse_datetime(date_str):
@@ -273,42 +204,28 @@ def parse_datetime(date_str):
         return None
 
 
-# Try to import SkillMatch modules with graceful error handling
-try:
-    # First try importing the models and utilities (less likely to have OpenAI issues)
-    # NOTE: Intentionally NOT importing UserProfile here - use SQLAlchemy model from database.models instead
-    # to avoid overwriting the SQLAlchemy UserProfile with the Pydantic UserProfile model
-    from skillmatch.models import (
-        SkillItem,
-        ExperienceLevel,
-        UserPreferences,
-        PreferenceType,
-    )
-    from skillmatch.utils import DataLoader, SkillMatcher
+# Resolve SkillMatch core modules using centralized manager
+SKILLMATCH_AVAILABLE, SkillMatchAgent, DataLoader, SkillMatcher = (
+    import_manager.resolve_skillmatch_core()
+)
 
-    # Then try importing the agent (more likely to have OpenAI compatibility issues)
+# NOTE: Intentionally NOT importing UserProfile from skillmatch - use SQLAlchemy model instead
+# to avoid overwriting the SQLAlchemy UserProfile with the Pydantic UserProfile model
+SkillItem = None
+ExperienceLevel = None
+UserPreferences = None
+PreferenceType = None
+
+if SKILLMATCH_AVAILABLE:
     try:
-        from skillmatch import SkillMatchAgent
-
-        print("✅ SkillMatch core modules loaded successfully")
-    except Exception as agent_error:
-        print(
-            f"⚠️  SkillMatch agent not available (OpenAI compatibility issue): {agent_error}"
+        from skillmatch.models import (
+            SkillItem,
+            ExperienceLevel,
+            UserPreferences,
+            PreferenceType,
         )
-        SkillMatchAgent = None
-
-    SKILLMATCH_AVAILABLE = True
-except ImportError as e:
-    print(f"Warning: SkillMatch core modules not available: {e}")
-    SkillMatchAgent = None
-    # UserProfile = None  # DON'T override the database UserProfile model!
-    SkillItem = None
-    ExperienceLevel = None
-    UserPreferences = None
-    PreferenceType = None
-    DataLoader = None
-    SkillMatcher = None
-    SKILLMATCH_AVAILABLE = False
+    except ImportError:
+        pass
 
 # Scraping functionality removed - using direct API access instead
 SCRAPER_AVAILABLE = False

@@ -173,8 +173,7 @@ def initialize_environment() -> None:
             f"✅ OpenAI API key loaded from .env (length: {len(openai_key)} characters)"
         )
         print(
-            "🚀 Using latest OpenAI models: GPT-4o, GPT-4 Turbo "
-            "(including ChatGPT Pro models)"
+            "🚀 Using latest OpenAI models: GPT-5-mini (including ChatGPT Pro models)"
         )
         if github_token:
             print("🔄 GitHub token also available as fallback")
