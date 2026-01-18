@@ -2,12 +2,12 @@
 import os
 
 # Server socket - Render expects PORT to be set and detected via 127.0.0.1
-port = os.environ.get('PORT', '10000')
+port = os.environ.get("PORT", "10000")
 bind = f"0.0.0.0:{port}"
 backlog = 2048
 
 # Worker processes
-workers = int(os.environ.get('WEB_CONCURRENCY', 1))
+workers = int(os.environ.get("WEB_CONCURRENCY", 1))
 worker_class = "eventlet"
 worker_connections = 1000
 max_requests = 1000
