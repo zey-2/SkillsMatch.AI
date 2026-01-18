@@ -16,7 +16,8 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 
 # AI Integration
-openai==1.51.2
+openai==1.54.4
+httpx==0.27.2
 
 # Database Support (SQLite - bundled with Python)
 SQLAlchemy==2.0.25
