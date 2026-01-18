@@ -73,9 +73,7 @@ def test_dashboard_stats() -> bool:
             print(f"Unique Categories: {len(category_counts):,}")
             if top_categories:
                 top_category = top_categories[0]
-                print(
-                    f"Top Category: {top_category[0]} ({top_category[1]} jobs)"
-                )
+                print(f"Top Category: {top_category[0]} ({top_category[1]} jobs)")
             else:
                 print("Top Category: None (0 jobs)")
 
@@ -88,10 +86,7 @@ def test_dashboard_stats() -> bool:
 
                 print("\n[INFO] Chart Data Ready:")
                 print(f"Categories for chart: {len(chart_data['categories'])}")
-                print(
-                    "Total job count in chart: "
-                    f"{sum(chart_data['counts']):,}"
-                )
+                print(f"Total job count in chart: {sum(chart_data['counts']):,}")
                 return True
 
                 print("[WARN] No category data available for chart")
