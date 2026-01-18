@@ -128,11 +128,8 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
 
                     if openai_api_key and not api_success:
                         openai_models = [
+                            "gpt-5-mini",
                             "gpt-4o-mini",
-                            "gpt-4o",
-                            "gpt-3.5-turbo",
-                            "gpt-4",
-                            "gpt-4-turbo",
                         ]
 
                         for model_name in openai_models:
@@ -170,10 +167,8 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
 
                     if github_token and not api_success:
                         github_models = [
-                            "gpt-4o",
+                            "gpt-5-mini",
                             "gpt-4o-mini",
-                            "gpt-4-turbo",
-                            "gpt-3.5-turbo",
                         ]
 
                         for model_name in github_models:
