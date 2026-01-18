@@ -124,13 +124,10 @@ python web/app.py
    ```
    
    **Required API Keys:**
-   - GitHub Personal Access Token ([Get one here](https://github.com/settings/tokens))
-   - OpenAI API Key (Optional - for enhanced AI features)
+   - OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))
    
    **Model Configuration:**
-   - Default: `openai/gpt-4o-mini` (GitHub Models)
-   - Advanced: GPT-4o, GPT-4-turbo (ChatGPT Pro)
-   - Fallback: GPT-3.5-turbo
+   - Single model: `gpt-5-mini` (OpenAI)
 
 5. **Initialize vector database** (Optional but recommended)
    ```bash
@@ -200,20 +197,16 @@ python app.py
 
 ### **🎯 AI Model Infrastructure**
 
-SkillsMatch.AI uses a **multi-model AI strategy** with intelligent fallback:
+SkillsMatch.AI uses a **single-model AI strategy** for consistent performance:
 
-#### **Primary AI Models (Priority Order)**
-1. **GPT-4o** - ChatGPT Pro (Best quality, comprehensive analysis)
-2. **GPT-4o-mini** - ChatGPT Pro (60% cost reduction, high efficiency)
-3. **GPT-4-turbo** - Fast processing for real-time applications
-4. **GitHub GPT-4o-mini** - External API fallback
-5. **GPT-3.5-turbo** - Standard fallback for basic operations
+#### **AI Model Configuration**
+- **gpt-5-mini** - OpenAI's efficient model for all tasks (analysis, matching, summaries, chat)
 
 #### **AI Model Usage by Function**
-- **PDF Resume Analysis**: GPT-4o → GPT-4o-mini → GPT-4-turbo → GitHub Models
-- **Job Matching Analysis**: GPT-4o → GPT-4o-mini → GPT-4-turbo → GitHub Models
-- **Profile Summaries**: GPT-4o-mini → GPT-3.5-turbo (cost-optimized)
-- **Career Chat Advisor**: GPT-4o → GitHub Models (best reasoning)
+- **PDF Resume Analysis**: gpt-5-mini
+- **Job Matching Analysis**: gpt-5-mini
+- **Profile Summaries**: gpt-5-mini
+- **Career Chat Advisor**: gpt-5-mini
 
 ### **🔍 Vector Database System**
 
@@ -607,7 +600,7 @@ SkillsMatch.AI/
 #### **2. AI Model Dependencies**
 - **API Rate Limits**: Subject to OpenAI and GitHub API rate limiting and quotas
 - **Network Dependency**: Requires stable internet connection for all AI functionality
-- **API Costs**: GPT-4o calls can be expensive ($0.008-0.013 per request for resume analysis)
+- **API Costs**: gpt-5-mini is cost-effective for all operations
 - **Model Availability**: Dependent on external AI service uptime and model availability
 - **Fallback Quality**: Significantly lower quality results when premium models unavailable
 
@@ -757,7 +750,7 @@ async def main():
     # Initialize the agent
     agent = SkillsMatchAgent(
         github_token="your_github_token",
-        model_id="openai/gpt-4.1-mini"
+        model_id="gpt-5-mini"
     )
     await agent.initialize()
     
@@ -885,7 +878,7 @@ The system organizes skills into categories:
 export GITHUB_TOKEN="your_github_personal_access_token"
 
 # Optional
-export SKILLSMATCH_MODEL="openai/gpt-4.1-mini"
+export SKILLSMATCH_MODEL="gpt-5-mini"
 export SKILLSMATCH_CONFIG_PATH="config/config.json"
 ```
 
@@ -896,7 +889,7 @@ Create `config/config.json`:
 ```json
 {
   "github_token": "your_github_token",
-  "model_id": "openai/gpt-4.1-mini",
+  "model_id": "gpt-5-mini",
   "skills_db_path": "data/skills_database.json",
   "opportunities_db_path": "data/opportunities_database.json"
 }
@@ -1010,7 +1003,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 #### **2. AI Model Dependencies**
 - **API Rate Limits**: Subject to OpenAI and GitHub API rate limiting
 - **Network Dependency**: Requires internet connection for AI functionality
-- **API Costs**: GPT-4o calls can be expensive ($0.008-0.013 per request)
+- **API Costs**: gpt-5-mini is cost-effective
 - **Model Availability**: Dependent on external AI service uptime
 - **Fallback Quality**: Lower quality results when premium models unavailable
 
@@ -1133,7 +1126,7 @@ Given these limitations, SkillsMatch.AI is best suited for:
 
 #### **🎯 Core AI Matching System**
 - [x] **Advanced 5-Tier Matching Algorithm** - Skills (45%), Industry (30%), Career (15%), Culture (5%), Strategic (5%)
-- [x] **Multi-Model AI Integration** - GPT-4o, GPT-4o-mini, GPT-4-turbo with intelligent fallback
+- [x] **Single-Model AI Integration** - gpt-5-mini for consistent performance
 - [x] **Vector Database System** - TF-IDF + Cosine Similarity for semantic job matching
 - [x] **PDF Resume Analysis** - Automatic text extraction and professional summary generation
 - [x] **Career Trajectory Planning** - 2-3 year progression analysis with growth potential assessment

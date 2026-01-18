@@ -362,20 +362,9 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
         return None
 
     try:
-        use_github_first = False
-        if github_token and openai_key:
-            use_github_first = True
-
-        if use_github_first and github_token:
-            print("🚀 Using GitHub Models (free tier) for AI analysis")
-            client = OpenAI(
-                base_url="https://models.inference.ai.azure.com",
-                api_key=github_token,
-            )
-            model_to_use = "gpt-4o-mini"
-        else:
-            client = OpenAI(api_key=openai_key)
-            model_to_use = "gpt-4o-mini"
+        # Use OpenAI with gpt-5-mini
+        client = OpenAI(api_key=openai_key)
+        model_to_use = "gpt-5-mini"
 
         profile_context = {
             "name": profile_data.get("name", "Professional"),

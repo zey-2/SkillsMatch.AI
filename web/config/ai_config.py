@@ -20,40 +20,16 @@ class AIConfig:
         # Model preferences (in order of preference)
         self.model_preferences = [
             {
-                "name": "GitHub Models",
-                "base_url": "https://models.github.ai/inference",
-                "api_key": self.github_token,
-                "models": {
-                    "fast": "openai/gpt-5-mini",  # Default: GPT-5-mini for efficiency
-                    "balanced": "openai/gpt-4.1",  # Balanced performance
-                    "premium": "openai/gpt-5-mini",  # High quality
-                    "reasoning": "openai/o1-mini",  # Complex reasoning
-                },
-                "available": bool(self.github_token),
-            },
-            {
                 "name": "OpenAI",
                 "base_url": "https://api.openai.com/v1",
                 "api_key": self.openai_api_key,
                 "models": {
-                    "fast": "gpt-4o-mini",
-                    "balanced": "gpt-4o",
-                    "premium": "gpt-4-turbo",
-                    "reasoning": "o1-mini",
+                    "fast": "gpt-5-mini",
+                    "balanced": "gpt-5-mini",
+                    "premium": "gpt-5-mini",
+                    "reasoning": "gpt-5-mini",
                 },
                 "available": bool(self.openai_api_key),
-            },
-            {
-                "name": "Azure OpenAI",
-                "base_url": self.azure_endpoint,
-                "api_key": self.azure_api_key,
-                "models": {
-                    "fast": "gpt-4o-mini",
-                    "balanced": "gpt-4o",
-                    "premium": "gpt-4-turbo",
-                    "reasoning": "gpt-4o",
-                },
-                "available": bool(self.azure_api_key and self.azure_endpoint),
             },
         ]
 

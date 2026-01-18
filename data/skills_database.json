@@ -1,0 +1,216 @@
+{
+    "skill_categories": {
+        "programming": {
+            "name": "Programming Languages",
+            "description": "Core programming languages and paradigms",
+            "skills": {
+                "python": {
+                    "name": "Python",
+                    "description": "High-level programming language for data science, web development, and automation",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "django",
+                        "flask",
+                        "pandas",
+                        "numpy"
+                    ]
+                },
+                "javascript": {
+                    "name": "JavaScript",
+                    "description": "Programming language for web development and client-side scripting",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "react",
+                        "nodejs",
+                        "typescript",
+                        "vue"
+                    ]
+                },
+                "java": {
+                    "name": "Java",
+                    "description": "Object-oriented programming language for enterprise applications",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "spring",
+                        "maven",
+                        "gradle",
+                        "hibernate"
+                    ]
+                }
+            }
+        },
+        "web_development": {
+            "name": "Web Development",
+            "description": "Frontend and backend web technologies",
+            "skills": {
+                "react": {
+                    "name": "React",
+                    "description": "JavaScript library for building user interfaces",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "javascript",
+                        "typescript",
+                        "redux",
+                        "nextjs"
+                    ]
+                },
+                "nodejs": {
+                    "name": "Node.js",
+                    "description": "JavaScript runtime for server-side development",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "javascript",
+                        "express",
+                        "mongodb",
+                        "npm"
+                    ]
+                }
+            }
+        },
+        "data_science": {
+            "name": "Data Science & AI",
+            "description": "Data analysis, machine learning, and AI technologies",
+            "skills": {
+                "machine_learning": {
+                    "name": "Machine Learning",
+                    "description": "Algorithms and techniques for predictive modeling",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "python",
+                        "tensorflow",
+                        "scikit-learn",
+                        "pytorch"
+                    ]
+                },
+                "data_analysis": {
+                    "name": "Data Analysis",
+                    "description": "Statistical analysis and data interpretation",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "python",
+                        "pandas",
+                        "numpy",
+                        "sql"
+                    ]
+                }
+            }
+        },
+        "databases": {
+            "name": "Databases",
+            "description": "Database management systems and data storage",
+            "skills": {
+                "sql": {
+                    "name": "SQL",
+                    "description": "Structured Query Language for relational databases",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "postgresql",
+                        "mysql",
+                        "oracle",
+                        "sqlserver"
+                    ]
+                },
+                "mongodb": {
+                    "name": "MongoDB",
+                    "description": "NoSQL document database",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "nodejs",
+                        "javascript",
+                        "nosql",
+                        "mongoose"
+                    ]
+                }
+            }
+        },
+        "cloud": {
+            "name": "Cloud & DevOps",
+            "description": "Cloud platforms and DevOps practices",
+            "skills": {
+                "aws": {
+                    "name": "Amazon Web Services",
+                    "description": "Cloud computing platform and services",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "ec2",
+                        "s3",
+                        "lambda",
+                        "cloudformation"
+                    ]
+                },
+                "docker": {
+                    "name": "Docker",
+                    "description": "Container platform for application deployment",
+                    "proficiency_levels": [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "expert"
+                    ],
+                    "related_skills": [
+                        "kubernetes",
+                        "linux",
+                        "devops",
+                        "containers"
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "version": "1.0",
+        "last_updated": "2026-01-18",
+        "total_categories": 5,
+        "total_skills": 11
+    }
+}

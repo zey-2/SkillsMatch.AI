@@ -18,12 +18,12 @@ logger = logging.getLogger(__name__)
 class AIService(BaseService):
     """Service for AI-powered features using GPT models"""
 
-    def __init__(self, model: str = "openai/gpt-5-mini"):
+    def __init__(self, model: str = "gpt-5-mini"):
         """
         Initialize AIService
 
         Args:
-            model: Model to use (default: openai/gpt-5-mini)
+            model: Model to use (default: gpt-5-mini)
         """
         super().__init__()
         self.model = model
@@ -34,20 +34,7 @@ class AIService(BaseService):
     def _initialize_client(self) -> None:
         """Initialize appropriate AI client based on available credentials"""
         try:
-            # Try GitHub Models first (recommended)
-            github_token = os.environ.get("GITHUB_TOKEN")
-            if github_token:
-                from openai import OpenAI
-
-                self.client = OpenAI(
-                    api_key=github_token,
-                    base_url="https://models.github.ai/inference",
-                )
-                self.provider = "GitHub Models"
-                self.log_info(f"✅ AI Service initialized with {self.provider}")
-                return
-
-            # Try OpenAI
+            # Use OpenAI
             openai_key = os.environ.get("OPENAI_API_KEY")
             if openai_key:
                 self.client = OpenAI(api_key=openai_key)

@@ -32,7 +32,7 @@ class SkillMatchAgent:
     def __init__(
         self,
         github_token: str,
-        model_id: str = "openai/gpt-5-mini",
+        model_id: str = "gpt-5-mini",
         skills_db_path: str = "data/skills_database.json",
         opportunities_db_path: str = "data/opportunities_database.json",
     ):
@@ -41,7 +41,7 @@ class SkillMatchAgent:
 
         Args:
             github_token: GitHub personal access token for model access
-            model_id: Model ID to use for AI matching
+            model_id: Model ID to use for AI matching (default: gpt-5-mini)
             skills_db_path: Path to skills database JSON file
             opportunities_db_path: Path to opportunities database JSON file
         """

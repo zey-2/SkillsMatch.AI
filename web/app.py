@@ -181,12 +181,7 @@ github_token = os.environ.get("GITHUB_TOKEN")
 
 if openai_key:
     print(f"✅ OpenAI API key loaded from .env (length: {len(openai_key)} characters)")
-    print("🚀 Using latest OpenAI models: GPT-5-mini")
-    if github_token:
-        print("🔄 GitHub token also available as fallback")
-elif github_token:
-    print(f"✅ GitHub token loaded from .env (length: {len(github_token)} characters)")
-    print("🚀 Using GitHub Copilot Pro models: GPT-5, O1, DeepSeek-R1")
+    print("🚀 Using OpenAI model: gpt-5-mini")
 else:
     print("❌ No AI API keys found - will use enhanced basic matching")
 
@@ -292,19 +287,9 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
     try:
         # Use GitHub Models first if OpenAI quota is likely exceeded
         use_github_first = False
-        if github_token and openai_key:
-            # Check if we recently hit quota limits (simple heuristic)
-            use_github_first = True  # Default to free GitHub Models
-
-        if use_github_first and github_token:
-            print("🚀 Using GitHub Models (free tier) for AI analysis")
-            client = OpenAI(
-                base_url="https://models.inference.ai.azure.com", api_key=github_token
-            )
-            model_to_use = "gpt-4o-mini"  # Free on GitHub Models
-        else:
-            client = OpenAI(api_key=openai_key)
-            model_to_use = "gpt-4o-mini"  # Most cost-effective
+        # Use OpenAI with gpt-5-mini
+        client = OpenAI(api_key=openai_key)
+        model_to_use = "gpt-5-mini"
 
         # Build comprehensive profile context
         profile_context = {
@@ -443,8 +428,8 @@ Return a JSON response with this EXACT structure:
 
         print("🤖 Requesting AI job matching analysis...")
 
-        # Try different models
-        models_to_try = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"]
+        # Use gpt-5-mini for matching
+        models_to_try = ["gpt-5-mini"]
         for model in models_to_try:
             try:
                 response = client.chat.completions.create(
@@ -1549,11 +1534,11 @@ Profile Details:
 
 Create a professional, engaging summary that highlights their unique value proposition, technical expertise, and career potential. Make it sound accomplished and forward-looking. Keep it under 280 characters but make every word count."""
 
-        # Call OpenAI API with ChatGPT Pro models (new format)
+        # Call OpenAI API with gpt-5-mini
         print(f"Generating AI summary for {name}...")  # Debug log
 
-        # Try ChatGPT Pro models first, then fallback
-        models_to_try = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
+        # Use gpt-5-mini
+        models_to_try = ["gpt-5-mini"]
         for model in models_to_try:
             try:
                 response = client.chat.completions.create(
@@ -1666,9 +1651,12 @@ def initialize_data():
         return False
 
     try:
+        project_root = Path(__file__).parent.parent
         data_loader = DataLoader(
-            skills_db_path="../data/skills_database.json",
-            opportunities_db_path="../data/opportunities_database.json",
+            skills_db_path=str(project_root / "data" / "skills_database.json"),
+            opportunities_db_path=str(
+                project_root / "data" / "opportunities_database.json"
+            ),
         )
         skill_matcher = SkillMatcher(data_loader.skills_data)
         return True
@@ -4311,7 +4299,7 @@ def test_ai():
             try:
                 client = OpenAI(api_key=openai_key)
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-5-mini",
                     messages=[
                         {"role": "user", "content": "Hello, just testing connectivity"}
                     ],
@@ -4321,40 +4309,13 @@ def test_ai():
                     {
                         "api": "OpenAI",
                         "status": "success",
-                        "model": "gpt-3.5-turbo",
+                        "model": "gpt-5-mini",
                         "response_length": len(response.choices[0].message.content),
                     }
                 )
             except Exception as e:
                 results["tests"].append(
                     {"api": "OpenAI", "status": "failed", "error": str(e)}
-                )
-
-        # Test GitHub models
-        if github_token:
-            try:
-                client = OpenAI(
-                    base_url="https://models.inference.ai.azure.com",
-                    api_key=github_token,
-                )
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "user", "content": "Hello, just testing connectivity"}
-                    ],
-                    max_tokens=50,
-                )
-                results["tests"].append(
-                    {
-                        "api": "GitHub Models",
-                        "status": "success",
-                        "model": "gpt-4o-mini",
-                        "response_length": len(response.choices[0].message.content),
-                    }
-                )
-            except Exception as e:
-                results["tests"].append(
-                    {"api": "GitHub Models", "status": "failed", "error": str(e)}
                 )
 
         return jsonify(results)
