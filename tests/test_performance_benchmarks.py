@@ -31,11 +31,18 @@ class TestMatchingPerformance:
             "name": "Test Developer",
             "experience_level": "mid",
             "skills": [
-                {"name": "Python", "level": "advanced"},
-                {"name": "Django", "level": "intermediate"},
-                {"name": "PostgreSQL", "level": "intermediate"},
+                {"skill_id": "python", "name": "Python", "level": "advanced"},
+                {"skill_id": "django", "name": "Django", "level": "intermediate"},
+                {
+                    "skill_id": "postgresql",
+                    "name": "PostgreSQL",
+                    "level": "intermediate",
+                },
             ],
-            "years_experience": 5,
+            "total_years_experience": 5,
+            "location": "San Francisco",
+            "open_to_remote": True,
+            "salary_range": {"min": 80000, "max": 150000},
         }
 
     @pytest.fixture
@@ -43,14 +50,21 @@ class TestMatchingPerformance:
         """Create sample jobs."""
         return [
             {
-                "id": f"job_{i}",
+                "job_id": f"job_{i}",
                 "title": f"Python Developer {i}",
+                "company": "Tech Corp",
                 "description": "Looking for Python developers",
                 "keywords": "Python Django PostgreSQL",
                 "position_level": "mid",
-                "min_years_experience": "3-5",
-                "min_salary": 80000,
-                "max_salary": 120000,
+                "min_years_experience": 3,
+                "max_years_experience": 5,
+                "required_skills": [
+                    {"skill_id": "python"},
+                    {"skill_id": "django"},
+                ],
+                "salary_range": {"min": 80000, "max": 120000},
+                "location": "San Francisco",
+                "remote_type": "hybrid",
             }
             for i in range(10)
         ]
@@ -104,13 +118,10 @@ class TestMatchingPerformance:
 
         # Results should be identical
         if result1 and result2:
-            assert result1.get("score") == result2.get("score")
+            assert result1.match_score == result2.match_score
 
         # Second call should be faster (if caching is working)
-        # Note: actual performance depends on cache implementation
-        logger = pytest.logger
-        if logger:
-            logger.info(f"First call: {time1_ms:.2f}ms, Cached call: {time2_ms:.2f}ms")
+        # Performance info: time1_ms={time1_ms:.2f}ms, time2_ms={time2_ms:.2f}ms
 
     @pytest.mark.benchmark
     @pytest.mark.performance
@@ -125,7 +136,7 @@ class TestMatchingPerformance:
             {
                 **sample_profile,
                 "user_id": f"profile_{i}",
-                "years_experience": 3 + (i % 5),
+                "total_years_experience": 3 + (i % 5),
             }
             for i in range(10)  # Use 10 profiles for reasonable test time
         ]
@@ -159,11 +170,11 @@ class TestSearchPerformance:
         Expected: <100ms with indexes
         """
         # Mock the database query
-        with patch.object(profile_service, "search") as mock_search:
+        with patch.object(profile_service, "search_profiles") as mock_search:
             mock_search.return_value = []
 
             def run_search():
-                return profile_service.search(query="python")
+                return profile_service.search_profiles(query="python")
 
             benchmark.pedantic(run_search, rounds=1, iterations=1)
             mock_search.assert_called()
@@ -177,11 +188,11 @@ class TestSearchPerformance:
         """
         job_service = JobService()
 
-        with patch.object(job_service, "search") as mock_search:
+        with patch.object(job_service, "search_jobs") as mock_search:
             mock_search.return_value = []
 
             def run_search():
-                return job_service.search(query="developer")
+                return job_service.search_jobs(query="developer")
 
             benchmark.pedantic(run_search, rounds=1, iterations=1)
             mock_search.assert_called()

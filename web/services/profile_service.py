@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 import json
 
-from web.services.base import BaseService, ValidationError, NotFoundError
+from web.services.base import BaseService, ValidationError, NotFoundError, ServiceError
 
 
 class ProfileService(BaseService):
