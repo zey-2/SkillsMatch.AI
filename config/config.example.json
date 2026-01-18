@@ -1,6 +1,6 @@
 {
-  "github_token": "YOUR_GITHUB_PERSONAL_ACCESS_TOKEN_HERE",
-  "model_id": "openai/gpt-4.1-mini",
+  "github_token": "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",
+  "model_id": "openai/gpt-5-mini",
   "skills_db_path": "data/skills_database.json",
   "opportunities_db_path": "data/opportunities_database.json"
 }

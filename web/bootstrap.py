@@ -45,12 +45,12 @@ def check_conda_environment() -> None:
             f"{os.environ.get('RENDER_SERVICE_NAME', 'Cloud Platform')}"
         )
         print(f"🐍 Python environment: {conda_env or 'system'}")
-    elif conda_env != "base":
-        print("⚠️  WARNING: Not running in 'base' conda environment!")
+    elif conda_env != "smai":
+        print("⚠️  WARNING: Not running in 'smai' conda environment!")
         print(f"📍 Current environment: {conda_env or 'base'}")
         print("🔧 To fix this, activate the environment first:")
-        print("   conda activate base")
-        print("   python app.py")
+        print("   conda activate smai")
+        print("   python web/app.py")
         print("")
     else:
         print(f"✅ Running in correct conda environment: {conda_env}")
@@ -155,6 +155,7 @@ def initialize_environment() -> None:
 
             profile_manager = manager
         except ImportError:
+
             class MinimalProfileManager:
                 def list_profiles(self):
                     return []
@@ -169,8 +170,7 @@ def initialize_environment() -> None:
 
     if openai_key:
         print(
-            "✅ OpenAI API key loaded from .env "
-            f"(length: {len(openai_key)} characters)"
+            f"✅ OpenAI API key loaded from .env (length: {len(openai_key)} characters)"
         )
         print(
             "🚀 Using latest OpenAI models: GPT-4o, GPT-4 Turbo "
@@ -180,8 +180,7 @@ def initialize_environment() -> None:
             print("🔄 GitHub token also available as fallback")
     elif github_token:
         print(
-            "✅ GitHub token loaded from .env "
-            f"(length: {len(github_token)} characters)"
+            f"✅ GitHub token loaded from .env (length: {len(github_token)} characters)"
         )
         print("🚀 Using GitHub Copilot Pro models: GPT-5, O1, DeepSeek-R1")
     else:
@@ -199,7 +198,10 @@ def initialize_environment() -> None:
             UserPreferences,
             PreferenceType,
         )
-        from skillmatch.utils import DataLoader as CoreDataLoader, SkillMatcher as CoreSkillMatcher
+        from skillmatch.utils import (
+            DataLoader as CoreDataLoader,
+            SkillMatcher as CoreSkillMatcher,
+        )
 
         try:
             from skillmatch import SkillMatchAgent as CoreSkillMatchAgent
@@ -330,7 +332,9 @@ def quick_skill_filter(profile_data, jobs_list, top_n=20):
 
         job_scores = []
         for job in jobs_list:
-            job_text = f"{job.get('job_title', '')} {job.get('job_description', '')}".lower()
+            job_text = (
+                f"{job.get('job_title', '')} {job.get('job_description', '')}".lower()
+            )
             matches = sum(1 for skill in user_skills if skill in job_text)
             match_ratio = matches / len(user_skills) if user_skills else 0
             job_scores.append((match_ratio, job))
@@ -348,9 +352,7 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
     print(f"🔍 AI Debug - openai module: {openai is not None}")
     print(f"🔍 AI Debug - OpenAI class: {OpenAI is not None}")
     print(f"🔍 AI Debug - API key available: {openai_key is not None}")
-    print(
-        f"🔍 AI Debug - API key length: {len(openai_key) if openai_key else 0}"
-    )
+    print(f"🔍 AI Debug - API key length: {len(openai_key) if openai_key else 0}")
 
     if not openai or not OpenAI:
         print("⚠️ AI modules not available - falling back to basic matching")
@@ -400,7 +402,9 @@ def ai_enhanced_job_matching(profile_data, jobs_list, vector_resume_text=None):
 
         resume_context = ""
         if vector_resume_text:
-            resume_context = f"\n\nResume Content Analysis:\n{vector_resume_text[:1000]}..."
+            resume_context = (
+                f"\n\nResume Content Analysis:\n{vector_resume_text[:1000]}..."
+            )
 
         job_summaries = []
         for job in jobs_list[:15]:

@@ -4,7 +4,9 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from functools import wraps
 
+from flask import copy_current_request_context
 from flask_socketio import emit
 
 
@@ -24,6 +26,8 @@ def register_socket_handlers(socketio, load_config) -> None:
             print(f"🤖 DEBUG: Received chat message: {message}")
             emit("chat_response", {"type": "thinking", "message": "AI is thinking..."})
 
+            # Wrap chat_task with copy_current_request_context to preserve Flask context
+            @copy_current_request_context
             def chat_task():
                 try:
                     config = load_config()
@@ -59,7 +63,7 @@ def register_socket_handlers(socketio, load_config) -> None:
                             "Personal Access Token."
                         )
 
-                        socketio.emit("chat_response", {"type": "ai", "message": response})
+                        emit("chat_response", {"type": "ai", "message": response})
                         return
 
                     from openai import OpenAI
@@ -151,7 +155,7 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
                                     "🤖 DEBUG: OpenAI API succeeded with "
                                     f"{model_name} ({len(ai_message)} characters)"
                                 )
-                                socketio.emit(
+                                emit(
                                     "chat_response",
                                     {"type": "ai", "message": ai_message},
                                 )
@@ -195,7 +199,7 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
                                     "🤖 DEBUG: GitHub API succeeded with "
                                     f"{model_name} ({len(ai_message)} characters)"
                                 )
-                                socketio.emit(
+                                emit(
                                     "chat_response",
                                     {"type": "ai", "message": ai_message},
                                 )
@@ -239,32 +243,46 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
                         message_lower = message.lower()
                         response = demo_responses["default"]
 
-                        if any(word in message_lower for word in ["time", "what time", "current time"]):
+                        if any(
+                            word in message_lower
+                            for word in ["time", "what time", "current time"]
+                        ):
                             response = demo_responses["time"]
-                        elif any(word in message_lower for word in ["career", "job", "work", "profession"]):
+                        elif any(
+                            word in message_lower
+                            for word in ["career", "job", "work", "profession"]
+                        ):
                             response = demo_responses["career"]
-                        elif any(word in message_lower for word in ["skill", "learn", "study", "course"]):
+                        elif any(
+                            word in message_lower
+                            for word in ["skill", "learn", "study", "course"]
+                        ):
                             response = demo_responses["skills"]
 
                         response += "\n\n⚠️ **Note:** Running in enhanced demo mode due to AI model access limitations."
 
-                        socketio.emit(
-                            "chat_response", {"type": "ai", "message": response}
-                        )
+                        emit("chat_response", {"type": "ai", "message": response})
                         return
 
                     if "401" in str(error):
-                        error_msg = "🔑 Authentication failed. Please check your GitHub token."
+                        error_msg = (
+                            "🔑 Authentication failed. Please check your GitHub token."
+                        )
                     elif (
                         "429" in str(error)
                         or "rate limit" in str(error).lower()
                         or "quota" in str(error).lower()
                     ):
-                        error_msg = "💳 OpenAI quota exceeded. Using fallback demo mode above."
-                    elif "network" in str(error).lower() or "connection" in str(error).lower():
+                        error_msg = (
+                            "💳 OpenAI quota exceeded. Using fallback demo mode above."
+                        )
+                    elif (
+                        "network" in str(error).lower()
+                        or "connection" in str(error).lower()
+                    ):
                         error_msg = "🌐 Network issue. Please check your connection and try again."
 
-                    socketio.emit("chat_response", {"type": "error", "message": error_msg})
+                    emit("chat_response", {"type": "error", "message": error_msg})
 
             socketio.start_background_task(chat_task)
 

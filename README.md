@@ -14,6 +14,7 @@ conda activate smai
 pip install -r requirements.txt
 python skillmatch.py setup
 python skillmatch.py match --profile profiles/john_developer.json
+python web/app.py
 ```
 
 ## Docs

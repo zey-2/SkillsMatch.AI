@@ -18,6 +18,42 @@
 - `python scripts/initialize_vector_db.py`: Build the vector DB.
 - `./build.sh`: Render build script (SQLite setup).
 
+## Testing app.py Process
+1. **Setup Environment**: 
+   - Ensure `smai` conda environment is activated: `conda activate smai`
+   - Install dependencies: `pip install -r requirements.txt`
+   - Set environment variables in `.env`: `OPENAI_API_KEY` and/or `GITHUB_TOKEN`
+   - Verify `.env` file is in project root (loads automatically on app startup)
+   
+2. **Start Web App**:
+   - Run: `python web/app.py`
+   - App starts on `http://127.0.0.1:5003` by default
+   - **Important**: Environment variables load BEFORE service initialization
+   - Verify output shows:
+     - ✅ `Running in correct conda environment: smai`
+     - ✅ `Initialized AI Skill Matcher with OpenAI` (or GitHub Models)
+     - ✅ `Vector search service available` (optional but recommended)
+
+3. **Test Features**:
+   - **Homepage**: Navigate to `/` - verify dashboard loads with job listings and metrics
+   - **Create Profile**: Navigate to `/profile/create` - fill form with test data
+   - **Jobs Listing**: Navigate to `/jobs` - verify job listings display with filters
+   - **Job Matching**: Navigate to `/match` - select profile, verify matching works
+   - **AI Chat**: Navigate to `/chat` - test chat responses (requires API keys for full functionality)
+
+4. **Verify API Keys are Loaded**:
+   - Check terminal output for: `✅ OpenAI API key loaded` or `✅ GitHub token loaded`
+   - Without keys, app runs in fallback/demo mode with limited AI features
+
+5. **Check Database**:
+   - Verify SQLite database exists: `web/data/skillsmatch.db`
+   - Database auto-initializes on first run
+
+6. **Debug Issues**:
+   - Check Flask logs in terminal for errors
+   - Inspect browser console (F12) for client-side issues
+   - Verify network requests in DevTools Network tab
+
 ## Coding Style & Naming Conventions
 - Python style: PEP 8, 4-space indentation, type hints where practical.
 - Format/lint: `black` and `flake8` are standard; `isort` and `mypy` are available in dev deps.

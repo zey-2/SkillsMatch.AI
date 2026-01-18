@@ -315,7 +315,8 @@ class SimpleVectorService:
                     })
             
             # Debug: show all similarity scores
-            print(f"🔍 Similarity scores: {[f'{job['similarity_score']:.3f}' for job in similar_jobs[:5]]}")
+            similarity_preview = [f"{job['similarity_score']:.3f}" for job in similar_jobs[:5]]
+            print(f"🔍 Similarity scores: {similarity_preview}")
             
             # Filter out low similarity scores (lowered threshold for testing)
             similar_jobs = [job for job in similar_jobs if job['similarity_score'] > 0.01]
