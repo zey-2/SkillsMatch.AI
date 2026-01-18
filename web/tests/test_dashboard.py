@@ -17,7 +17,7 @@ _add_web_root_to_path()
 
 def test_dashboard_stats() -> bool:
     """Test dashboard statistics gathering."""
-    print("\ud83e\uddea Testing Dashboard Statistics...")
+    print("[TEST] Testing Dashboard Statistics...")
 
     try:
         from database.db_config import db_config
@@ -25,10 +25,10 @@ def test_dashboard_stats() -> bool:
 
         with db_config.session_scope() as session:
             total_jobs = session.query(Job).filter(Job.is_active == True).count()
-            print(f"\ud83d\udcca Total Active Jobs: {total_jobs:,}")
+            print(f"[INFO] Total Active Jobs: {total_jobs:,}")
 
             total_profiles = session.query(UserProfile).count()
-            print(f"\ud83d\udc65 Total User Profiles: {total_profiles:,}")
+            print(f"[INFO] Total User Profiles: {total_profiles:,}")
 
             jobs_with_categories = (
                 session.query(Job)
@@ -36,7 +36,7 @@ def test_dashboard_stats() -> bool:
                 .all()
             )
 
-            print(f"\ud83c\udff7\ufe0f  Jobs with Categories: {len(jobs_with_categories):,}")
+            print(f"[INFO] Jobs with Categories: {len(jobs_with_categories):,}")
 
             category_counts = {}
             for job in jobs_with_categories:
@@ -61,12 +61,12 @@ def test_dashboard_stats() -> bool:
                 category_counts.items(), key=lambda item: item[1], reverse=True
             )[:10]
 
-            print("\n\ud83d\udcc8 Top Job Categories:")
+            print("\n[INFO] Top Job Categories:")
             print("=" * 50)
             for index, (category, count) in enumerate(top_categories, 1):
                 print(f"{index:2d}. {category:<30} {count:>4,} jobs")
 
-            print("\n\ud83d\udcca Dashboard Statistics Summary:")
+            print("\n[INFO] Dashboard Statistics Summary:")
             print("=" * 50)
             print(f"Total Jobs: {total_jobs:,}")
             print(f"Total Profiles: {total_profiles:,}")
@@ -86,7 +86,7 @@ def test_dashboard_stats() -> bool:
                     "total_categories": len(category_counts),
                 }
 
-                print("\n\ud83d\udcca Chart Data Ready:")
+                print("\n[INFO] Chart Data Ready:")
                 print(f"Categories for chart: {len(chart_data['categories'])}")
                 print(
                     "Total job count in chart: "
@@ -94,21 +94,21 @@ def test_dashboard_stats() -> bool:
                 )
                 return True
 
-            print("\u26a0\ufe0f No category data available for chart")
+                print("[WARN] No category data available for chart")
             return True
 
     except ImportError as exc:
-        print(f"\u274c Database modules not available: {exc}")
-        print("\ud83d\udca1 This is expected outside the proper environment")
+        print(f"[ERROR] Database modules not available: {exc}")
+        print("[HINT] This is expected outside the proper environment")
         return False
     except Exception as exc:
-        print(f"\u274c Error testing dashboard stats: {exc}")
+        print(f"[ERROR] Error testing dashboard stats: {exc}")
         return False
 
 
 def test_dashboard_route() -> bool:
     """Test the dashboard route with a test client."""
-    print("\n\ud83e\uddea Testing Dashboard Route...")
+    print("\n[TEST] Testing Dashboard Route...")
 
     try:
         from app import app
@@ -116,31 +116,31 @@ def test_dashboard_route() -> bool:
         with app.test_client() as client:
             response = client.get("/dashboard")
 
-            print(f"\ud83d\udccd Dashboard Route Status: {response.status_code}")
+            print(f"[INFO] Dashboard Route Status: {response.status_code}")
 
             if response.status_code == 200:
-                print("\u2705 Dashboard route accessible")
+                print("[OK] Dashboard route accessible")
                 data = response.get_data(as_text=True)
                 if "Summary Overview" in data:
-                    print("\u2705 Summary Overview section found")
+                    print("[OK] Summary Overview section found")
                 if "Total Job Listings" in data:
-                    print("\u2705 Total Job Listings card found")
+                    print("[OK] Total Job Listings card found")
                 if "Total Profiles" in data:
-                    print("\u2705 Total Profiles card found")
+                    print("[OK] Total Profiles card found")
                 if "jobCategoriesChart" in data:
-                    print("\u2705 Job Categories Chart container found")
+                    print("[OK] Job Categories Chart container found")
                 return True
 
-            print(f"\u274c Dashboard route returned {response.status_code}")
+            print(f"[ERROR] Dashboard route returned {response.status_code}")
             return False
 
     except Exception as exc:
-        print(f"\u274c Error testing dashboard route: {exc}")
+        print(f"[ERROR] Error testing dashboard route: {exc}")
         return False
 
 
 if __name__ == "__main__":
-    print("\ud83d\ude80 Dashboard Functionality Test")
+    print("[TEST] Dashboard Functionality Test")
     print("=" * 50)
 
     db_success = test_dashboard_stats()
@@ -148,8 +148,8 @@ if __name__ == "__main__":
 
     print("\n" + "=" * 50)
     if db_success and route_success:
-        print("\u2705 All dashboard tests passed!")
+        print("[OK] All dashboard tests passed!")
         sys.exit(0)
 
-    print("\u274c Some dashboard tests failed")
+    print("[ERROR] Some dashboard tests failed")
     sys.exit(1)

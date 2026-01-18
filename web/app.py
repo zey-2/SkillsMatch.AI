@@ -1619,6 +1619,23 @@ socketio = SocketIO(
 )
 
 
+# Lightweight application factory for CI and WSGI loaders
+def create_app(config_name: Optional[str] = None) -> Flask:
+    """Return the configured Flask app without re-instantiation."""
+
+    if config_name:
+        env = config_name.lower()
+
+        if env in ("development", "dev"):
+            app.config.update(ENV="development", DEBUG=True, TESTING=False)
+        elif env in ("testing", "test"):
+            app.config.update(ENV="testing", DEBUG=False, TESTING=True)
+        else:
+            app.config.update(ENV="production", DEBUG=False, TESTING=False)
+
+    return app
+
+
 # Global variables
 data_loader = None
 skill_matcher = None
