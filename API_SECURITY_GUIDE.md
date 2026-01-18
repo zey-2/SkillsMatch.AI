@@ -49,7 +49,7 @@ GITHUB_TOKEN=your_actual_token_here
 ## ✅ **SAFE FOR GIT COMMITS:**
 
 ✅ **DO** commit `.env.example` with placeholder values  
-✅ **DO** commit `config.example.json` with templates  
+✅ **DO** commit `.env.example` with templates  
 ✅ **DO** ensure `.gitignore` includes `.env` and `config/config.json`  
 ✅ **DO** use placeholder values in documentation  
 

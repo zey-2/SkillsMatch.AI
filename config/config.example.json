@@ -1,6 +1,0 @@
-{
-  "github_token": "github_pat_YOUR_TOKEN_HERE",
-  "model_id": "gpt-5-mini",
-  "skills_db_path": "data/skills_database.json",
-  "opportunities_db_path": "data/opportunities_database.json"
-}

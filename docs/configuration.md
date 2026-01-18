@@ -9,4 +9,4 @@ Example keys:
 - `SECRET_KEY`
 
 ## Non‑secret Settings
-Store non‑secret settings in `config/config.json` (see `config/config.example.json`).
+Store non‑secret settings in `.env` file (see `.env.example`).
