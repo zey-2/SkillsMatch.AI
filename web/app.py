@@ -1609,11 +1609,13 @@ CORS(app, origins=cors_origins if os.environ.get("FLASK_ENV") == "production" el
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",  # Allow all origins in development/local mode
-    async_mode="threading",  # Using threading instead of eventlet
+    async_mode="eventlet",  # Using eventlet for production compatibility
     logger=os.environ.get("FLASK_DEBUG", "False").lower() == "true",
     engineio_logger=os.environ.get("FLASK_DEBUG", "False").lower() == "true",
     ping_timeout=60,
     ping_interval=30,
+    always_connect=True,
+    manage_session=False,
 )
 
 

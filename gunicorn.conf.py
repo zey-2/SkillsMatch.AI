@@ -6,8 +6,8 @@ bind = f"0.0.0.0:{os.environ.get('PORT', 5003)}"
 backlog = 2048
 
 # Worker processes
-workers = 2
-worker_class = "sync"
+workers = 1
+worker_class = "eventlet"
 worker_connections = 1000
 max_requests = 1000
 max_requests_jitter = 50
