@@ -12,8 +12,35 @@ from flask_socketio import emit
 # Import centralized API key loader
 try:
     from .config import get_openai_api_key
-except ImportError:
-    from config import get_openai_api_key
+
+    print("[OK] Socket handler: Imported get_openai_api_key from .config")
+except ImportError as e1:
+    print(f"[WARN] Socket handler: Failed to import from .config: {e1}")
+    try:
+        from config import get_openai_api_key
+
+        print("[OK] Socket handler: Imported get_openai_api_key from config")
+    except ImportError as e2:
+        print(f"[ERROR] Socket handler: Failed to import from config: {e2}")
+
+        # Fallback: read directly
+        def get_openai_api_key():
+            key = os.environ.get("OPENAI_API_KEY")
+            if not key and os.path.exists("/etc/secrets/.env"):
+                try:
+                    with open("/etc/secrets/.env", "r") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith("OPENAI_API_KEY="):
+                                key = (
+                                    line.split("=", 1)[1].strip().strip('"').strip("'")
+                                )
+                                break
+                except Exception:
+                    pass
+            return key
+
+        print("[OK] Socket handler: Using fallback get_openai_api_key")
 
 
 def register_socket_handlers(socketio, load_config) -> None:
