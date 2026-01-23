@@ -8,7 +8,7 @@ backlog = 2048
 
 # Worker processes
 workers = int(os.environ.get("WEB_CONCURRENCY", 1))
-worker_class = "eventlet"
+worker_class = "gevent"  # Use gevent for better httpx compatibility
 worker_connections = 1000
 max_requests = 1000
 max_requests_jitter = 50
