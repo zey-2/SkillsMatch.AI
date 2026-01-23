@@ -13,6 +13,13 @@ from dataclasses import dataclass
 from openai import OpenAI
 import logging
 
+# Import the centralized API key loader
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config import get_openai_api_key
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,8 +58,8 @@ class AISkillMatcher:
     def initialize_openai(self):
         """Initialize OpenAI client - prioritize OpenAI over GitHub Models"""
         try:
-            # Try OpenAI first (more reliable if available)
-            openai_key = os.environ.get("OPENAI_API_KEY")
+            # Use centralized API key loader
+            openai_key = get_openai_api_key()
             if openai_key and openai_key.startswith("sk-"):
                 self.openai_client = OpenAI(
                     api_key=openai_key, timeout=30.0, max_retries=2

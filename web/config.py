@@ -12,6 +12,31 @@ from pathlib import Path
 from datetime import timedelta
 
 
+def get_openai_api_key():
+    """
+    Load OpenAI API key from environment or Render secret file.
+
+    Returns:
+        str: API key or None if not found
+    """
+    # Try environment variable first
+    api_key = os.environ.get("OPENAI_API_KEY")
+
+    # On Render, check for secret .env file
+    if not api_key and os.path.exists("/etc/secrets/.env"):
+        try:
+            with open("/etc/secrets/.env", "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("OPENAI_API_KEY="):
+                        api_key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+        except Exception:
+            pass
+
+    return api_key
+
+
 class Config:
     """Base configuration class with defaults."""
 

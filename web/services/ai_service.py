@@ -12,6 +12,13 @@ from typing import Dict, List, Optional, Any, Tuple
 from openai import OpenAI, AzureOpenAI
 from web.services.base import BaseService, ValidationError
 
+# Import centralized API key loader
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config import get_openai_api_key
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,8 +41,8 @@ class AIService(BaseService):
     def _initialize_client(self) -> None:
         """Initialize appropriate AI client based on available credentials"""
         try:
-            # Use OpenAI
-            openai_key = os.environ.get("OPENAI_API_KEY")
+            # Use centralized API key loader
+            openai_key = get_openai_api_key()
             if openai_key:
                 self.client = OpenAI(api_key=openai_key)
                 self.provider = "OpenAI"
