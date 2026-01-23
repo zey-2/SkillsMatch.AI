@@ -40,8 +40,10 @@ def register_socket_handlers(socketio, load_config) -> None:
 
                     # Use centralized API key loader
                     openai_api_key = get_openai_api_key()
-                    print(f"🔑 DEBUG: API key loaded: {bool(openai_api_key)}, length: {len(openai_api_key) if openai_api_key else 0}")
-                    
+                    print(
+                        f"🔑 DEBUG: API key loaded: {bool(openai_api_key)}, length: {len(openai_api_key) if openai_api_key else 0}"
+                    )
+
                     github_token = config.get("github_token") or os.environ.get(
                         "GITHUB_TOKEN"
                     )
