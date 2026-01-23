@@ -9,6 +9,9 @@ from functools import wraps
 from flask import copy_current_request_context
 from flask_socketio import emit
 
+# Import centralized API key loader
+from config import get_openai_api_key
+
 
 def register_socket_handlers(socketio, load_config) -> None:
     """Register Socket.IO handlers on the provided SocketIO instance."""
@@ -32,9 +35,8 @@ def register_socket_handlers(socketio, load_config) -> None:
                 try:
                     config = load_config()
 
-                    openai_api_key = config.get("openai_api_key") or os.environ.get(
-                        "OPENAI_API_KEY"
-                    )
+                    # Use centralized API key loader
+                    openai_api_key = get_openai_api_key()
                     github_token = config.get("github_token") or os.environ.get(
                         "GITHUB_TOKEN"
                     )
