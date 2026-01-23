@@ -10,7 +10,10 @@ from flask import copy_current_request_context
 from flask_socketio import emit
 
 # Import centralized API key loader
-from config import get_openai_api_key
+try:
+    from .config import get_openai_api_key
+except ImportError:
+    from config import get_openai_api_key
 
 
 def register_socket_handlers(socketio, load_config) -> None:
@@ -141,12 +144,22 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
                                     f"{model_name}"
                                 )
                                 client = OpenAI(api_key=openai_api_key)
+
+                                # gpt-5-mini uses max_completion_tokens, older models use max_tokens
+                                completion_params = {
+                                    "model": model_name,
+                                    "messages": messages,
+                                    "temperature": 0.7,
+                                    "top_p": 0.95,
+                                }
+
+                                if model_name == "gpt-5-mini":
+                                    completion_params["max_completion_tokens"] = 800
+                                else:
+                                    completion_params["max_tokens"] = 800
+
                                 response = client.chat.completions.create(
-                                    model=model_name,
-                                    messages=messages,
-                                    temperature=0.7,
-                                    max_tokens=800,
-                                    top_p=0.95,
+                                    **completion_params
                                 )
 
                                 ai_message = response.choices[0].message.content
