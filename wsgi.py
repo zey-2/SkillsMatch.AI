@@ -50,9 +50,9 @@ try:
     # Restore original directory
     os.chdir(original_cwd)
 
-    # Create application instance for gunicorn
-    # Must use socketio.run for Socket.IO to work with eventlet
-    application = socketio
+    # For gunicorn with eventlet worker, expose the Flask app directly
+    # The eventlet worker will handle Socket.IO automatically via the socketio instance
+    application = app
 
     logger.info("✅ Flask application with Socket.IO loaded successfully")
 
