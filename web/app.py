@@ -179,6 +179,21 @@ except ImportError:
 
 # Debug: Check if API keys are loaded
 openai_key = os.environ.get("OPENAI_API_KEY")
+
+# On Render, check for secret .env file if env var not found
+if not openai_key and os.path.exists("/etc/secrets/.env"):
+    try:
+        with open("/etc/secrets/.env", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("OPENAI_API_KEY="):
+                    openai_key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+        if openai_key:
+            print("[OK] OpenAI API key loaded from Render secret file")
+    except Exception as e:
+        print(f"[WARN] Failed to read secret file: {e}")
+
 github_token = os.environ.get("GITHUB_TOKEN")
 
 if openai_key:
