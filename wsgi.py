@@ -4,6 +4,11 @@ Simplified production entry point for Render.com
 Handles common deployment issues and provides debugging
 """
 
+# Eventlet monkey patching MUST be first
+import eventlet
+
+eventlet.monkey_patch()
+
 import os
 import sys
 import logging
