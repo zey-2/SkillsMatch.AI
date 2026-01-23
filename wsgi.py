@@ -4,11 +4,11 @@ Simplified production entry point for Render.com
 Handles common deployment issues and provides debugging
 """
 
-# Eventlet monkey patching MUST be first
-# Exclude dns to prevent interference with httpx/openai client
-import eventlet
-
-eventlet.monkey_patch(dns=False)
+# Eventlet monkey patching for Socket.IO
+# NOTE: Full patching causes DNS issues with httpx/openai client
+# Socket.IO with eventlet worker should work without explicit patching
+# import eventlet
+# eventlet.monkey_patch()
 
 import os
 import sys
