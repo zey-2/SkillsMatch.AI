@@ -5,9 +5,10 @@ Handles common deployment issues and provides debugging
 """
 
 # Eventlet monkey patching MUST be first
+# Exclude dns to prevent interference with httpx/openai client
 import eventlet
 
-eventlet.monkey_patch()
+eventlet.monkey_patch(dns=False)
 
 import os
 import sys
