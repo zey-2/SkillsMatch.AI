@@ -145,18 +145,20 @@ Current context: Singapore job market, SkillsFuture ecosystem, and career develo
                                 )
                                 client = OpenAI(api_key=openai_api_key)
 
-                                # gpt-5-mini uses max_completion_tokens, older models use max_tokens
+                                # gpt-5-mini has different parameter requirements
                                 completion_params = {
                                     "model": model_name,
                                     "messages": messages,
-                                    "temperature": 0.7,
-                                    "top_p": 0.95,
                                 }
 
                                 if model_name == "gpt-5-mini":
+                                    # gpt-5-mini only supports max_completion_tokens, no temperature/top_p
                                     completion_params["max_completion_tokens"] = 800
                                 else:
+                                    # Older models support full parameter set
                                     completion_params["max_tokens"] = 800
+                                    completion_params["temperature"] = 0.7
+                                    completion_params["top_p"] = 0.95
 
                                 response = client.chat.completions.create(
                                     **completion_params
